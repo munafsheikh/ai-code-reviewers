@@ -12,6 +12,8 @@ VARIABLES = [
     ("ACR_ALLOWED_HOSTS", "", "Extra hosts wrappers may contact (comma list). Loopback and compose names are always allowed."),
     ("ACR_ALLOW_PROXY", "0", "Set to 1 to let wrapper traffic use HTTP(S)_PROXY. Off by default."),
     ("ACR_CACHE_DIR", ".acr-cache", "Completion cache directory."),
+    ("ACR_RUN_URL", "", "CI run URL recorded in results and linked from review comments (the GitHub action sets it)."),
+    ("ACR_DOCS_BASE", "<project>/blob/v<version>/docs/generated", "Where rule documentation links point (e.g. an internal mirror)."),
     ("ACR_REVISION", "", "Source revision recorded in results (traceability)."),
     ("ACR_REPOSITORY", "", "Repository URI recorded in results."),
     ("ACR_BIND", "127.0.0.1", "`serve` bind address (compose sets 0.0.0.0 inside the container)."),

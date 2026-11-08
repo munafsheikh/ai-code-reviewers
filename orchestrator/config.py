@@ -185,8 +185,12 @@ def env_overrides(profile: dict[str, Any]) -> dict[str, Any]:
     if host:
         runtime["base_url"] = host
     routing = p.setdefault("routing", {})
-    for var in ("ACR_SMALL_MODEL", "LLM_MODEL"):  # LLM_MODEL: legacy ReviewGate compatibility
-        if var in os.environ:
+    # LLM_MODEL: legacy ReviewGate compatibility. An empty value only means "no model" in the
+    # legacy profile (ReviewGate exits 2 without one); elsewhere it is ignored, so CI systems that
+    # forward an unset variable as "" do not silently disable the profile's model.
+    legacy = profile.get("mode") == "legacy"
+    for var in ("ACR_SMALL_MODEL", "LLM_MODEL"):
+        if var in os.environ and (os.environ[var].strip() or legacy):
             routing["small_model"] = os.environ[var]
             break
     if os.environ.get("ACR_LARGE_MODEL"):

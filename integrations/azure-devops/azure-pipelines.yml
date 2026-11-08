@@ -1,6 +1,6 @@
 # Azure DevOps template: same container, same exit codes as the GitHub adapter.
 # Use from a consumer pipeline:
-#   resources: {repositories: [{repository: acr, type: github, name: munafsheikh/ai-code-reviewers, ref: refs/tags/v0.1.0, endpoint: github}]}
+#   resources: {repositories: [{repository: acr, type: github, name: munafsheikh/ai-code-reviewers, ref: refs/tags/v0.2.0, endpoint: github}]}
 #   steps: [{template: integrations/azure-devops/azure-pipelines.yml@acr, parameters: {profile: balanced}}]
 parameters:
   - name: profile
@@ -8,7 +8,7 @@ parameters:
     default: balanced
   - name: image
     type: string
-    default: ghcr.io/munafsheikh/ai-code-reviewers:0.1.0
+    default: ghcr.io/munafsheikh/ai-code-reviewers:0.2.0
   - name: runtimeImage
     type: string
     default: ollama/ollama:0.40.11@sha256:dea72d1e22270fe095b68fdf756d2b489d615643c5a2eaebbc5f569181e322d8

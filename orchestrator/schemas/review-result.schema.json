@@ -135,6 +135,27 @@
             ]
           }
         },
+        "links": {
+          "type": "object",
+          "description": "Reviewed commit, CI run (ACR_RUN_URL) and rule reference.",
+          "properties": {
+            "commit": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "ci_run": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "rules": {
+              "type": "string"
+            }
+          }
+        },
         "coverage": {
           "type": [
             "object",
@@ -381,6 +402,24 @@
         "fingerprint": {
           "type": "string",
           "pattern": "^[0-9a-f]{16}$"
+        },
+        "links": {
+          "type": "object",
+          "description": "Traceability: permalink to the reviewed lines (null when repository/revision unknown) and the rule documentation.",
+          "properties": {
+            "location": {
+              "type": [
+                "string",
+                "null"
+              ]
+            },
+            "rule": {
+              "type": [
+                "string",
+                "null"
+              ]
+            }
+          }
         }
       }
     }

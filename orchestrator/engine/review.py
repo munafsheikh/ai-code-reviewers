@@ -12,7 +12,7 @@ from typing import Any
 from orchestrator import __version__
 from orchestrator import config as cfg
 from orchestrator.contracts import RESULT_SCHEMA, SEVERITIES, AdapterError, Finding, GenerationRequest, ModelAdapter
-from orchestrator.engine import coverage, gate, parse, prompt
+from orchestrator.engine import coverage, gate, links, parse, prompt
 from orchestrator.engine import diff as diffmod
 from orchestrator.engine.adapters import load_adapter
 from orchestrator.engine.rules import run_companions, run_rules
@@ -173,6 +173,14 @@ def _model_findings(
             return []
         found, stats = parse.to_findings(text, route.skills, chunk, m.id)
         ctx.parse_stats.append({"model": m.id, **stats})
+        # Visible in CI logs (-v): what the model actually contributed for this chunk.
+        ctx.audit.record(
+            "model_output",
+            model=m.id,
+            chars=len(text),
+            **{k: v for k, v in stats.items() if k != "parse_error"},
+            parse_error=stats.get("parse_error"),
+        )
         return found
 
     workers = max(1, int(ctx.profile.get("budget", {}).get("concurrency", 1)))
@@ -257,6 +265,12 @@ def run_review(
 
     used = {r.model.id: r.model for r in routes if r.model}
     fdicts = [f.to_dict() for f in findings]
+    for d in fdicts:  # traceability: exact lines at the reviewed revision + the rule's documentation
+        loc = d["location"]
+        d["links"] = {
+            "location": links.location_url(repository, revision, loc["path"], loc["start_line"], loc["end_line"]),
+            "rule": links.rule_url(d["rule_id"], d["skill"], __version__),
+        }
     return {
         "schema": RESULT_SCHEMA,
         "tool": {"name": "ai-code-reviewers", "version": __version__},
@@ -285,6 +299,11 @@ def run_review(
             "infrastructure_errors": ctx.infra_errors,
             "coverage": cov,
             "recovery_events": audit.events,
+            "links": {
+                "commit": links.commit_url(repository, revision),
+                "ci_run": links.ci_run_url(),
+                "rules": f"{links.docs_base(__version__)}/rules.md",
+            },
             "legacy_raw_output": legacy_raw,
         },
         "findings": fdicts,

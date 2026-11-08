@@ -73,3 +73,15 @@ def test_catalog_is_consistent():
         assert (m.tier == "small") == (m.params_b < 6), m.id
         if m.license_class == "permissive":
             assert m.license in ("Apache-2.0", "MIT"), m.id
+
+
+def test_empty_model_env_does_not_disable_the_profile_model(monkeypatch):
+    """Regression: CI forwarded an unset LLM_MODEL as "", which routed rules-only."""
+    monkeypatch.setenv("LLM_MODEL", "")
+    p = cfg.env_overrides(cfg.load_profile("balanced"))
+    assert p["routing"]["small_model"] == "qwen2.5-coder-1.5b"
+    monkeypatch.setenv("ACR_SMALL_MODEL", "  ")
+    assert cfg.env_overrides(cfg.load_profile("balanced"))["routing"]["small_model"] == "qwen2.5-coder-1.5b"
+    # The legacy profile keeps ReviewGate semantics: empty means "no model" (exit 2, golden-tested).
+    monkeypatch.delenv("ACR_SMALL_MODEL")
+    assert cfg.env_overrides(cfg.load_profile("legacy"))["routing"]["small_model"] == ""

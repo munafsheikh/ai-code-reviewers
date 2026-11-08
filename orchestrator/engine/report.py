@@ -25,6 +25,7 @@ def to_sarif(result: dict[str, Any]) -> str:
                 "shortDescription": {"text": f["title"]},
                 "fullDescription": {"text": f["explanation"]},
                 "help": {"text": f["remediation"]},
+                **({"helpUri": f["links"]["rule"]} if (f.get("links") or {}).get("rule") else {}),
                 "properties": {"tags": [f["category"], f["source"]], "security-severity": SECURITY_SEVERITY[f["severity"]]},
             },
         )
@@ -92,6 +93,16 @@ def to_markdown(result: dict[str, Any]) -> str:
         f"{run['source']['files_reviewed']} files, {run['source']['added_lines']} added lines · "
         f"{run['duration_ms']} ms"
     )
+    rl = run.get("links") or {}
+    trace = []
+    if rl.get("commit") and run.get("revision"):
+        trace.append(f"commit [`{run['revision'][:7]}`]({rl['commit']})")
+    if rl.get("ci_run"):
+        trace.append(f"[CI run]({rl['ci_run']}) (JSON/SARIF report artifacts)")
+    if rl.get("rules"):
+        trace.append(f"[rule reference]({rl['rules']})")
+    trace.append(f"`ai-code-reviewers {result['tool']['version']}` · run `{run['id'][:8]}`")
+    lines.append("Reviewed " + " · ".join(trace))
     if run["degraded"]:
         lines += [
             "",
@@ -99,6 +110,18 @@ def to_markdown(result: dict[str, Any]) -> str:
         ]
     models = ", ".join(f"`{m['ref']}`" for m in run["models"]) or "none (rules only)"
     lines += ["", f"Models: {models}"]
+    parse = run.get("parse") or []
+    if parse:
+        raw = sum(p["raw"] for p in parse)
+        acc = sum(p["accepted"] for p in parse)
+        disc = sum(p["discarded"] for p in parse)
+        unv = sum(p["unverified_location"] for p in parse)
+        errs = [p["parse_error"] for p in parse if p.get("parse_error")]
+        lines.append(
+            f"Model output: {raw} findings returned, {acc} accepted, {disc} discarded "
+            f"(not in the diff or invalid), {unv} cited lines outside the changed hunks"
+            + (f"; unparseable reply: {errs[0]}" if errs else "")
+        )
     cov = run.get("coverage")
     if cov:
         cats = ", ".join(f"{c} ({n})" for c, n in cov["by_category"].items()) or "none"
@@ -113,14 +136,21 @@ def to_markdown(result: dict[str, Any]) -> str:
         lines += ["", "| | Location | Finding | Basis |", "|---|---|---|---|"]
         for f in result["findings"]:
             loc = f"`{f['location']['path']}:{f['location']['start_line']}`"
+            if (f.get("links") or {}).get("location"):
+                loc = f"[{loc}]({f['links']['location']})"
             basis = f"{f['kind']}, {f['source']}" + (f" ({f['model']})" if f["model"] else "") + f", {f['confidence']}"
             sup = " *(baselined)*" if f.get("suppressed") else ""
             title = f["title"].replace("|", "\\|")
             lines.append(f"| {f['severity']} | {loc} | **{title}**{sup} | {basis} |")
         lines += ["", "<details><summary>Details and remediation</summary>", ""]
         for f in result["findings"]:
+            fl = f.get("links") or {}
+            rule = f"[`{f['rule_id']}`]({fl['rule']})" if fl.get("rule") else f"`{f['rule_id']}`"
+            where = f"{f['location']['path']}:{f['location']['start_line']}"
+            if fl.get("location"):
+                where = f"[{where}]({fl['location']})"
             lines += [
-                f"#### `{f['rule_id']}` — {f['location']['path']}:{f['location']['start_line']}",
+                f"#### {rule} — {where}",
                 f"{f['explanation']}",
                 "",
                 f"Evidence: `{f['evidence'].replace('`', '')}`",

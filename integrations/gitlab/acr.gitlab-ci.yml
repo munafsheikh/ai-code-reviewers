@@ -1,9 +1,9 @@
-# GitLab CI template:  include: {remote: 'https://raw.githubusercontent.com/munafsheikh/ai-code-reviewers/v0.1.0/integrations/gitlab/acr.gitlab-ci.yml'}
+# GitLab CI template:  include: {remote: 'https://raw.githubusercontent.com/munafsheikh/ai-code-reviewers/v0.2.0/integrations/gitlab/acr.gitlab-ci.yml'}
 # Rules-only by default (no service); set ACR_PROFILE=balanced to add the Ollama service.
 acr-review:
   stage: test
   image:
-    name: ghcr.io/munafsheikh/ai-code-reviewers:0.1.0
+    name: ghcr.io/munafsheikh/ai-code-reviewers:0.2.0
     entrypoint: [""]
   variables:
     ACR_PROFILE: offline

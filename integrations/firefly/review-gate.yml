@@ -32,7 +32,7 @@ jobs:
 
       - name: AI review
         id: acr
-        uses: munafsheikh/ai-code-reviewers/integrations/github@ACR_REF
+        uses: munafsheikh/ai-code-reviewers/integrations/github@v0.2.0
         with:
           profile: ${{ vars.LLM_RUNTIME_IMAGE != '' && 'balanced' || 'offline' }}
           paths: '*.java'

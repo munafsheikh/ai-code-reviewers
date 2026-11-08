@@ -13,6 +13,9 @@ inputs:
   base-ref:
     description: Base ref to diff against (default the PR base)
     default: ''
+  head-ref:
+    description: Commit to review (default the PR head commit, else the pushed commit). Set to HEAD to include local commits.
+    default: ''
   paths:
     description: Space-separated git pathspecs to limit the diff (e.g. "*.java")
     default: ''
@@ -37,6 +40,12 @@ inputs:
   output-dir:
     description: Where review.{json,sarif,md,txt} are written
     default: acr-review
+  upload-artifact:
+    description: Upload the reports as a workflow artifact (linked from the review comment)
+    default: 'true'
+  artifact-name:
+    description: Artifact name for the reports
+    default: ai-code-review
 
 outputs:
   gate:
@@ -57,11 +66,15 @@ runs:
       env:
         BASE: ${{ inputs.base-ref || github.event.pull_request.base.ref || github.event.repository.default_branch }}
         PATHS: ${{ inputs.paths }}
+        # On pull requests HEAD is GitHub's ephemeral merge commit; review (and link) the PR head instead.
+        HEAD_REF: ${{ inputs.head-ref || github.event.pull_request.head.sha || github.sha }}
       run: |
         set -euo pipefail
         git fetch --no-tags --depth=200 origin "$BASE"
+        git cat-file -e "$HEAD_REF^{commit}" 2>/dev/null || git fetch --no-tags --depth=200 origin "$HEAD_REF"
+        HEAD_REF_RESOLVED=$(git rev-parse "$HEAD_REF")
         read -r -a specs <<< "$PATHS"
-        git -c core.fsmonitor=false diff --no-color --no-ext-diff --no-textconv "origin/$BASE...HEAD" -- "${specs[@]}" > "$RUNNER_TEMP/acr.diff"
+        git -c core.fsmonitor=false diff --no-color --no-ext-diff --no-textconv "origin/$BASE...$HEAD_REF_RESOLVED" -- "${specs[@]}" > "$RUNNER_TEMP/acr.diff"
         echo "diff lines: $(wc -l < "$RUNNER_TEMP/acr.diff")"
 
     - name: Prepare reviewer image
@@ -101,20 +114,23 @@ runs:
       env:
         IMAGE: ${{ steps.image.outputs.image }}
         PROFILE: ${{ inputs.profile }}
+        HEAD_REF: ${{ inputs.head-ref || github.event.pull_request.head.sha || github.sha }}
         POLICY: ${{ inputs.policy }}
         MODEL: ${{ inputs.model }}
         OUT: ${{ inputs.output-dir }}
       run: |
         set +e -uo pipefail   # composite steps run with bash -e; the exit code is handled below
+        HEAD_REF_RESOLVED=$(git rev-parse "$HEAD_REF")
         mkdir -p "$OUT" && chmod 0777 "$OUT"
         net=(); docker network inspect acr-net >/dev/null 2>&1 && net=(--network acr-net)
         args=(review --profile "$PROFILE" --format json,sarif,markdown,legacy --out-dir /out --stdout markdown -v
-              --revision "$GITHUB_SHA" --repository "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY")
+              --revision "$HEAD_REF_RESOLVED" --repository "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY")
         [ -n "$POLICY" ] && args+=(--policy "$POLICY")
         [ -n "$MODEL" ] && args+=(--model "$MODEL")
         docker run --rm -i "${net[@]}" --read-only --cap-drop ALL --security-opt no-new-privileges:true \
           --tmpfs /tmp -v "$PWD/$OUT:/out" -e ACR_MODEL_HOST=http://llm-runtime:11434 \
-          -e LLM_MODEL="${LLM_MODEL:-}" "$IMAGE" "${args[@]}" < "$RUNNER_TEMP/acr.diff" 2> "$OUT/review.log"
+          -e ACR_RUN_URL="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" \
+          ${LLM_MODEL:+-e LLM_MODEL="$LLM_MODEL"} "$IMAGE" "${args[@]}" < "$RUNNER_TEMP/acr.diff" 2> "$OUT/review.log"
         code=$?
         cat "$OUT/review.log" >&2
         gate=$(docker run --rm -i --entrypoint python "$IMAGE" -c 'import json,sys; print(json.load(sys.stdin)["gate"]["status"])' < "$OUT/review.json" 2>/dev/null || echo error)
@@ -122,6 +138,15 @@ runs:
         echo "gate=$gate" >> "$GITHUB_OUTPUT"
         [ -f "$OUT/review.md" ] && cat "$OUT/review.md" >> "$GITHUB_STEP_SUMMARY"
         exit 0
+
+    - name: Keep the reports (linked from the review comment)
+      if: always() && inputs.upload-artifact == 'true'
+      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+      with:
+        name: ${{ inputs.artifact-name }}
+        path: ${{ inputs.output-dir }}/
+        retention-days: 90
+        if-no-files-found: ignore
 
     - name: Comment on PR
       if: inputs.comment == 'true' && github.event.pull_request.number
