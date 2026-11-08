@@ -1,6 +1,6 @@
 """Plan and report the model-matrix evaluation (stdlib only; runs via py.sh or the toolbox).
 
-model_matrix.py plan  --select <all|small|changed|ids...> [--max-disk-mb N] [--base REF]
+model_matrix.py plan  --select <all|small|changed|ids...> [--max-disk-mb N] [--changed-files FILE]
     prints a JSON list of {id, ref, disk_mb} for the GitHub Actions matrix
 model_matrix.py report <results-dir>
     prints a Markdown comparison of bench results + pull/digest evidence
@@ -9,7 +9,6 @@ model_matrix.py report <results-dir>
 from __future__ import annotations
 
 import json
-import subprocess
 import sys
 import tomllib
 from pathlib import Path
@@ -26,7 +25,7 @@ def manifests() -> dict[str, dict]:
 
 
 def plan(args: list[str]) -> int:
-    select, max_disk, base = "small", 6000, "origin/main"
+    select, max_disk, changed_file = "small", 6000, None
     ids: list[str] = []
     it = iter(args)
     for a in it:
@@ -34,8 +33,8 @@ def plan(args: list[str]) -> int:
             select = next(it)
         elif a == "--max-disk-mb":
             max_disk = int(next(it))
-        elif a == "--base":
-            base = next(it)
+        elif a == "--changed-files":
+            changed_file = next(it)
         else:
             ids.append(a)
     ms = manifests()
@@ -44,13 +43,9 @@ def plan(args: list[str]) -> int:
     elif select == "small":
         chosen = [i for i, d in ms.items() if d["tier"] == "small"]
     elif select == "changed":
-        diff = subprocess.run(
-            ["git", "-C", str(ROOT), "diff", "--name-only", f"{base}...HEAD", "--", "models/registry"],
-            capture_output=True,
-            text=True,
-            check=False,
-        ).stdout.split()
-        chosen = [Path(p).stem for p in diff if Path(p).stem in ms]
+        # The caller supplies changed paths (e.g. `git diff --name-only`), so this script needs no git.
+        changed = Path(changed_file).read_text().split() if changed_file else []
+        chosen = [Path(p).stem for p in changed if p.startswith("models/registry/") and Path(p).stem in ms]
     else:
         chosen = [i for i in select.split() + ids if i in ms]
     rows, skipped = [], []

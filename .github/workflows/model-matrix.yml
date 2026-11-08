@@ -34,7 +34,8 @@ jobs:
           MAX_DISK: ${{ inputs.max_disk_mb || '6000' }}
           BASE: origin/${{ github.base_ref || 'main' }}
         run: |
-          models=$(infrastructure/scripts/py.sh infrastructure/scripts/model_matrix.py plan --select "$SELECT" --max-disk-mb "$MAX_DISK" --base "$BASE")
+          mkdir -p out && git diff --name-only "$BASE...HEAD" -- models/registry > out/changed.txt
+          models=$(infrastructure/scripts/py.sh infrastructure/scripts/model_matrix.py plan --select "$SELECT" --max-disk-mb "$MAX_DISK" --changed-files out/changed.txt)
           echo "models=$models" >> "$GITHUB_OUTPUT"
           echo "$models"
 
