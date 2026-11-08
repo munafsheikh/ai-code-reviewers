@@ -75,13 +75,15 @@ options:
 ## `acr bench`
 
 ```text
-usage: acr bench [-h] [--profile PROFILE] [--repeat REPEAT] [--out OUT]
-                 [--gate] [--update-manifest]
+usage: acr bench [-h] [--profile PROFILE] [--repeat REPEAT] [--policy POLICY]
+                 [--out OUT] [--gate] [--update-manifest]
 
 options:
   -h, --help         show this help message and exit
   --profile PROFILE
   --repeat REPEAT    runs per case (measures stability)
+  --policy POLICY    policy id (default: from profile); e.g. evaluation for
+                     benchmarking
   --out OUT          write JSON (and .md) report here
   --gate             enforce policies/quality-gates/benchmarks.toml
   --update-manifest  re-record fixture checksums (protected)
@@ -90,15 +92,19 @@ options:
 ## `acr models`
 
 ```text
-usage: acr models [-h] [--profile PROFILE] [--pin] {list,verify}
+usage: acr models [-h] [--ram-mb RAM_MB] [--policy POLICY] [--profile PROFILE]
+                  [--pin]
+                  {list,verify,recommend}
 
 positional arguments:
-  {list,verify}
+  {list,verify,recommend}
 
 options:
-  -h, --help         show this help message and exit
+  -h, --help            show this help message and exit
+  --ram-mb RAM_MB       recommend: memory available to the model
+  --policy POLICY       recommend: policy whose license classes apply
   --profile PROFILE
-  --pin              record runtime digests for unpinned manifests
+  --pin                 record runtime digests for unpinned manifests
 ```
 
 ## `acr skills`

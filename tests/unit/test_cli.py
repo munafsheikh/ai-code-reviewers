@@ -55,3 +55,13 @@ def test_review_exit_codes_and_stdout(capsys):
     assert main(["review", "--profile", "offline", "--format", "json", "--diff", str(FIXTURES / "typescript-types/diff.patch")]) == 0
     assert json.loads(capsys.readouterr().out)["gate"]["status"] == "warn"
     assert main(["review", "--profile", "offline", "--diff", "/nonexistent.patch"]) == 2
+
+
+def test_models_recommend_respects_budget_and_policy(capsys):
+    assert main(["models", "recommend", "--ram-mb", "4096"]) == 0
+    out = capsys.readouterr().out
+    assert "ACR_SMALL_MODEL=qwen2.5-coder-1.5b" in out and "qwen3-coder-30b-a3b" not in out
+    assert main(["models", "recommend", "--ram-mb", "32768", "--policy", "strict"]) == 0
+    out = capsys.readouterr().out
+    assert "llama3.2-3b" not in out and "codestral-22b" not in out and "qwen3-coder-30b-a3b" in out
+    assert main(["models", "recommend", "--ram-mb", "256"]) == 1

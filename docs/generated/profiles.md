@@ -7,6 +7,8 @@
 | `balanced` | default | small | qwen2.5-coder-1.5b | qwen2.5-coder-7b | 6 | 600 | Default: rules + small model for every diff, large-tier skills downgrade to the small model. |
 | `deep` | default | small, large | qwen2.5-coder-1.5b | qwen2.5-coder-7b | 16 | 3600 | Scheduled / release reviews: small model for focused skills, 7B model for architecture and performance. |
 | `fast` | default | small | qwen2.5-coder-0.5b | qwen2.5-coder-7b | 1 | 120 | Pre-commit / incremental: rules + 0.5B model, one call, short timeouts. |
+| `gpu` | default | small, large | qwen2.5-coder-7b | qwen3-coder-30b-a3b | 16 | 1800 | 24 GB GPU workstation or self-hosted runner: Qwen2.5-Coder 7B small tier, Qwen3-Coder 30B-A3B (MoE) large tier. |
+| `laptop` | default | small, large | qwen3.5-4b | qwen3.5-9b | 10 | 1800 | 16 GB laptop, CPU or integrated GPU: Qwen3.5 4B for focused skills, Qwen3.5 9B for architecture and performance. |
 | `legacy` | legacy | small | - | qwen2.5-coder-7b | 6 | 600 | Firefly ReviewGate.java compatibility mode (text protocol, exit codes 0/1/2). |
 | `offline` | default | rules only | qwen2.5-coder-1.5b | qwen2.5-coder-7b | 6 | 600 | Deterministic, rules only. No model runtime needed; used for benchmarks and air-gapped CI. |
 
@@ -15,5 +17,6 @@
 | Policy | Version | Block on | Model findings block | Fail on infra error | Description |
 |---|---|---|---|---|---|
 | `default` | 1.0.0 | major | True (≥medium) | False | Block on major+ findings; model findings block only at medium+ confidence. |
+| `evaluation` | 1.0.0 | critical | False (≥low) | True | Benchmarking only: any license class (incl. non-production), never used to gate merges. |
 | `legacy` | 1.0.0 | major | True (≥low) | True | Firefly ReviewGate.java semantics (gate decided by the model's SEVERITY line). |
 | `strict` | 1.0.0 | major | True (≥low) | True | Release branches: block on major+, fail when model infrastructure is unavailable, pinned models only. |

@@ -53,8 +53,18 @@ class ModelManifest:
     context_tokens: int
     min_ram_mb: int
     status: str
+    license_class: str = "unknown"
+    params_b: float = 0.0
+    kind: str = "instruct"
+    hf: str = ""
     raw: dict[str, Any] = field(repr=False, default_factory=dict)
     registered: bool = True
+
+    def ref_for(self, wrapper: str) -> str:
+        """Model name to send to a runtime: Ollama tag by default, HF repo id for OpenAI-compatible servers."""
+        if wrapper == "llama-cpp" and self.hf:
+            return self.hf
+        return self.ref
 
 
 def load_skills(root: Path | None = None) -> dict[str, Skill]:
@@ -99,6 +109,10 @@ def load_models(root: Path | None = None) -> dict[str, ModelManifest]:
             context_tokens=d["limits"]["context_tokens"],
             min_ram_mb=d["resources"]["min_ram_mb"],
             status=d["status"],
+            license_class=d.get("license_class", "unknown"),
+            params_b=float(d.get("params_b", 0)),
+            kind=d.get("kind", "instruct"),
+            hf=d["source"].get("hf", ""),
             raw=d,
         )
     return out
@@ -175,6 +189,8 @@ def env_overrides(profile: dict[str, Any]) -> dict[str, Any]:
             break
     if os.environ.get("ACR_LARGE_MODEL"):
         routing["large_model"] = os.environ["ACR_LARGE_MODEL"]
+    if os.environ.get("ACR_MEMORY_BUDGET_MB"):
+        p.setdefault("budget", {})["memory_budget_mb"] = int(os.environ["ACR_MEMORY_BUDGET_MB"])
     if os.environ.get("ACR_CACHE_DIR"):
         p.setdefault("cache", {})["dir"] = os.environ["ACR_CACHE_DIR"]
     if os.environ.get("ACR_WRAPPER"):

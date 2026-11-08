@@ -40,3 +40,36 @@ def test_policy_requiring_pinned_models_rejects_unpinned():
 def test_unregistered_runtime_ref_is_allowed_but_marked():
     (r,) = router.plan(SEL[:1], profile(small_model="some/custom:3b"), MODELS, {})
     assert r.model.ref == "some/custom:3b" and r.model.status == "unregistered"
+
+
+def test_policy_license_classes_gate_models():
+    p = profile(small_model="codestral-22b")
+    p["budget"]["memory_budget_mb"] = 65536
+    default = cfg.load_policy("default")
+    (r,) = router.plan(SEL[:1], p, MODELS, default)
+    assert r.model is None and "non-production" in r.reason
+    evaluation = cfg.load_policy("evaluation")
+    (r,) = router.plan(SEL[:1], p, MODELS, evaluation)
+    assert r.model.id == "codestral-22b"
+    p["routing"]["small_model"] = "llama3.2-3b"
+    assert router.plan(SEL[:1], p, MODELS, default)[0].model.id == "llama3.2-3b"
+    assert (
+        router.plan(SEL[:1], p, MODELS, cfg.load_policy("strict") | {"models": {"allowed_license_classes": ["permissive"]}})[0].model
+        is None
+    )
+
+
+def test_runtime_specific_model_names():
+    m = MODELS["qwen3-coder-30b-a3b"]
+    assert m.ref_for("ollama") == "qwen3-coder:30b"
+    assert m.ref_for("llama-cpp") == "Qwen/Qwen3-Coder-30B-A3B-Instruct"
+
+
+def test_catalog_is_consistent():
+    assert len(MODELS) >= 15
+    for m in MODELS.values():
+        assert m.kind in ("code-instruct", "instruct", "reasoning")
+        assert m.raw.get("evidence"), m.id
+        assert (m.tier == "small") == (m.params_b < 6), m.id
+        if m.license_class == "permissive":
+            assert m.license in ("Apache-2.0", "MIT"), m.id

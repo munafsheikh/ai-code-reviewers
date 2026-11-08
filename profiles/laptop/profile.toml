@@ -1,0 +1,20 @@
+extends = "balanced"
+id = "laptop"
+description = "16 GB laptop, CPU or integrated GPU: Qwen3.5 4B for focused skills, Qwen3.5 9B for architecture and performance."
+skills = ["*"]
+
+[routing]
+tiers = ["small", "large"]
+small_model = "qwen3.5-4b"
+large_model = "qwen3.5-9b"
+
+[generation]
+num_ctx = 16384
+max_tokens = 2048
+
+[budget]
+max_diff_chars = 32000
+max_model_calls = 10
+call_timeout_s = 300
+review_timeout_s = 1800
+memory_budget_mb = 12288

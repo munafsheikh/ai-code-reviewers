@@ -1,0 +1,34 @@
+# Evaluation only: non-production license. Rejected by default and strict policies; use policy `evaluation` to benchmark it.
+id = "codestral-22b"
+interface = "acr.model/v1"
+family = "codestral"
+tier = "large"
+kind = "code-instruct"
+architecture = "dense"
+params_b = 22.2
+status = "candidate"          # candidate -> approved: pinned digest + benchmark run (model-matrix workflow)
+license = "Mistral AI Non-Production License"
+license_class = "non-production"
+license_url = "https://mistral.ai/licenses/MNPL-0.1.md"
+capabilities = ["review.diff", "lang.java", "lang.python", "lang.javascript", "lang.typescript"]
+evidence = ["https://ollama.com/library/codestral", "https://mistral.ai/licenses/MNPL-0.1.md"]
+
+[source]
+runtime = "ollama"
+ref = "codestral:22b"
+url = "https://ollama.com/library/codestral"
+upstream = "https://huggingface.co/mistralai/Codestral-22B-v0.1"
+hf = "mistralai/Codestral-22B-v0.1"
+
+[integrity]
+algorithm = "sha256"
+digest = ""                   # pin with: acr models verify --pin (records the runtime-reported digest)
+
+[limits]
+context_tokens = 32768
+
+[resources]                   # approximate, Q4-class weights
+min_ram_mb = 16384
+recommended_ram_mb = 24576
+disk_mb = 13000
+gpu = "optional"              # CPU works; a GPU is recommended for interactive latency

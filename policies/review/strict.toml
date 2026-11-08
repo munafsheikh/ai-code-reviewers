@@ -12,6 +12,7 @@ fail_on_infrastructure_error = true
 [models]
 require_pinned = true
 forbidden_status = ["rejected", "deprecated", "unregistered"]
+allowed_license_classes = ["permissive"]
 
 [baseline]
 file = "policies/security/baseline.json"

@@ -1,0 +1,35 @@
+# MoE code model; custom license with use restrictions; excluded by the strict policy.
+id = "deepseek-coder-v2-lite-16b"
+interface = "acr.model/v1"
+family = "deepseek-coder-v2"
+tier = "large"
+kind = "code-instruct"
+architecture = "moe"
+params_b = 15.7
+active_params_b = 2.4
+status = "candidate"          # candidate -> approved: pinned digest + benchmark run (model-matrix workflow)
+license = "DeepSeek License"
+license_class = "open-weight-restricted"
+license_url = "https://github.com/deepseek-ai/DeepSeek-Coder-V2/blob/main/LICENSE-MODEL"
+capabilities = ["review.diff", "lang.java", "lang.python", "lang.javascript", "lang.typescript"]
+evidence = ["https://ollama.com/library/deepseek-coder-v2", "https://github.com/deepseek-ai/DeepSeek-Coder-V2"]
+
+[source]
+runtime = "ollama"
+ref = "deepseek-coder-v2:16b"
+url = "https://ollama.com/library/deepseek-coder-v2"
+upstream = "https://huggingface.co/deepseek-ai/DeepSeek-Coder-V2-Lite-Instruct"
+hf = "deepseek-ai/DeepSeek-Coder-V2-Lite-Instruct"
+
+[integrity]
+algorithm = "sha256"
+digest = ""                   # pin with: acr models verify --pin (records the runtime-reported digest)
+
+[limits]
+context_tokens = 131072
+
+[resources]                   # approximate, Q4-class weights
+min_ram_mb = 11264
+recommended_ram_mb = 16384
+disk_mb = 8900
+gpu = "optional"

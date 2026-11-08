@@ -24,7 +24,7 @@ inputs:
     default: qwen2.5-coder:1.5b
   runtime-image:
     description: Model runtime image. Empty = no runtime (review degrades to rules-only unless profile is offline).
-    default: ollama/ollama:0.12.6@sha256:a61a8fd395dbb931cc8cb1b5da7a2510746575c87113fdc45b647ee59ef7f808
+    default: ollama/ollama:0.40.11@sha256:dea72d1e22270fe095b68fdf756d2b489d615643c5a2eaebbc5f569181e322d8
   image:
     description: Reviewer image. Empty = build from this action's source (pinned by the ref you use).
     default: ''

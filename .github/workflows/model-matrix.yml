@@ -1,0 +1,99 @@
+name: Model matrix
+# Evaluates registry models on a real runtime: pulls each one (proves the tag exists, records
+# its digest) and runs the benchmark suite through it. PRs evaluate changed manifests that fit
+# the runner; the monthly run and manual runs cover more. Results feed model promotion
+# (candidate -> approved) and the monthly evolution proposal.
+on:
+  pull_request:
+    paths: [models/registry/**]
+  schedule:
+    - cron: "29 2 15 * *"
+  workflow_dispatch:
+    inputs:
+      select:
+        description: all | small | changed | space-separated registry ids
+        default: small
+      max_disk_mb:
+        description: skip models whose weights exceed this (default runner ~14 GB free disk)
+        default: "6000"
+
+permissions:
+  contents: read
+
+jobs:
+  plan:
+    runs-on: ubuntu-latest
+    outputs:
+      models: ${{ steps.p.outputs.models }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with: {fetch-depth: 0}
+      - id: p
+        env:
+          SELECT: ${{ github.event_name == 'pull_request' && 'changed' || inputs.select || 'small' }}
+          MAX_DISK: ${{ inputs.max_disk_mb || '6000' }}
+          BASE: origin/${{ github.base_ref || 'main' }}
+        run: |
+          models=$(infrastructure/scripts/py.sh infrastructure/scripts/model_matrix.py plan --select "$SELECT" --max-disk-mb "$MAX_DISK" --base "$BASE")
+          echo "models=$models" >> "$GITHUB_OUTPUT"
+          echo "$models"
+
+  evaluate:
+    needs: plan
+    if: needs.plan.outputs.models != '[]'
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      max-parallel: 4
+      matrix:
+        model: ${{ fromJson(needs.plan.outputs.models) }}
+    env:
+      ID: ${{ matrix.model.id }}
+      REF: ${{ matrix.model.ref }}
+      RUNTIME: ollama/ollama:0.40.11@sha256:dea72d1e22270fe095b68fdf756d2b489d615643c5a2eaebbc5f569181e322d8
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Reviewer image and runtime
+        run: |
+          make build IMAGE=acr-reviewer:matrix
+          docker network create acr-net
+          docker run -d --name llm-runtime --network acr-net "$RUNTIME" >/dev/null
+          for i in $(seq 1 30); do docker exec llm-runtime ollama list >/dev/null 2>&1 && break; sleep 2; done
+      - name: Pull (verifies the tag exists)
+        id: pull
+        continue-on-error: true
+        run: |
+          for attempt in 1 2 3; do docker exec llm-runtime ollama pull "$REF" && exit 0; sleep $((attempt * 10)); done
+          exit 1
+      - name: Benchmark through the model
+        if: steps.pull.outcome == 'success'
+        run: |
+          mkdir -p "out/matrix/$ID" && chmod 0777 "out/matrix/$ID"
+          docker run --rm --network acr-net -v "$PWD/benchmarks:/opt/acr/benchmarks:ro" -v "$PWD/out/matrix/$ID:/out" \
+            -e ACR_MODEL_HOST=http://llm-runtime:11434 -e ACR_SMALL_MODEL="$ID" -e ACR_MEMORY_BUDGET_MB=65536 \
+            acr-reviewer:matrix bench --profile balanced --policy evaluation --out /out/bench.json
+      - name: Record result
+        if: always()
+        env:
+          PULLED: ${{ steps.pull.outcome == 'success' }}
+        run: |
+          mkdir -p "out/matrix/$ID"
+          digest=$(docker exec llm-runtime ollama list 2>/dev/null | awk -v r="$REF" '$1==r || $1==r":latest" {print $2}' | head -1)
+          bench=$(cat "out/matrix/$ID/bench.json" 2>/dev/null || echo null)
+          printf '{"id":"%s","ref":"%s","pulled":%s,"digest":"%s","bench":%s}\n' "$ID" "$REF" "$PULLED" "$digest" "$bench" > "out/matrix/$ID/result.json"
+          docker rm -f llm-runtime >/dev/null 2>&1 || true
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: always()
+        with: {name: "matrix-${{ matrix.model.id }}", path: "out/matrix/${{ matrix.model.id }}", retention-days: 90}
+
+  report:
+    needs: evaluate
+    if: always() && needs.evaluate.result != 'skipped'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with: {pattern: "matrix-*", path: out/matrix}
+      - name: Comparison table (fails if any tag could not be pulled)
+        run: infrastructure/scripts/py.sh infrastructure/scripts/model_matrix.py report out/matrix | tee -a "$GITHUB_STEP_SUMMARY"

@@ -1,0 +1,34 @@
+# Custom license with an acceptable-use policy; excluded by the strict policy.
+id = "llama3.2-3b"
+interface = "acr.model/v1"
+family = "llama3.2"
+tier = "small"
+kind = "instruct"
+architecture = "dense"
+params_b = 3.2
+status = "candidate"          # candidate -> approved: pinned digest + benchmark run (model-matrix workflow)
+license = "Llama 3.2 Community License"
+license_class = "open-weight-restricted"
+license_url = "https://www.llama.com/llama3_2/license/"
+capabilities = ["review.diff", "lang.java", "lang.python", "lang.javascript", "lang.typescript"]
+evidence = ["https://ollama.com/library/llama3.2", "https://www.llama.com/llama3_2/license/"]
+
+[source]
+runtime = "ollama"
+ref = "llama3.2:3b"
+url = "https://ollama.com/library/llama3.2"
+upstream = "https://huggingface.co/meta-llama/Llama-3.2-3B-Instruct"
+hf = "meta-llama/Llama-3.2-3B-Instruct"
+
+[integrity]
+algorithm = "sha256"
+digest = ""                   # pin with: acr models verify --pin (records the runtime-reported digest)
+
+[limits]
+context_tokens = 131072
+
+[resources]                   # approximate, Q4-class weights
+min_ram_mb = 3072
+recommended_ram_mb = 6144
+disk_mb = 2000
+gpu = "optional"

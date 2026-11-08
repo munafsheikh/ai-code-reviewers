@@ -12,6 +12,8 @@ fail_on_infrastructure_error = false   # degrade to rules-only (audited) instead
 [models]
 require_pinned = false
 forbidden_status = ["rejected"]
+# Non-production licenses (evaluation-only weights) are excluded; use policy "evaluation" to benchmark them.
+allowed_license_classes = ["permissive", "open-weight-restricted"]
 
 [baseline]
 file = "policies/security/baseline.json"

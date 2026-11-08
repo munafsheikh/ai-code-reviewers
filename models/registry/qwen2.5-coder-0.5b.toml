@@ -1,18 +1,24 @@
-# Smallest CPU option; for incremental reviews on constrained runners.
+# Smallest CPU option; for incremental pre-commit reviews. Exercised by model-e2e on every PR.
 id = "qwen2.5-coder-0.5b"
 interface = "acr.model/v1"
 family = "qwen2.5-coder"
 tier = "small"
-status = "candidate"          # candidate -> approved requires a pinned digest + benchmark run
+kind = "code-instruct"
+architecture = "dense"
+params_b = 0.5
+status = "candidate"          # candidate -> approved: pinned digest + benchmark run (model-matrix workflow)
 license = "Apache-2.0"
+license_class = "permissive"
 license_url = "https://huggingface.co/Qwen/Qwen2.5-Coder-0.5B-Instruct/blob/main/LICENSE"
 capabilities = ["review.diff", "lang.java", "lang.python", "lang.javascript", "lang.typescript"]
+evidence = ["https://huggingface.co/Qwen/Qwen2.5-Coder-0.5B-Instruct"]
 
 [source]
 runtime = "ollama"
 ref = "qwen2.5-coder:0.5b"
 url = "https://ollama.com/library/qwen2.5-coder"
 upstream = "https://huggingface.co/Qwen/Qwen2.5-Coder-0.5B-Instruct"
+hf = "Qwen/Qwen2.5-Coder-0.5B-Instruct"
 
 [integrity]
 algorithm = "sha256"
@@ -21,7 +27,7 @@ digest = ""                   # pin with: acr models verify --pin (records the r
 [limits]
 context_tokens = 32768
 
-[resources]                   # approximate, quantised Q4 weights on CPU
+[resources]                   # approximate, Q4-class weights
 min_ram_mb = 1024
 recommended_ram_mb = 2048
 disk_mb = 400

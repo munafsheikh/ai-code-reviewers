@@ -1,0 +1,34 @@
+# Largest of the small series; good default large model on 16 GB laptops.
+id = "qwen3.5-9b"
+interface = "acr.model/v1"
+family = "qwen3.5"
+tier = "large"
+kind = "instruct"
+architecture = "dense"
+params_b = 9.0
+status = "candidate"          # candidate -> approved: pinned digest + benchmark run (model-matrix workflow)
+license = "Apache-2.0"
+license_class = "permissive"
+license_url = "https://huggingface.co/Qwen/Qwen3.5-9B"
+capabilities = ["review.diff", "lang.java", "lang.python", "lang.javascript", "lang.typescript"]
+evidence = ["https://artificialanalysis.ai/articles/qwen3-5-small-models", "https://news.lavx.hu/article/alibaba-s-qwen3-5-small-models-challenge-ai-giants-with-9b-parameter-breakthrough"]
+
+[source]
+runtime = "ollama"
+ref = "qwen3.5:9b"
+url = "https://ollama.com/library/qwen3.5"
+upstream = "https://huggingface.co/Qwen/Qwen3.5-9B"
+hf = "Qwen/Qwen3.5-9B"
+
+[integrity]
+algorithm = "sha256"
+digest = ""                   # pin with: acr models verify --pin (records the runtime-reported digest)
+
+[limits]
+context_tokens = 262144
+
+[resources]                   # approximate, Q4-class weights
+min_ram_mb = 8192
+recommended_ram_mb = 12288
+disk_mb = 6600
+gpu = "optional"

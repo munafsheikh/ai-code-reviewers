@@ -43,6 +43,9 @@ def _candidate(tier: str, profile: dict, models: dict[str, ModelManifest], polic
         return None, f"{m.id} has no pinned digest and policy requires one"
     if m.status in policy.get("models", {}).get("forbidden_status", ["rejected"]):
         return None, f"{m.id} status '{m.status}' is not allowed"
+    allowed = policy.get("models", {}).get("allowed_license_classes")
+    if allowed and m.registered and m.license_class not in allowed:
+        return None, f"{m.id} license class '{m.license_class}' ({m.license}) is not allowed by policy"
     return m, "selected"
 
 

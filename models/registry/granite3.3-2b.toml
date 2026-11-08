@@ -1,0 +1,34 @@
+# Enterprise-oriented small model with clear provenance documentation.
+id = "granite3.3-2b"
+interface = "acr.model/v1"
+family = "granite3.3"
+tier = "small"
+kind = "instruct"
+architecture = "dense"
+params_b = 2.5
+status = "candidate"          # candidate -> approved: pinned digest + benchmark run (model-matrix workflow)
+license = "Apache-2.0"
+license_class = "permissive"
+license_url = "https://huggingface.co/ibm-granite/granite-3.3-2b-instruct"
+capabilities = ["review.diff", "lang.java", "lang.python", "lang.javascript", "lang.typescript"]
+evidence = ["https://registry.ollama.ai/library/granite3.3"]
+
+[source]
+runtime = "ollama"
+ref = "granite3.3:2b"
+url = "https://ollama.com/library/granite3.3"
+upstream = "https://huggingface.co/ibm-granite/granite-3.3-2b-instruct"
+hf = "ibm-granite/granite-3.3-2b-instruct"
+
+[integrity]
+algorithm = "sha256"
+digest = ""                   # pin with: acr models verify --pin (records the runtime-reported digest)
+
+[limits]
+context_tokens = 131072
+
+[resources]                   # approximate, Q4-class weights
+min_ram_mb = 2560
+recommended_ram_mb = 4096
+disk_mb = 1500
+gpu = "optional"

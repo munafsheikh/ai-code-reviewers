@@ -43,6 +43,13 @@ Source: `orchestrator/schemas/model.schema.json`
 | `integrity` | yes | object |  |
 | `limits` | yes | object |  |
 | `resources` | yes | object |  |
+| `license_class` | yes | permissive \| open-weight-restricted \| non-production | permissive = OSI-style (Apache-2.0, MIT); open-weight-restricted = custom terms with use restrictions (Llama, DeepSeek); non-production = evaluation only (e.g. Mistral Non-Production License). |
+| `params_b` | yes | number | Total parameters, billions. |
+| `active_params_b` |  | number | Active parameters per token for MoE models. |
+| `architecture` | yes | dense \| moe |  |
+| `kind` | yes | code-instruct \| instruct \| reasoning | Base (non-instruct) models are not supported: reviews need instruction following. |
+| `evidence` |  | array | Sources for license, size and runtime tag. |
+| `notes` |  | string |  |
 
 ## `acr.profile/v1` — Execution profile (profiles/<id>/profile.toml, after `extends` is resolved)
 

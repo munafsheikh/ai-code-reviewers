@@ -1,0 +1,35 @@
+# MoE: ~3B active parameters, so fast for its size; best code model here for a 24 GB GPU or 32 GB RAM.
+id = "qwen3-coder-30b-a3b"
+interface = "acr.model/v1"
+family = "qwen3-coder"
+tier = "large"
+kind = "code-instruct"
+architecture = "moe"
+params_b = 30.5
+active_params_b = 3.3
+status = "candidate"          # candidate -> approved: pinned digest + benchmark run (model-matrix workflow)
+license = "Apache-2.0"
+license_class = "permissive"
+license_url = "https://huggingface.co/Qwen/Qwen3-Coder-30B-A3B-Instruct"
+capabilities = ["review.diff", "lang.java", "lang.python", "lang.javascript", "lang.typescript"]
+evidence = ["https://registry.ollama.ai/library/qwen3-coder:30b", "https://huggingface.co/Qwen/Qwen3-Coder-30B-A3B-Instruct"]
+
+[source]
+runtime = "ollama"
+ref = "qwen3-coder:30b"
+url = "https://ollama.com/library/qwen3-coder"
+upstream = "https://huggingface.co/Qwen/Qwen3-Coder-30B-A3B-Instruct"
+hf = "Qwen/Qwen3-Coder-30B-A3B-Instruct"
+
+[integrity]
+algorithm = "sha256"
+digest = ""                   # pin with: acr models verify --pin (records the runtime-reported digest)
+
+[limits]
+context_tokens = 262144
+
+[resources]                   # approximate, Q4-class weights
+min_ram_mb = 20480
+recommended_ram_mb = 32768
+disk_mb = 19000
+gpu = "optional"              # CPU works; a GPU is recommended for interactive latency
