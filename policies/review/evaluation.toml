@@ -1,0 +1,17 @@
+id = "evaluation"
+version = "1.0.0"
+description = "Benchmarking only: any license class (incl. non-production), never used to gate merges."
+
+[gate]
+block_on = "critical"
+warn_on = "minor"
+model_findings_can_block = false
+fail_on_infrastructure_error = true
+
+[models]
+require_pinned = false
+forbidden_status = ["rejected"]
+allowed_license_classes = ["permissive", "open-weight-restricted", "non-production"]
+
+[baseline]
+file = "policies/security/baseline.json"

@@ -60,7 +60,7 @@ def _ratio(a: int, b: int) -> float:
     return round(a / b, 4) if b else 1.0
 
 
-def run(profile: str = "offline", repeat: int = 1, root: Path | None = None) -> dict[str, Any]:
+def run(profile: str = "offline", repeat: int = 1, root: Path | None = None, policy: str | None = None) -> dict[str, Any]:
     root = root or cfg.home()
     rows = []
     totals = {"tp": 0, "fp": 0, "fn": 0}
@@ -70,7 +70,7 @@ def run(profile: str = "offline", repeat: int = 1, root: Path | None = None) -> 
         runs = []
         for _ in range(max(1, repeat)):
             t0 = time.monotonic()
-            res = run_review(case["diff"], profile, audit=Audit(log_stream=open("/dev/null", "w")), root=root)
+            res = run_review(case["diff"], profile, policy, audit=Audit(log_stream=open("/dev/null", "w")), root=root)
             latencies.append((time.monotonic() - t0) * 1000)
             runs.append(res)
         s = score(runs[0]["findings"], case["expected"])

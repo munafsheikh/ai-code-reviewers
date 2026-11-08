@@ -1,18 +1,24 @@
-# Deeper architectural/security analysis; Firefly's previous local default.
+# Default large model (deep profile); Firefly's previous local default.
 id = "qwen2.5-coder-7b"
 interface = "acr.model/v1"
 family = "qwen2.5-coder"
 tier = "large"
-status = "candidate"          # candidate -> approved requires a pinned digest + benchmark run
+kind = "code-instruct"
+architecture = "dense"
+params_b = 7.6
+status = "candidate"          # candidate -> approved: pinned digest + benchmark run (model-matrix workflow)
 license = "Apache-2.0"
+license_class = "permissive"
 license_url = "https://huggingface.co/Qwen/Qwen2.5-Coder-7B-Instruct/blob/main/LICENSE"
 capabilities = ["review.diff", "lang.java", "lang.python", "lang.javascript", "lang.typescript"]
+evidence = ["https://huggingface.co/Qwen/Qwen2.5-Coder-7B-Instruct"]
 
 [source]
 runtime = "ollama"
 ref = "qwen2.5-coder:7b"
 url = "https://ollama.com/library/qwen2.5-coder"
 upstream = "https://huggingface.co/Qwen/Qwen2.5-Coder-7B-Instruct"
+hf = "Qwen/Qwen2.5-Coder-7B-Instruct"
 
 [integrity]
 algorithm = "sha256"
@@ -21,7 +27,7 @@ digest = ""                   # pin with: acr models verify --pin (records the r
 [limits]
 context_tokens = 32768
 
-[resources]                   # approximate, quantised Q4 weights on CPU
+[resources]                   # approximate, Q4-class weights
 min_ram_mb = 6144
 recommended_ram_mb = 10240
 disk_mb = 4700

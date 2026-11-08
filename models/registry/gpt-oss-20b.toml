@@ -1,0 +1,35 @@
+# Reasoning model (MXFP4); slower per review but strong on logic and security defects.
+id = "gpt-oss-20b"
+interface = "acr.model/v1"
+family = "gpt-oss"
+tier = "large"
+kind = "reasoning"
+architecture = "moe"
+params_b = 21.0
+active_params_b = 3.6
+status = "candidate"          # candidate -> approved: pinned digest + benchmark run (model-matrix workflow)
+license = "Apache-2.0"
+license_class = "permissive"
+license_url = "https://huggingface.co/openai/gpt-oss-20b"
+capabilities = ["review.diff", "lang.java", "lang.python", "lang.javascript", "lang.typescript"]
+evidence = ["https://huggingface.co/openai/gpt-oss-20b", "https://lmstudio.ai/openai/gpt-oss-20b"]
+
+[source]
+runtime = "ollama"
+ref = "gpt-oss:20b"
+url = "https://ollama.com/library/gpt-oss"
+upstream = "https://huggingface.co/openai/gpt-oss-20b"
+hf = "openai/gpt-oss-20b"
+
+[integrity]
+algorithm = "sha256"
+digest = ""                   # pin with: acr models verify --pin (records the runtime-reported digest)
+
+[limits]
+context_tokens = 131072
+
+[resources]                   # approximate, Q4-class weights
+min_ram_mb = 16384
+recommended_ram_mb = 24576
+disk_mb = 14000
+gpu = "optional"              # CPU works; a GPU is recommended for interactive latency

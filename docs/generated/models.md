@@ -2,8 +2,46 @@
 
 # Model catalog
 
-| Model | Tier | Status | Runtime ref | License | Context | Min RAM | Digest |
-|---|---|---|---|---|---|---|---|
-| `qwen2.5-coder-0.5b` | small | candidate | `qwen2.5-coder:0.5b` | Apache-2.0 | 32768 | 1024 MB | unpinned |
-| `qwen2.5-coder-1.5b` | small | candidate | `qwen2.5-coder:1.5b` | Apache-2.0 | 32768 | 2048 MB | unpinned |
-| `qwen2.5-coder-7b` | large | candidate | `qwen2.5-coder:7b` | Apache-2.0 | 32768 | 6144 MB | unpinned |
+Selection guide: [model selection](../operations/model-selection.md). Pick for a machine with `acr models recommend --ram-mb <MB> --policy <policy>`.
+
+| Model | Tier | Kind | Params | Arch | Ollama ref | License | Class | Context | Min RAM | Status | Digest |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| `qwen2.5-coder-0.5b` | small | code-instruct | 0.5B | dense | `qwen2.5-coder:0.5b` | Apache-2.0 | permissive | 32768 | 1024 MB | candidate | unpinned |
+| `qwen2.5-coder-1.5b` | small | code-instruct | 1.5B | dense | `qwen2.5-coder:1.5b` | Apache-2.0 | permissive | 32768 | 2048 MB | candidate | unpinned |
+| `qwen3.5-2b` | small | instruct | 2.0B | dense | `qwen3.5:2b` | Apache-2.0 | permissive | 262144 | 2560 MB | candidate | unpinned |
+| `granite3.3-2b` | small | instruct | 2.5B | dense | `granite3.3:2b` | Apache-2.0 | permissive | 131072 | 2560 MB | candidate | unpinned |
+| `llama3.2-3b` | small | instruct | 3.2B | dense | `llama3.2:3b` | Llama 3.2 Community License | open-weight-restricted | 131072 | 3072 MB | candidate | unpinned |
+| `phi4-mini-3.8b` | small | instruct | 3.8B | dense | `phi4-mini:3.8b` | MIT | permissive | 131072 | 4096 MB | candidate | unpinned |
+| `gemma4-e4b` | small | instruct | 4.0B | dense | `gemma4:e4b` | Apache-2.0 | permissive | 32768 | 6144 MB | candidate | unpinned |
+| `qwen3.5-4b` | small | instruct | 4.0B | dense | `qwen3.5:4b` | Apache-2.0 | permissive | 262144 | 4096 MB | candidate | unpinned |
+| `qwen2.5-coder-7b` | large | code-instruct | 7.6B | dense | `qwen2.5-coder:7b` | Apache-2.0 | permissive | 32768 | 6144 MB | candidate | unpinned |
+| `granite3.3-8b` | large | instruct | 8.0B | dense | `granite3.3:8b` | Apache-2.0 | permissive | 131072 | 7168 MB | candidate | unpinned |
+| `qwen3.5-9b` | large | instruct | 9.0B | dense | `qwen3.5:9b` | Apache-2.0 | permissive | 262144 | 8192 MB | candidate | unpinned |
+| `qwen2.5-coder-14b` | large | code-instruct | 14.8B | dense | `qwen2.5-coder:14b` | Apache-2.0 | permissive | 32768 | 11264 MB | candidate | unpinned |
+| `deepseek-coder-v2-lite-16b` | large | code-instruct | 15.7B | moe (2.4B active) | `deepseek-coder-v2:16b` | DeepSeek License | open-weight-restricted | 131072 | 11264 MB | candidate | unpinned |
+| `gpt-oss-20b` | large | reasoning | 21.0B | moe (3.6B active) | `gpt-oss:20b` | Apache-2.0 | permissive | 131072 | 16384 MB | candidate | unpinned |
+| `codestral-22b` | large | code-instruct | 22.2B | dense | `codestral:22b` | Mistral AI Non-Production License | non-production | 32768 | 16384 MB | candidate | unpinned |
+| `devstral-small-2-24b` | large | code-instruct | 24.0B | dense | `devstral-small-2` | Apache-2.0 | permissive | 131072 | 16384 MB | candidate | unpinned |
+| `gemma4-26b` | large | instruct | 26.0B | moe (4.0B active) | `gemma4:26b` | Apache-2.0 | permissive | 32768 | 20480 MB | candidate | unpinned |
+| `qwen3-coder-30b-a3b` | large | code-instruct | 30.5B | moe (3.3B active) | `qwen3-coder:30b` | Apache-2.0 | permissive | 262144 | 20480 MB | candidate | unpinned |
+
+## Sources
+
+- `codestral-22b`: [1](https://ollama.com/library/codestral), [2](https://mistral.ai/licenses/MNPL-0.1.md)
+- `deepseek-coder-v2-lite-16b`: [1](https://ollama.com/library/deepseek-coder-v2), [2](https://github.com/deepseek-ai/DeepSeek-Coder-V2)
+- `devstral-small-2-24b`: [1](https://huggingface.co/mistralai/Devstral-Small-2-24B-Instruct-2512), [2](https://codersera.com/blog/run-devstral-locally-with-ollama/)
+- `gemma4-26b`: [1](https://the-decoder.com/googles-gemma-4-is-now-available-with-apache-2-0-licensing-for-the-first-time/), [2](https://dev.to/purpledoubled/how-to-run-googles-gemma-4-locally-with-ollama-all-4-model-sizes-compared-2pbh)
+- `gemma4-e4b`: [1](https://the-decoder.com/googles-gemma-4-is-now-available-with-apache-2-0-licensing-for-the-first-time/), [2](https://jacar.es/en/gemma-4-locally-with-ollama/)
+- `gpt-oss-20b`: [1](https://huggingface.co/openai/gpt-oss-20b), [2](https://lmstudio.ai/openai/gpt-oss-20b)
+- `granite3.3-2b`: [1](https://registry.ollama.ai/library/granite3.3)
+- `granite3.3-8b`: [1](https://registry.ollama.ai/library/granite3.3)
+- `llama3.2-3b`: [1](https://ollama.com/library/llama3.2), [2](https://www.llama.com/llama3_2/license/)
+- `phi4-mini-3.8b`: [1](https://registry.ollama.ai/library/phi4-mini), [2](https://huggingface.co/microsoft/Phi-4-mini-instruct)
+- `qwen2.5-coder-0.5b`: [1](https://huggingface.co/Qwen/Qwen2.5-Coder-0.5B-Instruct)
+- `qwen2.5-coder-1.5b`: [1](https://huggingface.co/Qwen/Qwen2.5-Coder-1.5B-Instruct)
+- `qwen2.5-coder-14b`: [1](https://huggingface.co/Qwen/Qwen2.5-Coder-14B-Instruct)
+- `qwen2.5-coder-7b`: [1](https://huggingface.co/Qwen/Qwen2.5-Coder-7B-Instruct)
+- `qwen3-coder-30b-a3b`: [1](https://registry.ollama.ai/library/qwen3-coder:30b), [2](https://huggingface.co/Qwen/Qwen3-Coder-30B-A3B-Instruct)
+- `qwen3.5-2b`: [1](https://artificialanalysis.ai/articles/qwen3-5-small-models), [2](https://gigazine.net/gsc_news/en/20260303-qwen-3-5-small)
+- `qwen3.5-4b`: [1](https://artificialanalysis.ai/articles/qwen3-5-small-models)
+- `qwen3.5-9b`: [1](https://artificialanalysis.ai/articles/qwen3-5-small-models), [2](https://news.lavx.hu/article/alibaba-s-qwen3-5-small-models-challenge-ai-giants-with-9b-parameter-breakthrough)

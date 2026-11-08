@@ -44,8 +44,8 @@ flowchart LR
 | Concept | Where | Reference |
 |---|---|---|
 | Skills (rules + prompts) | `skills/` | [catalog](docs/generated/skills.md) |
-| Models (manifests, no weights) | `models/registry/` | [catalog](docs/generated/models.md) |
-| Profiles `fast · balanced · deep · offline · legacy` | `profiles/` | [profiles & policies](docs/generated/profiles.md) |
+| Models: 18 manifests, 11 families, no weights | `models/registry/` | [catalog](docs/generated/models.md) · [selection guide](docs/operations/model-selection.md) |
+| Profiles `fast · balanced · deep · laptop · gpu · offline · legacy` | `profiles/` | [profiles & policies](docs/generated/profiles.md) |
 | Policies (gate, model trust, baseline) | `policies/` | [profiles & policies](docs/generated/profiles.md) |
 | Wrappers (runtime adapters) | `wrappers/` | [custom wrappers](wrappers/custom/README.md) |
 | Contracts | `orchestrator/schemas/` | [schemas](docs/generated/schemas.md) |

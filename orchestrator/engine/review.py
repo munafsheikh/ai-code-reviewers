@@ -154,7 +154,7 @@ def _model_findings(
     def one(chunk: list[diffmod.FileDiff]) -> list[Finding]:
         system, user = prompt.build(route.skills, diffmod.render(chunk))
         req = GenerationRequest(
-            model=m.ref,
+            model=m.ref_for(ctx.profile.get("runtime", {}).get("wrapper", "ollama")),
             prompt=user,
             system=system,
             temperature=gen.get("temperature", 0.0),

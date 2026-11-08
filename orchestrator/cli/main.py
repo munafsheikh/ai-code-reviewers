@@ -111,7 +111,7 @@ def cmd_bench(args) -> int:
         (root / "benchmarks" / "fixtures" / "MANIFEST.sha256").write_text(fixture_manifest(root))
         print("updated benchmarks/fixtures/MANIFEST.sha256")
         return 0
-    res = bench.run(args.profile, args.repeat)
+    res = bench.run(args.profile, args.repeat, policy=args.policy)
     if args.out:
         Path(args.out).parent.mkdir(parents=True, exist_ok=True)
         Path(args.out).write_text(json.dumps(res, indent=2) + "\n")
@@ -134,10 +134,12 @@ def cmd_models(args) -> int:
     if args.action == "list":
         for m in models.values():
             print(
-                f"{m.id:<22} {m.tier:<6} {m.status:<10} {m.ref:<24} {m.license:<12} "
+                f"{m.id:<28} {m.tier:<6} {m.kind:<14} {m.params_b:>5}B {m.license_class:<22} {m.ref:<24} "
                 f"ram>={m.min_ram_mb}MB digest={'pinned' if m.digest else 'UNPINNED'}"
             )
         return 0
+    if args.action == "recommend":
+        return _recommend(models, args)
     from orchestrator.engine.adapters import load_adapter
 
     profile = cfg.env_overrides(cfg.load_profile(args.profile))
@@ -164,6 +166,39 @@ def cmd_models(args) -> int:
             state, rc = f"MISMATCH (runtime {actual[:16]})", 1
         print(f"{m.id:<22} {m.ref:<24} {state}")
     return rc
+
+
+def _recommend(models: dict, args) -> int:
+    """Pick small/large models that fit the machine and the policy's license classes."""
+    policy = cfg.load_policy(args.policy)
+    allowed = policy.get("models", {}).get("allowed_license_classes") or ["permissive", "open-weight-restricted", "non-production"]
+    budget = args.ram_mb
+    fits = [m for m in models.values() if m.min_ram_mb <= budget and m.license_class in allowed and m.status != "rejected"]
+    if not fits:
+        print(f"no registered model fits {budget} MB under policy '{args.policy}'", file=sys.stderr)
+        return 1
+    # Prefer code-specialised models, then the largest that fits (a proxy for quality), small tier first.
+    rank = {"code-instruct": 0, "instruct": 1, "reasoning": 2}
+    by_tier = {}
+    for tier in ("small", "large"):
+        cand = sorted((m for m in fits if m.tier == tier), key=lambda m: (rank.get(m.kind, 3), -m.params_b))
+        by_tier[tier] = cand
+    print(f"Machine: {budget} MB RAM/VRAM available to the model · policy {args.policy} allows {', '.join(allowed)}\n")
+    for tier in ("small", "large"):
+        print(f"{tier} tier:")
+        for m in by_tier[tier][:4]:
+            print(f"  {m.id:<28} {m.params_b:>5}B {m.kind:<14} {m.license:<34} needs {m.min_ram_mb} MB  ({m.ref})")
+        if not by_tier[tier]:
+            print("  (none fits)")
+    small = by_tier["small"][0].id if by_tier["small"] else None
+    large = by_tier["large"][0].id if by_tier["large"] else None
+    print("\nSuggested environment:")
+    if small:
+        print(f"  ACR_SMALL_MODEL={small}")
+    if large:
+        print(f"  ACR_LARGE_MODEL={large}  ACR_PROFILE=deep  ACR_MEMORY_BUDGET_MB={budget}")
+    print("Benchmark before adopting: acr bench --profile balanced (see the model-matrix workflow).")
+    return 0
 
 
 def cmd_skills(args) -> int:
@@ -248,13 +283,16 @@ def build_parser() -> argparse.ArgumentParser:
     b = sub.add_parser("bench", help="run the benchmark suite")
     b.add_argument("--profile", default="offline")
     b.add_argument("--repeat", type=int, default=1, help="runs per case (measures stability)")
+    b.add_argument("--policy", default=None, help="policy id (default: from profile); e.g. evaluation for benchmarking")
     b.add_argument("--out", help="write JSON (and .md) report here")
     b.add_argument("--gate", action="store_true", help="enforce policies/quality-gates/benchmarks.toml")
     b.add_argument("--update-manifest", action="store_true", help="re-record fixture checksums (protected)")
     b.set_defaults(func=cmd_bench)
 
     m = sub.add_parser("models", help="list registry models or verify runtime digests")
-    m.add_argument("action", choices=["list", "verify"])
+    m.add_argument("action", choices=["list", "verify", "recommend"])
+    m.add_argument("--ram-mb", type=int, default=8192, help="recommend: memory available to the model")
+    m.add_argument("--policy", default="default", help="recommend: policy whose license classes apply")
     m.add_argument("--profile", default="balanced")
     m.add_argument("--pin", action="store_true", help="record runtime digests for unpinned manifests")
     m.set_defaults(func=cmd_models)

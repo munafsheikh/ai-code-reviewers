@@ -3,24 +3,197 @@
   "$id": "acr.model/v1",
   "title": "Model manifest (models/registry/*.toml)",
   "type": "object",
-  "required": ["id", "interface", "family", "tier", "status", "license", "source", "integrity", "limits", "resources", "capabilities"],
+  "required": [
+    "id",
+    "interface",
+    "family",
+    "tier",
+    "status",
+    "license",
+    "source",
+    "integrity",
+    "limits",
+    "resources",
+    "capabilities",
+    "license_class",
+    "params_b",
+    "architecture",
+    "kind"
+  ],
   "properties": {
-    "id": {"type": "string", "pattern": "^[a-z0-9.-]+$"},
-    "interface": {"enum": ["acr.model/v1"]},
-    "family": {"type": "string"},
-    "tier": {"enum": ["small", "large"]},
-    "status": {"enum": ["candidate", "approved", "deprecated", "rejected"]},
-    "license": {"type": "string"},
-    "license_url": {"type": "string", "pattern": "^https://"},
-    "capabilities": {"type": "array", "items": {"type": "string"}},
-    "source": {"type": "object", "required": ["runtime", "ref", "url"], "properties": {
-      "runtime": {"enum": ["ollama", "llama-cpp", "cli"]}, "ref": {"type": "string"},
-      "url": {"type": "string", "pattern": "^https://"}, "upstream": {"type": "string", "pattern": "^https://"}}},
-    "integrity": {"type": "object", "required": ["algorithm", "digest"], "properties": {
-      "algorithm": {"enum": ["sha256"]}, "digest": {"type": "string", "pattern": "^(|(sha256:)?[0-9a-f]{12,64})$"}}},
-    "limits": {"type": "object", "required": ["context_tokens"], "properties": {"context_tokens": {"type": "integer", "minimum": 512}}},
-    "resources": {"type": "object", "required": ["min_ram_mb", "recommended_ram_mb", "disk_mb", "gpu"], "properties": {
-      "min_ram_mb": {"type": "integer", "minimum": 0}, "recommended_ram_mb": {"type": "integer", "minimum": 0},
-      "disk_mb": {"type": "integer", "minimum": 0}, "gpu": {"enum": ["none", "optional", "required"]}}}
+    "id": {
+      "type": "string",
+      "pattern": "^[a-z0-9.-]+$"
+    },
+    "interface": {
+      "enum": [
+        "acr.model/v1"
+      ]
+    },
+    "family": {
+      "type": "string"
+    },
+    "tier": {
+      "enum": [
+        "small",
+        "large"
+      ]
+    },
+    "status": {
+      "enum": [
+        "candidate",
+        "approved",
+        "deprecated",
+        "rejected"
+      ]
+    },
+    "license": {
+      "type": "string"
+    },
+    "license_url": {
+      "type": "string",
+      "pattern": "^https://"
+    },
+    "capabilities": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "source": {
+      "type": "object",
+      "required": [
+        "runtime",
+        "ref",
+        "url"
+      ],
+      "properties": {
+        "runtime": {
+          "enum": [
+            "ollama",
+            "llama-cpp",
+            "cli"
+          ]
+        },
+        "ref": {
+          "type": "string"
+        },
+        "url": {
+          "type": "string",
+          "pattern": "^https://"
+        },
+        "upstream": {
+          "type": "string",
+          "pattern": "^https://"
+        },
+        "hf": {
+          "type": "string",
+          "description": "Hugging Face repo id, used as the model name by OpenAI-compatible servers (vLLM, llama.cpp, LM Studio)."
+        }
+      }
+    },
+    "integrity": {
+      "type": "object",
+      "required": [
+        "algorithm",
+        "digest"
+      ],
+      "properties": {
+        "algorithm": {
+          "enum": [
+            "sha256"
+          ]
+        },
+        "digest": {
+          "type": "string",
+          "pattern": "^(|(sha256:)?[0-9a-f]{12,64})$"
+        }
+      }
+    },
+    "limits": {
+      "type": "object",
+      "required": [
+        "context_tokens"
+      ],
+      "properties": {
+        "context_tokens": {
+          "type": "integer",
+          "minimum": 512
+        }
+      }
+    },
+    "resources": {
+      "type": "object",
+      "required": [
+        "min_ram_mb",
+        "recommended_ram_mb",
+        "disk_mb",
+        "gpu"
+      ],
+      "properties": {
+        "min_ram_mb": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "recommended_ram_mb": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "disk_mb": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "gpu": {
+          "enum": [
+            "none",
+            "optional",
+            "required"
+          ]
+        }
+      }
+    },
+    "license_class": {
+      "enum": [
+        "permissive",
+        "open-weight-restricted",
+        "non-production"
+      ],
+      "description": "permissive = OSI-style (Apache-2.0, MIT); open-weight-restricted = custom terms with use restrictions (Llama, DeepSeek); non-production = evaluation only (e.g. Mistral Non-Production License)."
+    },
+    "params_b": {
+      "type": "number",
+      "minimum": 0.1,
+      "description": "Total parameters, billions."
+    },
+    "active_params_b": {
+      "type": "number",
+      "minimum": 0.1,
+      "description": "Active parameters per token for MoE models."
+    },
+    "architecture": {
+      "enum": [
+        "dense",
+        "moe"
+      ]
+    },
+    "kind": {
+      "enum": [
+        "code-instruct",
+        "instruct",
+        "reasoning"
+      ],
+      "description": "Base (non-instruct) models are not supported: reviews need instruction following."
+    },
+    "evidence": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^https://"
+      },
+      "description": "Sources for license, size and runtime tag."
+    },
+    "notes": {
+      "type": "string"
+    }
   }
 }

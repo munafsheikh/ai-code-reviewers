@@ -7,6 +7,7 @@ VARIABLES = [
     ("ACR_MODEL_HOST", "(from profile)", "Model runtime base URL, e.g. http://llm-runtime:11434."),
     ("ACR_SMALL_MODEL", "(from profile)", "Small-tier model (registry id or runtime ref)."),
     ("ACR_LARGE_MODEL", "(from profile)", "Large-tier model."),
+    ("ACR_MEMORY_BUDGET_MB", "(from profile)", "Override the profile's model memory budget (router refuses models that need more)."),
     ("ACR_WRAPPER", "(from profile)", "Wrapper id: ollama, llama-cpp, cli, example-echo."),
     ("ACR_ALLOWED_HOSTS", "", "Extra hosts wrappers may contact (comma list). Loopback and compose names are always allowed."),
     ("ACR_ALLOW_PROXY", "0", "Set to 1 to let wrapper traffic use HTTP(S)_PROXY. Off by default."),

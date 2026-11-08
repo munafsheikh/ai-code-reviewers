@@ -1,0 +1,21 @@
+extends = "balanced"
+id = "gpu"
+description = "24 GB GPU workstation or self-hosted runner: Qwen2.5-Coder 7B small tier, Qwen3-Coder 30B-A3B (MoE) large tier."
+skills = ["*"]
+
+[routing]
+tiers = ["small", "large"]
+small_model = "qwen2.5-coder-7b"
+large_model = "qwen3-coder-30b-a3b"
+
+[generation]
+num_ctx = 32768
+max_tokens = 2048
+
+[budget]
+max_diff_chars = 64000
+max_model_calls = 16
+call_timeout_s = 300
+review_timeout_s = 1800
+memory_budget_mb = 32768
+concurrency = 2

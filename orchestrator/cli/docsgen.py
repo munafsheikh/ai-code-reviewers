@@ -38,14 +38,24 @@ def models_md() -> str:
     out = [
         "# Model catalog",
         "",
-        "| Model | Tier | Status | Runtime ref | License | Context | Min RAM | Digest |",
-        "|---|---|---|---|---|---|---|---|",
+        "Selection guide: [model selection](../operations/model-selection.md). "
+        "Pick for a machine with `acr models recommend --ram-mb <MB> --policy <policy>`.",
+        "",
+        "| Model | Tier | Kind | Params | Arch | Ollama ref | License | Class | Context | Min RAM | Status | Digest |",
+        "|---|---|---|---|---|---|---|---|---|---|---|---|",
     ]
-    for m in cfg.load_models().values():
+    for m in sorted(cfg.load_models().values(), key=lambda m: (m.tier != "small", m.params_b)):
+        arch = m.raw.get("architecture", "")
+        if m.raw.get("active_params_b"):
+            arch += f" ({m.raw['active_params_b']}B active)"
         out.append(
-            f"| `{m.id}` | {m.tier} | {m.status} | `{m.ref}` | {m.license} | {m.context_tokens} | "
-            f"{m.min_ram_mb} MB | {'pinned' if m.digest else 'unpinned'} |"
+            f"| `{m.id}` | {m.tier} | {m.kind} | {m.params_b}B | {arch} | `{m.ref}` | {m.license} | {m.license_class} | "
+            f"{m.context_tokens} | {m.min_ram_mb} MB | {m.status} | {'pinned' if m.digest else 'unpinned'} |"
         )
+    out += ["", "## Sources", ""]
+    for m in sorted(cfg.load_models().values(), key=lambda m: m.id):
+        links = ", ".join(f"[{i + 1}]({u})" for i, u in enumerate(m.raw.get("evidence", [])))
+        out.append(f"- `{m.id}`: {links}" + (f" — {m.raw.get('notes', '')}" if m.raw.get("notes") else ""))
     return "\n".join(out) + "\n"
 
 

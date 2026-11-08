@@ -4,6 +4,17 @@ All notable changes are documented here. Format: [Keep a Changelog](https://keep
 
 ## [Unreleased]
 
+### Added
+- Model registry expanded to 18 models across 11 families (Qwen2.5-Coder, Qwen3.5, Qwen3-Coder, Devstral Small 2, gpt-oss, Gemma 4, Phi-4-mini, Granite 3.3, Llama 3.2, DeepSeek-Coder-V2-Lite, Codestral), each with license class, size, architecture, Hugging Face id and sources.
+- License-class policy enforcement (`allowed_license_classes`); new `evaluation` policy for benchmarking non-production weights.
+- `laptop` and `gpu` profiles; `acr models recommend --ram-mb N [--policy P]`; `acr bench --policy`; `ACR_MEMORY_BUDGET_MB`.
+- `Model matrix` workflow: pulls each model on a runner, records digests, benchmarks through the model, publishes a comparison.
+- OpenAI-compatible servers (vLLM, LM Studio, LocalAI, llama.cpp) receive the manifest's Hugging Face id.
+- Model selection guide.
+
+### Changed
+- Ollama runtime pinned to 0.40.11 (newer model families need it).
+
 ## [0.1.0] - 2026-11-08
 
 ### Added
