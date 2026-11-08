@@ -5,7 +5,7 @@ name: Model matrix
 # (candidate -> approved) and the monthly evolution proposal.
 on:
   pull_request:
-    paths: [models/registry/**]
+    paths: [models/registry/**, .github/workflows/model-matrix.yml, infrastructure/scripts/model_matrix.py]
   schedule:
     - cron: "29 2 15 * *"
   workflow_dispatch:
