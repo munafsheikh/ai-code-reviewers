@@ -21,7 +21,12 @@ def main() -> int:
             m = USES.match(line)
             if m:
                 ref = m.group(1)
-                if ref.startswith("./") or ref.startswith("docker://") or ref.endswith("@ACR_REF"):  # template placeholder
+                if ref.startswith("./") or ref.startswith("docker://"):
+                    continue
+                # Consumer templates reference this project's own release tags; its workflows pin SHAs.
+                if f.parts[len(ROOT.parts)] == "integrations" and re.fullmatch(
+                    r"munafsheikh/ai-code-reviewers/[\w/.-]+@v\d+\.\d+\.\d+", ref
+                ):
                     continue
                 if not re.search(r"@[0-9a-f]{40}$", ref):
                     errors.append(f"{f.relative_to(ROOT)}:{n}: action not pinned by SHA: {ref}")

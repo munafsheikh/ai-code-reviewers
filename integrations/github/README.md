@@ -1,6 +1,7 @@
 # GitHub Actions adapter
 
-Composite action at `integrations/github/action.yml`. Pin it by commit SHA.
+Composite action at `integrations/github/action.yml`. Reference a release tag (`@v0.2.0`), or pin the
+tag's commit SHA with the tag as a comment, as this repository's own workflows do.
 
 ```yaml
 permissions: {contents: read, pull-requests: write, security-events: write}
@@ -11,7 +12,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with: {fetch-depth: 0}
       - id: acr
-        uses: munafsheikh/ai-code-reviewers/integrations/github@<commit-sha>
+        uses: munafsheikh/ai-code-reviewers/integrations/github@v0.2.0
         with:
           profile: balanced          # offline = rules only, no model download
           paths: "*.java *.py"

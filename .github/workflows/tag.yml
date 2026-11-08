@@ -1,0 +1,43 @@
+name: Tag version
+# Creates an annotated vX.Y.Z tag for documentation and consumers to reference, after checking
+# the commit is on main and its pyproject version, orchestrator.__version__ and CHANGELOG agree.
+# Tags pushed with GITHUB_TOKEN do not trigger other workflows; run the Release workflow
+# separately to publish images.
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Version to tag (X.Y.Z)
+        required: true
+      commit:
+        description: Commit to tag (default: tip of main)
+        required: false
+        default: ''
+
+permissions:
+  contents: write
+
+jobs:
+  tag:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          ref: ${{ inputs.commit || 'main' }}
+      - name: Verify and tag
+        env:
+          VERSION: ${{ inputs.version }}
+        run: |
+          set -euo pipefail
+          [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || { echo "version must be X.Y.Z" >&2; exit 1; }
+          commit=$(git rev-parse HEAD)
+          git merge-base --is-ancestor "$commit" origin/main || { echo "$commit is not on main" >&2; exit 1; }
+          grep -q "^version = \"$VERSION\"" pyproject.toml || { echo "pyproject.toml is not $VERSION" >&2; exit 1; }
+          grep -q "__version__ = \"$VERSION\"" orchestrator/__init__.py || { echo "orchestrator.__version__ is not $VERSION" >&2; exit 1; }
+          grep -q "^## \[$VERSION\]" CHANGELOG.md || { echo "CHANGELOG.md has no [$VERSION] section" >&2; exit 1; }
+          if git rev-parse -q --verify "refs/tags/v$VERSION" >/dev/null; then echo "v$VERSION already exists" >&2; exit 1; fi
+          git -c user.name="github-actions[bot]" -c user.email="41898282+github-actions[bot]@users.noreply.github.com" \
+            tag -a "v$VERSION" "$commit" -m "v$VERSION"
+          git push origin "v$VERSION"
+          echo "Tagged v$VERSION at $commit" | tee -a "$GITHUB_STEP_SUMMARY"

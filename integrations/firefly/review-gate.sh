@@ -6,7 +6,7 @@
 set -euo pipefail
 PROFILE="${ACR_PROFILE:-fast}"
 FORMAT="${ACR_FORMAT:-legacy}"
-IMAGE="${ACR_IMAGE:-ghcr.io/munafsheikh/ai-code-reviewers:0.1.0}"
+IMAGE="${ACR_IMAGE:-ghcr.io/munafsheikh/ai-code-reviewers:0.2.0}"
 HOST="${LLM_HOST:-${ACR_MODEL_HOST:-http://host.docker.internal:11434}}"
 if [ -n "${ACR_HOME:-}" ]; then
   exec env PYTHONPATH="$ACR_HOME" ACR_MODEL_HOST="${LLM_HOST:-${ACR_MODEL_HOST:-http://127.0.0.1:11434}}" \

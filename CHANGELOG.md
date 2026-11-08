@@ -4,6 +4,8 @@ All notable changes are documented here. Format: [Keep a Changelog](https://keep
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-11-08
+
 ### Added
 - Model registry expanded to 18 models across 11 families (Qwen2.5-Coder, Qwen3.5, Qwen3-Coder, Devstral Small 2, gpt-oss, Gemma 4, Phi-4-mini, Granite 3.3, Llama 3.2, DeepSeek-Coder-V2-Lite, Codestral), each with license class, size, architecture, Hugging Face id and sources.
 - License-class policy enforcement (`allowed_license_classes`); new `evaluation` policy for benchmarking non-production weights.
@@ -14,6 +16,11 @@ All notable changes are documented here. Format: [Keep a Changelog](https://keep
 
 ### Changed
 - Ollama runtime pinned to 0.40.11 (newer model families need it).
+- Docs and CI templates reference release tags (`@v0.2.0`, image `0.2.0`); a `Tag version` workflow creates verified tags.
+
+### Fixed
+- Empty `LLM_MODEL` / `ACR_SMALL_MODEL` no longer disable the profile's model outside the legacy profile; the GitHub action no longer forwards an empty `LLM_MODEL`.
+- Model-matrix planner no longer requires git in its container.
 
 ## [0.1.0] - 2026-11-08
 
