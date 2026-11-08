@@ -114,7 +114,7 @@ runs:
         [ -n "$MODEL" ] && args+=(--model "$MODEL")
         docker run --rm -i "${net[@]}" --read-only --cap-drop ALL --security-opt no-new-privileges:true \
           --tmpfs /tmp -v "$PWD/$OUT:/out" -e ACR_MODEL_HOST=http://llm-runtime:11434 \
-          -e LLM_MODEL="${LLM_MODEL:-}" "$IMAGE" "${args[@]}" < "$RUNNER_TEMP/acr.diff" 2> "$OUT/review.log"
+          ${LLM_MODEL:+-e LLM_MODEL="$LLM_MODEL"} "$IMAGE" "${args[@]}" < "$RUNNER_TEMP/acr.diff" 2> "$OUT/review.log"
         code=$?
         cat "$OUT/review.log" >&2
         gate=$(docker run --rm -i --entrypoint python "$IMAGE" -c 'import json,sys; print(json.load(sys.stdin)["gate"]["status"])' < "$OUT/review.json" 2>/dev/null || echo error)
