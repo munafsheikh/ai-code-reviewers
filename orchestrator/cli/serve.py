@@ -151,7 +151,7 @@ def main(host: str, port: int, profile: str) -> int:
     try:
         srv.serve_forever()
     except KeyboardInterrupt:
-        pass
+        print(json.dumps({"level": "info", "component": "http", "msg": "shutting down"}), file=sys.stderr)
     finally:
         srv.server_close()
     return 0

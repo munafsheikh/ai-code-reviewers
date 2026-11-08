@@ -21,7 +21,7 @@ def main() -> int:
             m = USES.match(line)
             if m:
                 ref = m.group(1)
-                if ref.startswith("./") or ref.startswith("docker://"):
+                if ref.startswith("./") or ref.startswith("docker://") or ref.endswith("@ACR_REF"):  # template placeholder
                     continue
                 if not re.search(r"@[0-9a-f]{40}$", ref):
                     errors.append(f"{f.relative_to(ROOT)}:{n}: action not pinned by SHA: {ref}")

@@ -105,7 +105,7 @@ runs:
         MODEL: ${{ inputs.model }}
         OUT: ${{ inputs.output-dir }}
       run: |
-        set -uo pipefail
+        set +e -uo pipefail   # composite steps run with bash -e; the exit code is handled below
         mkdir -p "$OUT" && chmod 0777 "$OUT"
         net=(); docker network inspect acr-net >/dev/null 2>&1 && net=(--network acr-net)
         args=(review --profile "$PROFILE" --format json,sarif,markdown,legacy --out-dir /out --stdout markdown -v
