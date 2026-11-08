@@ -40,6 +40,7 @@ class Skill:
     output: str
     rules: list[dict[str, Any]]
     raw: dict[str, Any] = field(repr=False, default_factory=dict)
+    companions: list[dict[str, Any]] = field(default_factory=list)
 
 
 @dataclass
@@ -90,6 +91,7 @@ def load_skills(root: Path | None = None) -> dict[str, Skill]:
             output=prompt_cfg.get("output", "findings-json"),
             rules=d.get("rules", []),
             raw=d,
+            companions=d.get("companions", []),
         )
     return out
 

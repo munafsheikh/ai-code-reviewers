@@ -8,7 +8,9 @@ rule hits are recorded as hypotheses.
 from __future__ import annotations
 
 import re
+from fnmatch import fnmatch
 from functools import lru_cache
+from pathlib import PurePosixPath
 
 from orchestrator.config import Skill
 from orchestrator.contracts import Finding, Location
@@ -88,3 +90,57 @@ def _blocks(added: list[tuple[int, str]]) -> list[tuple[int, str, list[int]]]:
     if run:
         blocks.append((run[0][0], "\n".join(x for _, x in run), [x for x, _ in run]))
     return blocks
+
+
+def _glob_hit(path: str, globs: list[str]) -> bool:
+    name = PurePosixPath(path).name
+    return any(fnmatch(path, g) or fnmatch(name, g) for g in globs)
+
+
+def companion_trigger(c: dict, f: FileDiff) -> tuple[int, str] | None:
+    """First (line, text) of ``f`` that triggers companion ``c``, or None."""
+    if not _glob_hit(f.path, c["when"]):
+        return None
+    if not c.get("pattern"):
+        return f.added[0] if f.added else (1, "")
+    rx = _rx(c["pattern"])
+    return next(((n, t) for n, t in f.added if rx.search(t)), None)
+
+
+def run_companions(skill: Skill, files: list[FileDiff]) -> list[Finding]:
+    """Diff-level checks: a change to one kind of file must travel with a change to another.
+
+    A companion fires once per diff when some file matching ``when`` (and, if set, an added
+    line matching ``pattern``) changed but no file matching ``requires`` did. Typical use:
+    user-facing surfaces (build, CI, CLI options, env vars, schemas) changed without docs.
+    """
+    out: list[Finding] = []
+    for c in skill.companions:
+        if any(_glob_hit(f.path, c["requires"]) for f in files):
+            continue
+        hits = [(f, t) for f in files if f.matches(skill.file_globs, ["*"], skill.exclude_globs) and (t := companion_trigger(c, f))]
+        if not hits:
+            continue
+        f, (line_no, text) = hits[0]
+        triggered = sorted({x.path for x, _ in hits})
+        conf = c.get("confidence", "medium")
+        out.append(
+            Finding(
+                rule_id=c["id"],
+                skill=skill.id,
+                title=c["title"],
+                severity=c["severity"],
+                category=skill.category,
+                location=Location(f.path, line_no, line_no),
+                explanation=c["explanation"],
+                evidence=redact(
+                    f"changed {', '.join(triggered)}; nothing matching {' '.join(c['requires'])}"
+                    + (f": {text}" if c.get("pattern") else "")
+                ),
+                remediation=c["remediation"],
+                confidence=conf,
+                kind="verified" if conf == "high" else "hypothesis",
+                source="rule",
+            )
+        )
+    return out

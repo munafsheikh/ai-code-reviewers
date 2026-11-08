@@ -1,0 +1,98 @@
+id = "maintainability.docs"
+version = "1.0.0"
+interface = "acr.skill/v1"
+category = "maintainability"
+description = "User-facing surfaces (build, CI, deployment, make targets, CLI options, env vars, contracts) changed without a documentation change in the same diff."
+languages = ["*"]
+file_globs = ["*"]
+# Tests and fixtures exercise surfaces; they do not define them.
+exclude_globs = ["tests/*", "test/*", "*/tests/*", "*/test/*", "*_test.*", "test_*.py", "*Test.java", "*Tests.java", "*.spec.*", "*.test.*", "*fixtures/*"]
+tier = "none"
+
+[[companions]]
+id = "DOC-001"
+title = "Build, CI or deployment definition changed without documentation"
+severity = "minor"
+confidence = "medium"
+when = ["Dockerfile", "Dockerfile.*", "*.Dockerfile", "Containerfile", "compose.yml", "compose.yaml", "docker-compose*.yml", "docker-compose*.yaml", ".github/workflows/*", "action.yml", "action.yaml", ".gitlab-ci.yml", "*gitlab-ci.yml", "azure-pipelines.yml", "Jenkinsfile", "charts/*", "helm/*", "k8s/*", "kubernetes/*"]
+# Any added line that is not a pure pin bump (uses:/FROM/image:), a comment or blank: Dependabot stays quiet.
+pattern = '^(?!\s*-?\s*uses:\s)(?!\s*FROM\s)(?!\s*image:\s)(?!\s*#)\s*\S'
+requires = ["*.md", "*.rst", "*.adoc", "docs/*", "doc/*"]
+explanation = "How the project is built, released or deployed changed, but no README, docs page or CHANGELOG changed with it, so operators and contributors work from stale instructions."
+remediation = "Update the README / docs page that describes this pipeline or image (and the CHANGELOG), or note in the PR why no user-visible behaviour changed."
+examples.flag = [
+  {files = ["infrastructure/docker/Dockerfile"], line = "RUN apt-get install -y git"},
+  {files = [".github/workflows/release.yml"], line = "  publish:"},
+  {files = ["compose.yaml", "src/app.py"], line = "    target: reviewer"},
+]
+examples.pass = [
+  {files = ["infrastructure/docker/Dockerfile", "README.md"], line = "RUN apt-get install -y git"},
+  {files = [".github/workflows/ci.yml", "docs/operations/runbook.md"], line = "  publish:"},
+  {files = [".github/workflows/ci.yml"], line = "      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1"},
+  {files = ["Dockerfile"], line = "FROM python:3.13-slim@sha256:e48f59cdba69a3cbd9ed2cf0f348d90d45a8d350d98134cf1070bc106ee9ed90"},
+  {files = ["tests/fixtures/Dockerfile"], line = "RUN true"},
+  {files = ["src/app.py"], line = "x = 1"},
+]
+
+[[companions]]
+id = "DOC-002"
+title = "New make target without documentation"
+severity = "minor"
+confidence = "medium"
+when = ["Makefile", "GNUmakefile", "*.mk"]
+pattern = '^[A-Za-z0-9][\w.-]*\s*:(?![=:])'
+requires = ["*.md", "*.rst", "*.adoc", "docs/*", "doc/*"]
+explanation = "A new make target is an entry point people are expected to run; undocumented, it is only discoverable by reading the Makefile."
+remediation = "Mention the target where the workflow it belongs to is documented (README, CONTRIBUTING, runbook)."
+examples.flag = [
+  {files = ["Makefile"], line = "images: ## build every image"},
+  {files = ["build/rules.mk"], line = "release: build"},
+]
+examples.pass = [
+  {files = ["Makefile", "README.md"], line = "images: ## build every image"},
+  {files = ["Makefile"], line = "IMAGE := acr-reviewer:local"},
+  {files = ["Makefile"], line = ".PHONY: images"},
+  {files = ["Makefile"], line = "\tdocker build -t x ."},
+]
+
+[[companions]]
+id = "DOC-003"
+title = "New CLI option or environment variable without documentation"
+severity = "minor"
+confidence = "medium"
+when = ["*.py", "*.java", "*.kt", "*.js", "*.mjs", "*.cjs", "*.ts", "*.tsx", "*.go", "*.rs", "*.rb", "*.cs"]
+pattern = '''os\.environ(?:\.get)?\s*[\[(]\s*["'][A-Za-z_]|os\.getenv\(\s*["']|System\.getenv\(\s*"|process\.env(?:\.[A-Za-z_]|\[\s*["'])|os\.Getenv\(\s*"|env::var\(\s*"|add_argument\(\s*["']-|click\.option\(\s*["']-'''
+requires = ["*.md", "*.rst", "*.adoc", "docs/*", "doc/*"]
+explanation = "Configuration that users can set (flags, environment variables) is part of the interface; if it is not documented it effectively does not exist, or is set wrongly."
+remediation = "Document the option (name, default, effect) in the configuration / CLI reference, or regenerate generated docs (`make docs`)."
+examples.flag = [
+  {files = ["orchestrator/config.py"], line = "    timeout = os.environ.get(\"ACR_TIMEOUT\", \"30\")"},
+  {files = ["src/main.py"], line = "    p.add_argument(\"--max-files\", type=int)"},
+  {files = ["src/Main.java"], line = "String h = System.getenv(\"HOST\");"},
+  {files = ["web/server.ts"], line = "const port = process.env.PORT ?? 8080;"},
+]
+examples.pass = [
+  {files = ["orchestrator/config.py", "docs/generated/configuration.md"], line = "    timeout = os.environ.get(\"ACR_TIMEOUT\", \"30\")"},
+  {files = ["tests/unit/test_cli.py"], line = "    monkeypatch.setattr(os.environ, \"X\", \"1\")"},
+  {files = ["tests/unit/test_cli.py"], line = "    os.environ[\"ACR_HOME\"] = str(tmp)"},
+  {files = ["src/main.py"], line = "    return compute(args)"},
+  {files = ["skills/x/skill.toml"], line = "line = \"os.getenv('X')\""},
+]
+
+[[companions]]
+id = "DOC-004"
+title = "Interface contract changed without documentation"
+severity = "minor"
+confidence = "medium"
+when = ["*.schema.json", "*openapi*.json", "*openapi*.yaml", "*openapi*.yml", "*swagger*.json", "*swagger*.yaml", "*.proto", "*.graphql", "*.graphqls", "*.avsc"]
+requires = ["*.md", "*.rst", "*.adoc", "docs/*", "doc/*"]
+explanation = "Schemas and API definitions are consumed by other systems; a change without a documented note (reference docs, CHANGELOG, migration notes) breaks consumers silently."
+remediation = "Update the contract reference (or regenerate it) and record the change in the CHANGELOG."
+examples.flag = [
+  {files = ["orchestrator/schemas/skill.schema.json"], line = "    \"companions\": {\"type\": \"array\"},"},
+  {files = ["api/v1/service.proto"], line = "  string name = 2;"},
+]
+examples.pass = [
+  {files = ["orchestrator/schemas/skill.schema.json", "docs/generated/schemas.md"], line = "    \"companions\": {\"type\": \"array\"},"},
+  {files = ["api/v1/README.md"], line = "x"},
+]

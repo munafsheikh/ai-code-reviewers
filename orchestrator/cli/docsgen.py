@@ -25,12 +25,29 @@ def skills_md() -> str:
     out = ["# Skill catalog", "", "| Skill | Version | Category | Model tier | Languages | Rules |", "|---|---|---|---|---|---|"]
     skills = cfg.load_skills()
     for s in skills.values():
-        out.append(f"| `{s.id}` | {s.version} | {s.category} | {s.tier} | {', '.join(s.languages)} | {len(s.rules)} |")
+        out.append(f"| `{s.id}` | {s.version} | {s.category} | {s.tier} | {', '.join(s.languages)} | {len(s.rules) + len(s.companions)} |")
     out += ["", "## Rules", "", "| Rule | Skill | Severity | Confidence | Kind | Title |", "|---|---|---|---|---|---|"]
     for s in skills.values():
         for r in s.rules:
             kind = "verified" if r["confidence"] == "high" else "hypothesis"
             out.append(f"| `{r['id']}` | `{s.id}` | {r['severity']} | {r['confidence']} | {kind} | {r['title']} |")
+    companions = [(s, c) for s in skills.values() for c in s.companions]
+    if companions:
+        out += [
+            "",
+            "## Companion rules",
+            "",
+            "Diff-level: fire when files matching *When* change and nothing matching *Requires* changes in the same diff.",
+            "",
+            "| Rule | Skill | Severity | When | Line pattern | Requires | Title |",
+            "|---|---|---|---|---|---|---|",
+        ]
+        for s, c in companions:
+            pat = "yes" if c.get("pattern") else "-"
+            out.append(
+                f"| `{c['id']}` | `{s.id}` | {c['severity']} | {' '.join(f'`{g}`' for g in c['when'])} | {pat} | "
+                f"{' '.join(f'`{g}`' for g in c['requires'])} | {c['title']} |"
+            )
     return "\n".join(out) + "\n"
 
 

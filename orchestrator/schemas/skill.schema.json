@@ -38,6 +38,32 @@
           "match": {"type": "array", "items": {"type": "string"}},
           "no_match": {"type": "array", "items": {"type": "string"}}}}
       }
+    }},
+    "companions": {"type": "array", "description": "Diff-level rules: files matching `when` changed (with an added line matching `pattern`, if set) but nothing matching `requires` did.", "items": {
+      "type": "object",
+      "required": ["id", "title", "severity", "confidence", "when", "requires", "explanation", "remediation", "examples"],
+      "additionalProperties": false,
+      "properties": {
+        "id": {"type": "string", "pattern": "^[A-Z]+-\\d{3}$"},
+        "title": {"type": "string"},
+        "severity": {"enum": ["info", "minor", "major", "critical"]},
+        "confidence": {"enum": ["low", "medium", "high"]},
+        "when": {"type": "array", "items": {"type": "string"}},
+        "requires": {"type": "array", "items": {"type": "string"}},
+        "pattern": {"type": "string"},
+        "explanation": {"type": "string"},
+        "remediation": {"type": "string"},
+        "examples": {"type": "object", "required": ["flag", "pass"], "additionalProperties": false, "properties": {
+          "flag": {"type": "array", "items": {"$ref": "#/definitions/companionExample"}},
+          "pass": {"type": "array", "items": {"$ref": "#/definitions/companionExample"}}}}
+      }
     }}
+  },
+  "definitions": {
+    "companionExample": {
+      "type": "object", "required": ["files"], "additionalProperties": false,
+      "description": "A simulated diff: every listed file gets `line` (default `x`) as its one added line.",
+      "properties": {"files": {"type": "array", "items": {"type": "string"}}, "line": {"type": "string"}}
+    }
   }
 }

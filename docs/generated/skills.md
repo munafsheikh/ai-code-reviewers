@@ -6,6 +6,7 @@
 |---|---|---|---|---|---|
 | `architecture.design` | 1.0.0 | architecture | large | * | 0 |
 | `code-quality.error-handling` | 1.0.0 | code-quality | small | java, python, javascript, typescript, kotlin, csharp | 3 |
+| `maintainability.docs` | 1.0.0 | maintainability | none | * | 4 |
 | `lang.java.core` | 1.0.0 | code-quality | small | java | 3 |
 | `lang.java.first-pass-gate` | 1.0.0 | code-quality | small | java | 0 |
 | `lang.javascript.core` | 1.0.0 | security | small | javascript, typescript | 1 |
@@ -47,3 +48,14 @@
 | `TST-001` | `testing.hygiene` | major | high | verified | Focused test (.only / fit) left in |
 | `TST-002` | `testing.hygiene` | minor | high | verified | Test disabled |
 | `TST-003` | `testing.hygiene` | info | medium | hypothesis | Fixed sleep in test |
+
+## Companion rules
+
+Diff-level: fire when files matching *When* change and nothing matching *Requires* changes in the same diff.
+
+| Rule | Skill | Severity | When | Line pattern | Requires | Title |
+|---|---|---|---|---|---|---|
+| `DOC-001` | `maintainability.docs` | minor | `Dockerfile` `Dockerfile.*` `*.Dockerfile` `Containerfile` `compose.yml` `compose.yaml` `docker-compose*.yml` `docker-compose*.yaml` `.github/workflows/*` `action.yml` `action.yaml` `.gitlab-ci.yml` `*gitlab-ci.yml` `azure-pipelines.yml` `Jenkinsfile` `charts/*` `helm/*` `k8s/*` `kubernetes/*` | yes | `*.md` `*.rst` `*.adoc` `docs/*` `doc/*` | Build, CI or deployment definition changed without documentation |
+| `DOC-002` | `maintainability.docs` | minor | `Makefile` `GNUmakefile` `*.mk` | yes | `*.md` `*.rst` `*.adoc` `docs/*` `doc/*` | New make target without documentation |
+| `DOC-003` | `maintainability.docs` | minor | `*.py` `*.java` `*.kt` `*.js` `*.mjs` `*.cjs` `*.ts` `*.tsx` `*.go` `*.rs` `*.rb` `*.cs` | yes | `*.md` `*.rst` `*.adoc` `docs/*` `doc/*` | New CLI option or environment variable without documentation |
+| `DOC-004` | `maintainability.docs` | minor | `*.schema.json` `*openapi*.json` `*openapi*.yaml` `*openapi*.yml` `*swagger*.json` `*swagger*.yaml` `*.proto` `*.graphql` `*.graphqls` `*.avsc` | - | `*.md` `*.rst` `*.adoc` `docs/*` `doc/*` | Interface contract changed without documentation |

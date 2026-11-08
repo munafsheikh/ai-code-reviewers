@@ -13,6 +13,21 @@
 Use `confidence = "high"` only when a match is almost certainly a defect; those findings are
 reported as `verified`.
 
+## Add a companion rule (diff-level)
+
+Line rules see one added line at a time. A `[[companions]]` entry instead checks the whole diff:
+it fires when a file matching `when` changed (and, if `pattern` is set, an added line in it
+matches) but **no** file matching `requires` changed in the same diff. Fields: `id`, `title`,
+`severity`, `confidence`, `when`, `requires`, optional `pattern`, `explanation`, `remediation`, and
+`examples.flag` / `examples.pass`. Each example is a simulated diff
+(`{files = [...], line = "..."}`) that validation runs. The skill's `exclude_globs` apply to
+triggering files only.
+
+`maintainability.docs` (`DOC-001`…`DOC-004`) uses these to make the reviewer flag user-facing
+changes (build/CI/deploy definitions, new make targets, CLI options and env vars, schemas/APIs)
+that arrive without a README, docs or CHANGELOG change. Pin bumps (`uses:`, `FROM`, `image:`) and
+tests do not trigger it.
+
 ## Add a skill
 
 Create `skills/<area>/<name>/skill.toml` (`acr.skill/v1`, schema in

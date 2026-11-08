@@ -15,7 +15,7 @@ from orchestrator.contracts import RESULT_SCHEMA, SEVERITIES, AdapterError, Find
 from orchestrator.engine import diff as diffmod
 from orchestrator.engine import gate, parse, prompt
 from orchestrator.engine.adapters import load_adapter
-from orchestrator.engine.rules import run_rules
+from orchestrator.engine.rules import run_companions, run_rules
 from orchestrator.recovery.audit import Audit
 from orchestrator.recovery.cache import CompletionCache, key_for
 from orchestrator.recovery.retry import CircuitBreaker, call_with_retry
@@ -231,7 +231,7 @@ def run_review(
     else:
         if profile.get("rules", {}).get("enabled", True):
             for s in skills:
-                findings += run_rules(s, files)
+                findings += run_rules(s, files) + run_companions(s, files)
         routes = router.plan(skills, profile, models, policy)
         if files and profile.get("routing", {}).get("tiers"):
             for r in routes:
