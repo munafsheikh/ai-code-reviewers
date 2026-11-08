@@ -13,7 +13,7 @@ All notable changes are documented here. Format: [Keep a Changelog](https://keep
 - `Model matrix` workflow: pulls each model on a runner, records digests, benchmarks through the model, publishes a comparison.
 - OpenAI-compatible servers (vLLM, LM Studio, LocalAI, llama.cpp) receive the manifest's Hugging Face id.
 - Model selection guide.
-- Traceable reviews: every finding links to the exact lines at the reviewed commit and to its rule documentation (`docs/generated/rules.md`, versioned anchors); review comments link the commit, the CI run and its report artifacts; JSON results carry `links`, SARIF rules carry `helpUri`. The GitHub action uploads the reports as an artifact.
+- Traceable reviews: every finding links to the exact lines at the reviewed commit and to its rule documentation (`docs/generated/rules.md`, versioned anchors); review comments link the commit, the CI run and its report artifacts; JSON results carry `links`, SARIF rules carry `helpUri`. The GitHub action uploads the reports as an artifact and reviews the PR head commit (new `head-ref` input), so permalinks survive the PR.
 
 ### Changed
 - Ollama runtime pinned to 0.40.11 (newer model families need it).

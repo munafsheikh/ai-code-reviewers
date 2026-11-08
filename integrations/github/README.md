@@ -21,6 +21,10 @@ jobs:
         with: {sarif_file: acr-review/review.sarif, category: ai-code-review}
 ```
 
+Reviews and links use the PR's head commit (not GitHub's temporary merge commit), so line
+permalinks in the comment stay valid after the PR closes. Set `head-ref: HEAD` to review local
+commits made earlier in the job (as Firefly's end-to-end test does).
+
 Outputs: `gate` (`pass|warn|block|error`), `exit-code`, `sarif`. With `enforce: true`
 (default) the job fails on `block` (exit 1) and on `error` (exit 2, strict policies only).
 The default `balanced` policy degrades to rules-only when the model is unavailable and
