@@ -41,12 +41,12 @@ jobs:
           mkdir -p out/model
           for d in benchmarks/fixtures/*/; do
             n=$(basename "$d")
-            curl -sf -H 'Content-Type: application/json' --max-time 600 \
-              -d "$(python3 -c 'import json,sys; print(json.dumps({"diff": open(sys.argv[1]).read(), "format": "json"}))' "$d/diff.patch")" \
+            curl -sf --max-time 600 \
+              -H 'Content-Type: text/plain' --data-binary "@$d/diff.patch" \
               http://127.0.0.1:8088/v1/review > "out/model/$n.json"
           done
-          python3 -m orchestrator.schema_check out/model/*.json
-          python3 - <<'PY'
+          for f in out/model/*.json; do docker compose exec -T reviewer python -m orchestrator.schema_check /dev/stdin < "$f"; done
+          infrastructure/scripts/py.sh - <<'PY'
           import glob, json
           rows = [json.load(open(p)) for p in glob.glob("out/model/*.json")]
           degraded = [r["run"]["id"] for r in rows if r["run"]["degraded"]]
@@ -59,7 +59,7 @@ jobs:
       - name: Stability (same input twice must hit the cache or match)
         run: |
           for i in 1 2; do curl -sf --data-binary @benchmarks/fixtures/python-unsafe/diff.patch http://127.0.0.1:8088/v1/review \
-            | python3 -c 'import json,sys; r=json.load(sys.stdin); print(sorted(f["fingerprint"] for f in r["findings"]))'; done | uniq | wc -l | grep -qx 1
+            | infrastructure/scripts/py.sh -c 'import json,sys; r=json.load(sys.stdin); print(sorted(f["fingerprint"] for f in r["findings"]))'; done | uniq | wc -l | grep -qx 1
       - name: Diagnostics
         if: always()
         run: docker compose --profile model logs --no-color > out/model/compose.log 2>&1 || true

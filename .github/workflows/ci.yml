@@ -16,22 +16,14 @@ concurrency:
 
 jobs:
   test:
-    name: test (py${{ matrix.python }})
+    # Docker-first: the toolbox image carries every tool; the runner only needs Docker.
     runs-on: ubuntu-latest
-    timeout-minutes: 15
-    strategy:
-      fail-fast: false
-      matrix:
-        python: ["3.11", "3.13"]
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
-        with:
-          python-version: ${{ matrix.python }}
-          cache: pip
-          cache-dependency-path: requirements-dev.txt
-      - run: make dev
-      - name: Validate structure, manifests, rule examples, wrapper permissions, fixtures
+      - name: Toolbox image
+        run: make toolbox
+      - name: Validate structure, manifests, rule examples, wrapper permissions, fixtures, pins, exceptions
         run: make validate
       - name: Lint
         run: make lint
@@ -43,18 +35,27 @@ jobs:
         run: make bench-gate
       - name: Fixture reviews -> JSON/SARIF/Markdown, schema-validated
         run: |
-          set -o pipefail
           for d in benchmarks/fixtures/*/ examples/sample-repo/; do
             n=$(basename "$d"); f="$d/diff.patch"; [ -f "$f" ] || f="$d/change.patch"
-            python -m orchestrator review --profile offline --diff "$f" --format json,sarif,markdown,legacy --out-dir "out/reviews/$n" || [ $? -eq 1 ]
+            make -s review-offline DIFF="$f" OUT="out/reviews/$n" > /dev/null || true   # exit 1 = blocked; schema-check below fails on missing output
           done
-          python -m orchestrator.schema_check out/reviews/*/review.json
+          make schema-check FILES="$(ls out/reviews/*/review.json | tr '\n' ' ')"
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
-        if: always() && matrix.python == '3.13'
+        if: always()
         with:
           name: reports
           path: out/
           retention-days: 14
+
+  python-compat:
+    # Minimum supported interpreter, run natively (LOCAL=1) to prove the stdlib-only runtime.
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with: {python-version: "3.11", cache: pip, cache-dependency-path: requirements-dev.txt}
+      - run: make dev LOCAL=1 && make test LOCAL=1
 
   container:
     runs-on: ubuntu-latest

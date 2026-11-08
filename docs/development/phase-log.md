@@ -30,7 +30,7 @@ docs evolve`), HTTP service, Compose stack. Image: 178 MB, uid 10001, read-only 
 
 ## Phase 3 — Automated verification
 
-- Tests: 114 passed, 1 skipped (needs JDK + ReviewGate.java), coverage ≥ 85 % (gate 80 %).
+- Tests: 113 passed, 1 skipped (needs JDK + ReviewGate.java), coverage ≥ 85 % (gate 80 %).
 - `acr validate`: all checks pass; 3 warnings (model digests unpinned — see limitations).
 - Offline benchmark: 8 fixtures, precision 1.0, recall 1.0, gate accuracy 1.0, stability 1.0.
 - Compose e2e: health-gated startup, smoke, CLI container, non-root and read-only asserted.

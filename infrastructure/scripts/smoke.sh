@@ -15,7 +15,7 @@ check() {  # fixture expected_gate
   local body gate
   body=$(curl_ -f -H 'Content-Type: text/plain' --data-binary "@benchmarks/fixtures/$1/diff.patch" "$BASE_URL/v1/review") \
     || fail "review request failed for $1"
-  gate=$(python3 -c 'import json,sys; r=json.load(sys.stdin); print(r["gate"]["status"], r["run"]["degraded"])' <<<"$body")
+  gate=$(infrastructure/scripts/py.sh -c 'import json,sys; r=json.load(sys.stdin); print(r["gate"]["status"], r["run"]["degraded"])' <<<"$body")
   echo "fixture $1 -> $gate"
   [ "${gate%% *}" = "$2" ] || fail "fixture $1: expected gate $2, got $gate"
   if [ "${REQUIRE_MODEL:-0}" = "1" ] && [ "${gate##* }" = "True" ]; then fail "fixture $1 ran degraded"; fi

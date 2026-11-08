@@ -16,5 +16,6 @@ All notable changes are documented here. Format: [Keep a Changelog](https://keep
 - `legacy` profile: behaviour-compatible with Firefly's `ReviewGate.java` (golden-tested).
 - CLI (`review`, `validate`, `bench`, `models`, `skills`, `health`, `serve`, `docs`, `evolve`) and HTTP service.
 - Docker image (non-root, read-only, stdlib-only) and Compose stack with health checks.
+- Docker-first tooling: pinned toolbox image runs validate, lint, tests, docs and benchmarks; helper scripts run Python in a pinned container.
 - CI, security (levels 1–3), model end-to-end, release (SBOM, signing), deploy with rollback, scheduled automation.
 - Integrations: GitHub Actions, Azure DevOps, GitLab, Firefly.

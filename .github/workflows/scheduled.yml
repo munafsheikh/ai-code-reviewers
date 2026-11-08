@@ -37,19 +37,14 @@ jobs:
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
-        with: {python-version: "3.13", cache: pip, cache-dependency-path: requirements-dev.txt}
-      - run: make dev
       - run: make validate
       - name: Quick regression
-        run: .venv/bin/pytest tests/regression tests/unit -q
+        run: make test-fast
       - run: make docs-check
       - name: Dependency and secret checks
         run: |
           infrastructure/scripts/security-scan.sh - deps
           infrastructure/scripts/security-scan.sh - secrets
-      - name: Tracked exceptions not expired
-        run: python3 infrastructure/scripts/check_exceptions.py
 
   weekly:
     needs: plan
@@ -58,13 +53,10 @@ jobs:
     timeout-minutes: 30
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
-        with: {python-version: "3.13", cache: pip, cache-dependency-path: requirements-dev.txt}
-      - run: make dev
       - name: Benchmark stability (repeat 3) and comparison artifact
-        run: python -m orchestrator bench --profile offline --repeat 3 --gate --out out/bench/offline.json
+        run: make bench-gate BENCH_ARGS="--repeat 3"
       - name: Resilience tests (retry, circuit breaker, cache corruption, runtime loss, deadline)
-        run: .venv/bin/pytest tests/unit/test_recovery.py tests/integration -q
+        run: make test-resilience
       - name: Compose resilience (watchdog restart + circuit open, deploy rollback)
         run: tests/end-to-end/resilience.sh
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
@@ -87,7 +79,7 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Improvement proposal
-        run: python3 -m orchestrator evolve --out proposal.md
+        run: make evolve && cp out/proposal.md proposal.md
       - name: Open or update the proposal issue
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         with:

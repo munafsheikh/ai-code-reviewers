@@ -16,7 +16,7 @@ docker compose --profile test run --rm -T reviewer review --profile balanced --f
 code=$?
 set -e
 [ "$code" = 1 ] || { echo "expected exit 1 (block), got $code" >&2; exit 1; }
-python3 -m orchestrator.schema_check out/e2e/review.json
+docker compose --profile test run --rm -T --entrypoint python reviewer -m orchestrator.schema_check /dev/stdin < out/e2e/review.json
 # Read-only, non-root, no capabilities
 uid=$(docker compose --profile test exec -T reviewer id -u)
 [ "$uid" = 10001 ] || { echo "reviewer runs as uid $uid" >&2; exit 1; }

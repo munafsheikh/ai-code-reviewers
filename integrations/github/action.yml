@@ -117,7 +117,7 @@ runs:
           -e LLM_MODEL="${LLM_MODEL:-}" "$IMAGE" "${args[@]}" < "$RUNNER_TEMP/acr.diff" 2> "$OUT/review.log"
         code=$?
         cat "$OUT/review.log" >&2
-        gate=$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["gate"]["status"])' "$OUT/review.json" 2>/dev/null || echo error)
+        gate=$(docker run --rm -i --entrypoint python "$IMAGE" -c 'import json,sys; print(json.load(sys.stdin)["gate"]["status"])' < "$OUT/review.json" 2>/dev/null || echo error)
         echo "exit_code=$code" >> "$GITHUB_OUTPUT"
         echo "gate=$gate" >> "$GITHUB_OUTPUT"
         [ -f "$OUT/review.md" ] && cat "$OUT/review.md" >> "$GITHUB_STEP_SUMMARY"

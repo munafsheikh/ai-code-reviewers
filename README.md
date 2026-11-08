@@ -16,9 +16,12 @@ telemetry, no source code leaves your machine.
 
 ## Quick start
 
+Only Docker is required. Every tool (reviewer, tests, linters, scanners, docs) runs in a
+pinned container image and pulls its own dependencies.
+
 ```bash
-# 1. Rules only — no containers, no downloads (Python ≥ 3.11, stdlib only)
-python3 -m orchestrator review --profile offline --diff examples/sample-repo/change.patch
+# 1. Rules only — no model download
+make review-offline DIFF=examples/sample-repo/change.patch
 
 # 2. Full stack: reviewer + Ollama + qwen2.5-coder:1.5b, health-checked
 make up
@@ -68,7 +71,8 @@ across CI systems.
 ## Development
 
 ```bash
-make dev && make ci      # validate · lint · tests (coverage gate) · docs check · benchmark gate
+make ci                  # validate · lint · tests (coverage gate) · docs check · benchmark gate, in the toolbox image
+make shell               # interactive toolbox shell; LOCAL=1 runs targets in a host .venv instead
 make e2e                 # Compose end-to-end with a deterministic fake runtime
 make security            # gitleaks · semgrep · hadolint · trivy (fs, image) · SBOM
 ```

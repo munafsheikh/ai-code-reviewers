@@ -44,8 +44,9 @@ not update `MANIFEST.sha256`, and CODEOWNERS requires owner review for the direc
 ## Local workflow
 
 ```bash
-make dev            # .venv with pinned tools
-make ci             # validate, lint, tests + coverage gate, docs check, benchmark gate
+make ci             # validate, lint, tests + coverage gate, docs check, benchmark gate (toolbox container)
+make shell          # shell inside the toolbox
+make ci LOCAL=1     # same targets in a host .venv (after `make dev`)
 make e2e            # docker: compose stack with fake runtime
 make docs           # regenerate docs/generated after changing skills/models/profiles/CLI
 ```
