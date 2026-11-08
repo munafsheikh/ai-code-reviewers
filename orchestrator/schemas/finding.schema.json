@@ -3,32 +3,139 @@
   "$id": "acr.finding/v1",
   "title": "Review finding",
   "type": "object",
-  "required": ["rule_id", "skill", "title", "severity", "category", "location", "explanation", "evidence", "remediation", "confidence", "kind", "source", "fingerprint"],
+  "required": [
+    "rule_id",
+    "skill",
+    "title",
+    "severity",
+    "category",
+    "location",
+    "explanation",
+    "evidence",
+    "remediation",
+    "confidence",
+    "kind",
+    "source",
+    "fingerprint"
+  ],
   "properties": {
-    "rule_id": {"type": "string", "description": "Rule id (rule findings) or model.<skill> (model findings)."},
-    "skill": {"type": "string"},
-    "title": {"type": "string"},
-    "severity": {"enum": ["info", "minor", "major", "critical"]},
-    "category": {"type": "string"},
+    "rule_id": {
+      "type": "string",
+      "description": "Rule id (rule findings) or model.<skill> (model findings)."
+    },
+    "skill": {
+      "type": "string"
+    },
+    "title": {
+      "type": "string"
+    },
+    "severity": {
+      "enum": [
+        "info",
+        "minor",
+        "major",
+        "critical"
+      ]
+    },
+    "category": {
+      "type": "string"
+    },
     "location": {
       "type": "object",
-      "required": ["path", "start_line", "verified"],
+      "required": [
+        "path",
+        "start_line",
+        "verified"
+      ],
       "properties": {
-        "path": {"type": "string"},
-        "start_line": {"type": "integer", "minimum": 1},
-        "end_line": {"type": ["integer", "null"]},
-        "verified": {"type": "boolean", "description": "False when a model cited a line outside the changed hunks."}
+        "path": {
+          "type": "string"
+        },
+        "start_line": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "end_line": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "verified": {
+          "type": "boolean",
+          "description": "False when a model cited a line outside the changed hunks."
+        }
       }
     },
-    "explanation": {"type": "string"},
-    "evidence": {"type": "string", "description": "Quoted code, secrets redacted."},
-    "remediation": {"type": "string"},
-    "confidence": {"enum": ["low", "medium", "high"]},
-    "kind": {"enum": ["verified", "hypothesis"], "description": "verified = deterministic high-confidence rule match; hypothesis = everything else."},
-    "source": {"enum": ["rule", "model"]},
-    "model": {"type": ["string", "null"]},
-    "corroborated_by": {"type": "array", "items": {"type": "string"}},
-    "suppressed": {"type": ["object", "null"]},
-    "fingerprint": {"type": "string", "pattern": "^[0-9a-f]{16}$"}
+    "explanation": {
+      "type": "string"
+    },
+    "evidence": {
+      "type": "string",
+      "description": "Quoted code, secrets redacted."
+    },
+    "remediation": {
+      "type": "string"
+    },
+    "confidence": {
+      "enum": [
+        "low",
+        "medium",
+        "high"
+      ]
+    },
+    "kind": {
+      "enum": [
+        "verified",
+        "hypothesis"
+      ],
+      "description": "verified = deterministic high-confidence rule match; hypothesis = everything else."
+    },
+    "source": {
+      "enum": [
+        "rule",
+        "model"
+      ]
+    },
+    "model": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "corroborated_by": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "suppressed": {
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "fingerprint": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{16}$"
+    },
+    "links": {
+      "type": "object",
+      "description": "Traceability: permalink to the reviewed lines (null when repository/revision unknown) and the rule documentation.",
+      "properties": {
+        "location": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "rule": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    }
   }
 }

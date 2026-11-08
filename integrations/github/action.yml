@@ -37,6 +37,12 @@ inputs:
   output-dir:
     description: Where review.{json,sarif,md,txt} are written
     default: acr-review
+  upload-artifact:
+    description: Upload the reports as a workflow artifact (linked from the review comment)
+    default: 'true'
+  artifact-name:
+    description: Artifact name for the reports
+    default: ai-code-review
 
 outputs:
   gate:
@@ -114,6 +120,7 @@ runs:
         [ -n "$MODEL" ] && args+=(--model "$MODEL")
         docker run --rm -i "${net[@]}" --read-only --cap-drop ALL --security-opt no-new-privileges:true \
           --tmpfs /tmp -v "$PWD/$OUT:/out" -e ACR_MODEL_HOST=http://llm-runtime:11434 \
+          -e ACR_RUN_URL="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" \
           ${LLM_MODEL:+-e LLM_MODEL="$LLM_MODEL"} "$IMAGE" "${args[@]}" < "$RUNNER_TEMP/acr.diff" 2> "$OUT/review.log"
         code=$?
         cat "$OUT/review.log" >&2
@@ -122,6 +129,15 @@ runs:
         echo "gate=$gate" >> "$GITHUB_OUTPUT"
         [ -f "$OUT/review.md" ] && cat "$OUT/review.md" >> "$GITHUB_STEP_SUMMARY"
         exit 0
+
+    - name: Keep the reports (linked from the review comment)
+      if: always() && inputs.upload-artifact == 'true'
+      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+      with:
+        name: ${{ inputs.artifact-name }}
+        path: ${{ inputs.output-dir }}/
+        retention-days: 90
+        if-no-files-found: ignore
 
     - name: Comment on PR
       if: inputs.comment == 'true' && github.event.pull_request.number

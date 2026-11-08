@@ -24,6 +24,7 @@ Source: `orchestrator/schemas/finding.schema.json`
 | `corroborated_by` |  | array |  |
 | `suppressed` |  | object \| null |  |
 | `fingerprint` | yes | string |  |
+| `links` |  | object | Traceability: permalink to the reviewed lines (null when repository/revision unknown) and the rule documentation. |
 
 ## `acr.model/v1` — Model manifest (models/registry/*.toml)
 

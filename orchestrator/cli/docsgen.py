@@ -34,6 +34,45 @@ def skills_md() -> str:
     return "\n".join(out) + "\n"
 
 
+def rules_md() -> str:
+    """One section per skill and rule with a stable HTML anchor; review comments link here."""
+    from orchestrator.engine.links import rule_anchor, skill_anchor
+
+    out = [
+        "# Rule reference",
+        "",
+        "Review findings link to the sections below (`#<rule-id>` for rules, `#skill-<skill-id>` for model findings).",
+        "",
+    ]
+    for s in cfg.load_skills().values():
+        out += [
+            f'<a id="{skill_anchor(s.id)}"></a>',
+            "",
+            f"## Skill `{s.id}` (v{s.version})",
+            "",
+            f"{s.description} Category: {s.category}. Model tier: {s.tier}.",
+            "",
+        ]
+        if s.prompt:
+            out += ["Model findings from this skill are reported as `model." + s.id + "` and are always hypotheses.", ""]
+        for r in s.rules:
+            kind = "verified" if r["confidence"] == "high" else "hypothesis"
+            out += [
+                f'<a id="{rule_anchor(r["id"])}"></a>',
+                "",
+                f"### {r['id']}: {r['title']}",
+                "",
+                f"Severity **{r['severity']}** · confidence {r['confidence']} ({kind}) · languages: "
+                f"{', '.join(r.get('languages') or s.languages)}",
+                "",
+                r["explanation"],
+                "",
+                f"**Fix:** {r['remediation']}",
+                "",
+            ]
+    return "\n".join(out)
+
+
 def models_md() -> str:
     out = [
         "# Model catalog",
@@ -119,6 +158,7 @@ def env_md() -> str:
 
 
 GENERATORS = {
+    "rules.md": rules_md,
     "cli.md": cli_md,
     "skills.md": skills_md,
     "models.md": models_md,

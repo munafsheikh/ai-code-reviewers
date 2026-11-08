@@ -13,7 +13,7 @@ from orchestrator import __version__
 from orchestrator import config as cfg
 from orchestrator.contracts import RESULT_SCHEMA, SEVERITIES, AdapterError, Finding, GenerationRequest, ModelAdapter
 from orchestrator.engine import diff as diffmod
-from orchestrator.engine import gate, parse, prompt
+from orchestrator.engine import gate, links, parse, prompt
 from orchestrator.engine.adapters import load_adapter
 from orchestrator.engine.rules import run_rules
 from orchestrator.recovery.audit import Audit
@@ -251,6 +251,12 @@ def run_review(
 
     used = {r.model.id: r.model for r in routes if r.model}
     fdicts = [f.to_dict() for f in findings]
+    for d in fdicts:  # traceability: exact lines at the reviewed revision + the rule's documentation
+        loc = d["location"]
+        d["links"] = {
+            "location": links.location_url(repository, revision, loc["path"], loc["start_line"], loc["end_line"]),
+            "rule": links.rule_url(d["rule_id"], d["skill"], __version__),
+        }
     return {
         "schema": RESULT_SCHEMA,
         "tool": {"name": "ai-code-reviewers", "version": __version__},
@@ -278,6 +284,11 @@ def run_review(
             "degraded": bool(ctx.infra_errors),
             "infrastructure_errors": ctx.infra_errors,
             "recovery_events": audit.events,
+            "links": {
+                "commit": links.commit_url(repository, revision),
+                "ci_run": links.ci_run_url(),
+                "rules": f"{links.docs_base(__version__)}/rules.md",
+            },
             "legacy_raw_output": legacy_raw,
         },
         "findings": fdicts,
