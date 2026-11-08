@@ -1,0 +1,68 @@
+id = "security.injection"
+version = "1.0.0"
+interface = "acr.skill/v1"
+category = "security"
+description = "Injection, unsafe evaluation, disabled TLS verification and unsafe deserialisation."
+languages = ["java", "python", "javascript", "typescript", "kotlin", "csharp", "go", "ruby"]
+file_globs = ["*"]
+tier = "small"
+
+[prompt]
+file = "prompt.md"
+output = "findings-json"
+
+[[rules]]
+id = "INJ-001"
+title = "SQL built by string concatenation"
+severity = "critical"
+confidence = "medium"
+pattern = '''(?i)(?:SELECT\b.+?\bFROM|INSERT\s+INTO|UPDATE\s+\w+\s+SET|DELETE\s+FROM)\b.*["'`]\s*\+\s*\w|(?:SELECT\b.+?\bFROM|INSERT\s+INTO|UPDATE\s+\w+\s+SET|DELETE\s+FROM)\b[^"'`]*\$\{|\bf["'](?:SELECT\b.+?\bFROM|INSERT\s+INTO|UPDATE\s+\w+\s+SET|DELETE\s+FROM)\b[^"']*\{'''
+explanation = "Concatenating input into SQL allows an attacker to change the query (SQL injection)."
+remediation = "Use parameterised queries / prepared statements with bound parameters."
+examples.match = ['String q = "SELECT * FROM users WHERE id = " + id;', "q = \"SELECT * FROM t WHERE n = '\" + name + \"'\";", 'cur.execute(f"SELECT name FROM t WHERE id={uid}")', 'db.query(`DELETE FROM t WHERE id = ${id}`)']
+examples.no_match = ['ps = conn.prepareStatement("SELECT * FROM users WHERE id = ?");', 'log.info("SELECT finished")']
+
+[[rules]]
+id = "INJ-002"
+title = "Dynamic code evaluation"
+severity = "major"
+confidence = "medium"
+pattern = '(?<![\w.])(?:eval|exec)\s*\((?!\s*\))|new\s+Function\s*\('
+languages = ["python", "javascript", "typescript"]
+explanation = "Evaluating strings as code executes attacker-controlled input if any part of it is untrusted."
+remediation = "Replace with explicit parsing (e.g. json/ast.literal_eval) or a dispatch table."
+examples.match = ["result = eval(user_input)", "const f = new Function(body);"]
+examples.no_match = ["model.eval()", "cursor.execute(sql, params)", "evaluate(x)"]
+
+[[rules]]
+id = "INJ-003"
+title = "Shell command built from variables"
+severity = "critical"
+confidence = "medium"
+pattern = '''subprocess\.\w+\([^)]*shell\s*=\s*True|os\.system\s*\(\s*(?:f["']|[^"')]*\+)|Runtime\.getRuntime\(\)\.exec\s*\([^)]*\+|child_process\.(?:exec|execSync)\s*\(\s*`[^`]*\$\{|\bexec(?:Sync)?\s*\(\s*`[^`]*\$\{'''
+explanation = "Passing interpolated strings to a shell enables command injection."
+remediation = "Pass an argument list without a shell (subprocess.run([...]), ProcessBuilder, execFile)."
+examples.match = ["subprocess.run(cmd, shell=True)", 'os.system(f"rm {path}")', 'Runtime.getRuntime().exec("ping " + host);', "exec(`ls ${dir}`)"]
+examples.no_match = ['subprocess.run(["ls", path])', 'new ProcessBuilder("ls", dir)']
+
+[[rules]]
+id = "INJ-004"
+title = "TLS certificate verification disabled"
+severity = "major"
+confidence = "high"
+pattern = '''verify\s*=\s*False|rejectUnauthorized\s*:\s*false|NODE_TLS_REJECT_UNAUTHORIZED\s*=\s*["']?0|ALLOW_ALL_HOSTNAME_VERIFIER|NoopHostnameVerifier|InsecureSkipVerify\s*:\s*true|curl\s+(?:-k|--insecure)\b'''
+explanation = "Disabling certificate checks allows man-in-the-middle interception of the connection."
+remediation = "Keep verification on; trust a private CA explicitly instead of disabling checks."
+examples.match = ["requests.get(url, verify=False)", "{ rejectUnauthorized: false }", "InsecureSkipVerify: true"]
+examples.no_match = ["requests.get(url, verify=True)", "verify=ca_bundle"]
+
+[[rules]]
+id = "INJ-005"
+title = "Unsafe deserialisation"
+severity = "major"
+confidence = "medium"
+pattern = '''pickle\.loads?\s*\(|yaml\.load\s*\((?![^)]*SafeLoader)|new\s+ObjectInputStream\s*\(|Marshal\.load\b|\bunserialize\s*\('''
+explanation = "Deserialising untrusted data with these APIs can execute arbitrary code."
+remediation = "Use a data-only format (JSON) or a safe loader (yaml.safe_load); validate the input source."
+examples.match = ["obj = pickle.loads(blob)", "cfg = yaml.load(fh)", "new ObjectInputStream(socket.getInputStream())"]
+examples.no_match = ["cfg = yaml.safe_load(fh)", "yaml.load(fh, Loader=yaml.SafeLoader)"]

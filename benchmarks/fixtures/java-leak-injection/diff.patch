@@ -1,0 +1,27 @@
+diff --git a/src/main/java/app/UserDao.java b/src/main/java/app/UserDao.java
+index 623557d..26aad6c 100644
+--- a/src/main/java/app/UserDao.java
++++ b/src/main/java/app/UserDao.java
+@@ -1,4 +1,22 @@
+ package app;
+ 
++import java.io.FileInputStream;
++import java.sql.*;
++
+ public class UserDao {
++    private static final String password = "Sup3rS3cretDb!";
++
++    public User find(Connection conn, String id) throws SQLException {
++        String q = "SELECT * FROM users WHERE id = '" + id + "'";
++        ResultSet rs = conn.createStatement().executeQuery(q);
++        return map(rs);
++    }
++
++    public byte[] loadAvatar(String path) {
++        try {
++            FileInputStream in = new FileInputStream(path);
++            return in.readAllBytes();
++        } catch (Exception e) {}
++        return null;
++    }
+ }

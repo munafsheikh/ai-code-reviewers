@@ -1,0 +1,11 @@
+diff --git a/deploy/config.yaml b/deploy/config.yaml
+index 84a1962..2848cbf 100644
+--- a/deploy/config.yaml
++++ b/deploy/config.yaml
+@@ -1 +1,6 @@
+ service: api
++aws_access_key_id: AKIAZ7Q3XJ5M2N4P6R8T
++github: ghp_Ab3Ab3Ab3Ab3Ab3Ab3Ab3Ab3Ab3Ab3Ab3Ab3
++tls_key: |
++  -----BEGIN RSA PRIVATE KEY-----
++  MIIEowIBAAKCAQEAfakefakefakefake

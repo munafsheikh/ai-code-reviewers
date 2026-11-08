@@ -1,0 +1,45 @@
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ai-code-reviewers"
+version = "0.1.0"
+description = "Offline, model-agnostic AI code review: rules + small/large local models, JSON/SARIF/Markdown output."
+readme = "README.md"
+license = {text = "MIT"}
+requires-python = ">=3.11"
+dependencies = []   # runtime is stdlib-only by design (supply-chain surface)
+
+[project.scripts]
+acr = "orchestrator.cli.main:main"
+
+[tool.setuptools.packages.find]
+include = ["orchestrator*"]
+
+[tool.setuptools.package-data]
+orchestrator = ["schemas/*.json"]
+
+[tool.ruff]
+line-length = 140
+target-version = "py311"
+extend-exclude = ["benchmarks/fixtures"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "B", "UP", "S", "BLE"]
+ignore = ["S101", "S603", "S607", "S310", "B008"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["S", "B", "BLE"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+
+[tool.coverage.run]
+source = ["orchestrator", "wrappers"]
+branch = true
+
+[tool.coverage.report]
+fail_under = 80
+show_missing = false

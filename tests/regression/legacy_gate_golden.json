@@ -1,0 +1,57 @@
+[
+  {
+    "name": "clean",
+    "exit_code": 0,
+    "stdout": "SEVERITY: NONE\nSUMMARY: looks fine"
+  },
+  {
+    "name": "minor",
+    "exit_code": 0,
+    "stdout": "SEVERITY: MINOR\nSUMMARY: naming nit\nISSUES:\n- A.java:3 rename variable"
+  },
+  {
+    "name": "block",
+    "exit_code": 1,
+    "stdout": "SEVERITY: BLOCK\nSUMMARY: resource leak\nISSUES:\n- A.java:10 stream never closed"
+  },
+  {
+    "name": "block_lowercase",
+    "exit_code": 1,
+    "stdout": "severity: block\nsummary: leak"
+  },
+  {
+    "name": "block_decorated",
+    "exit_code": 1,
+    "stdout": "Here is my review.\n  SEVERITY: **BLOCK**\nSUMMARY: injection"
+  },
+  {
+    "name": "unparseable_fails_open",
+    "exit_code": 0,
+    "stdout": "I think this code is dangerous and must be blocked."
+  },
+  {
+    "name": "unknown_value_is_none",
+    "exit_code": 0,
+    "stdout": "SEVERITY: HIGH\nSUMMARY: ?"
+  },
+  {
+    "name": "first_severity_wins",
+    "exit_code": 0,
+    "stdout": "SEVERITY: MINOR\nSEVERITY: BLOCK"
+  },
+  {
+    "name": "empty_diff",
+    "exit_code": 0,
+    "stdout": "SEVERITY: NONE\nSUMMARY: empty diff, nothing to review"
+  },
+  {
+    "name": "no_model",
+    "exit_code": 2,
+    "stdout": ""
+  },
+  {
+    "name": "runtime_unreachable",
+    "exit_code": 2,
+    "stdout": ""
+  }
+]

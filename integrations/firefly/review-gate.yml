@@ -1,0 +1,55 @@
+name: AI Review Gate
+
+# Review of Java changes by ai-code-reviewers (rules + local model, no external API).
+# Blocks merge on major+ findings; posts a PR comment; uploads SARIF.
+#
+# Repository variables (Settings > Variables > Actions):
+#   LLM_RUNTIME_IMAGE  local model runtime image; empty = deterministic rules only
+#   LLM_MODEL          model runtime ref (e.g. qwen2.5-coder:1.5b); empty = platform default
+
+on:
+  pull_request:
+    paths:
+      - '**/*.java'
+
+permissions:
+  contents: read
+  pull-requests: write
+  security-events: write
+
+concurrency:
+  group: review-gate-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  review-gate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+
+      - name: AI review
+        id: acr
+        uses: munafsheikh/ai-code-reviewers/integrations/github@ACR_REF
+        with:
+          profile: ${{ vars.LLM_RUNTIME_IMAGE != '' && 'balanced' || 'offline' }}
+          paths: '*.java'
+          runtime-image: ${{ vars.LLM_RUNTIME_IMAGE }}
+          pull-models: ${{ vars.LLM_MODEL || 'qwen2.5-coder:1.5b' }}
+          model: ${{ vars.LLM_MODEL }}
+          enforce: 'false'
+
+      - name: Upload SARIF
+        if: always() && hashFiles('acr-review/review.sarif') != ''
+        uses: github/codeql-action/upload-sarif@33d7b85da1a04171e211befe2c739303b9a4c066 # v4.39.3
+        with:
+          sarif_file: acr-review/review.sarif
+          category: ai-review-gate
+
+      - name: Enforce gate
+        if: steps.acr.outputs.exit-code == '1'
+        run: |
+          echo "Blocked by AI review gate — see PR comment for details." >&2
+          exit 1

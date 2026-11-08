@@ -1,0 +1,17 @@
+id = "strict"
+version = "1.0.0"
+description = "Release branches: block on major+, fail when model infrastructure is unavailable, pinned models only."
+
+[gate]
+block_on = "major"
+warn_on = "minor"
+model_findings_can_block = true
+model_min_confidence_to_block = "low"
+fail_on_infrastructure_error = true
+
+[models]
+require_pinned = true
+forbidden_status = ["rejected", "deprecated", "unregistered"]
+
+[baseline]
+file = "policies/security/baseline.json"

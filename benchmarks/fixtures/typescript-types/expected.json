@@ -1,0 +1,19 @@
+{
+  "findings": [
+    {
+      "path": "src/api.ts",
+      "line": 1,
+      "rule_id": "TS-001"
+    },
+    {
+      "path": "src/api.ts",
+      "line": 4,
+      "rule_id": "TS-002"
+    },
+    {
+      "path": "src/api.ts",
+      "line": 5,
+      "rule_id": "TS-002"
+    }
+  ]
+}

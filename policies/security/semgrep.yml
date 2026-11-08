@@ -1,0 +1,40 @@
+# Project SAST rules (offline; no registry download). CI additionally runs CodeQL.
+rules:
+  - id: acr-subprocess-shell
+    languages: [python]
+    severity: ERROR
+    message: subprocess with shell=True executes through a shell; pass an argv list.
+    pattern: subprocess.$F(..., shell=True, ...)
+  - id: acr-eval-exec
+    languages: [python]
+    severity: ERROR
+    message: eval/exec of dynamic input.
+    pattern-either:
+      - pattern: eval(...)
+      - pattern: exec(...)
+  - id: acr-urlopen-without-egress-check
+    languages: [python]
+    severity: ERROR
+    message: Raw urllib/http use in wrappers bypasses the egress allowlist; use orchestrator.engine.http.request_json.
+    paths:
+      include: ["/wrappers/"]
+    pattern-either:
+      - pattern: urllib.request.urlopen(...)
+      - pattern: http.client.HTTPConnection(...)
+  - id: acr-yaml-load
+    languages: [python]
+    severity: ERROR
+    message: yaml.load without SafeLoader.
+    pattern: yaml.load(...)
+  - id: acr-pickle
+    languages: [python]
+    severity: ERROR
+    message: pickle on untrusted data executes code.
+    pattern-either:
+      - pattern: pickle.load(...)
+      - pattern: pickle.loads(...)
+  - id: acr-bind-all-interfaces-default
+    languages: [python]
+    severity: WARNING
+    message: Binding 0.0.0.0 by default exposes the service; require explicit configuration.
+    pattern: ThreadingHTTPServer(("0.0.0.0", $P), ...)

@@ -1,0 +1,70 @@
+name: Model end-to-end
+# Real local model (no external inference API): Ollama + qwen2.5-coder:0.5b on a CPU runner.
+# Runs on PRs that touch the engine/wrappers/skills/models, weekly, and on demand.
+on:
+  pull_request:
+    paths: [orchestrator/**, wrappers/**, skills/**, models/**, profiles/**, compose.yaml, infrastructure/docker/**]
+  schedule:
+    - cron: "41 3 * * 1"
+  workflow_dispatch:
+    inputs:
+      model:
+        description: runtime ref to evaluate
+        default: qwen2.5-coder:0.5b
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  model-e2e:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      MODEL_REF: ${{ inputs.model || 'qwen2.5-coder:0.5b' }}
+      ACR_HOST_PORT: "8088"
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Start stack with a real model
+        run: |
+          export ACR_PULL_MODELS="$MODEL_REF" ACR_SMALL_MODEL="$MODEL_REF" LLM_MEMORY=6g
+          docker compose --profile model up -d --build --wait --wait-timeout 900
+          docker compose --profile model logs model-init
+      - name: Readiness requires the model
+        run: |
+          curl -sf http://127.0.0.1:8088/readyz | tee readyz.json
+          grep -q '"status": "ready"' readyz.json
+      - name: Smoke (non-degraded, rules + model)
+        run: REQUIRE_MODEL=1 SMOKE_TIMEOUT=600 infrastructure/scripts/smoke.sh
+      - name: Review every fixture through the model; validate outputs
+        run: |
+          mkdir -p out/model
+          for d in benchmarks/fixtures/*/; do
+            n=$(basename "$d")
+            curl -sf -H 'Content-Type: application/json' --max-time 600 \
+              -d "$(python3 -c 'import json,sys; print(json.dumps({"diff": open(sys.argv[1]).read(), "format": "json"}))' "$d/diff.patch")" \
+              http://127.0.0.1:8088/v1/review > "out/model/$n.json"
+          done
+          python3 -m orchestrator.schema_check out/model/*.json
+          python3 - <<'PY'
+          import glob, json
+          rows = [json.load(open(p)) for p in glob.glob("out/model/*.json")]
+          degraded = [r["run"]["id"] for r in rows if r["run"]["degraded"]]
+          model_findings = sum(r["summary"]["by_source"]["model"] for r in rows)
+          print(f"reviews={len(rows)} degraded={len(degraded)} model_findings={model_findings}")
+          assert not degraded, "model runs must not be degraded"
+          PY
+      - name: Record model digest
+        run: docker compose exec -T reviewer acr models verify | tee out/model/digests.txt
+      - name: Stability (same input twice must hit the cache or match)
+        run: |
+          for i in 1 2; do curl -sf --data-binary @benchmarks/fixtures/python-unsafe/diff.patch http://127.0.0.1:8088/v1/review \
+            | python3 -c 'import json,sys; r=json.load(sys.stdin); print(sorted(f["fingerprint"] for f in r["findings"]))'; done | uniq | wc -l | grep -qx 1
+      - name: Diagnostics
+        if: always()
+        run: docker compose --profile model logs --no-color > out/model/compose.log 2>&1 || true
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: always()
+        with: {name: model-e2e, path: out/, retention-days: 30}
+      - if: always()
+        run: docker compose --profile model down -v

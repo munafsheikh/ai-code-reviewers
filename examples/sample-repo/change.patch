@@ -1,0 +1,23 @@
+diff --git a/src/main/java/demo/GreetingRepository.java b/src/main/java/demo/GreetingRepository.java
+--- a/src/main/java/demo/GreetingRepository.java
++++ b/src/main/java/demo/GreetingRepository.java
+@@ -21,4 +21,19 @@ public class GreetingRepository {
+             }
+         }
+     }
++
++    public String greetingByName(String name) {
++        try {
++            ResultSet rs = conn.createStatement()
++                .executeQuery("SELECT text FROM greetings WHERE name = '" + name + "'");
++            return rs.next() ? rs.getString(1) : "Hello";
++        } catch (SQLException e) {}
++        return null;
++    }
++
++    public void audit(String user) {
++        if (user == "admin") {
++            System.out.println("admin greeting");
++        }
++    }
+ }

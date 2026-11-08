@@ -1,0 +1,105 @@
+name: CI
+# Every PR and push to main: validate, lint, test, docs, benchmarks, container build,
+# compose end-to-end, fixture reviews with schema validation, quality gates.
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_call:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: test (py${{ matrix.python }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ["3.11", "3.13"]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
+        with:
+          python-version: ${{ matrix.python }}
+          cache: pip
+          cache-dependency-path: requirements-dev.txt
+      - run: make dev
+      - name: Validate structure, manifests, rule examples, wrapper permissions, fixtures
+        run: make validate
+      - name: Lint
+        run: make lint
+      - name: Unit, contract, integration, regression, security tests (coverage gate)
+        run: make test
+      - name: Generated docs and links
+        run: make docs-check
+      - name: Benchmark quality gate (offline, deterministic)
+        run: make bench-gate
+      - name: Fixture reviews -> JSON/SARIF/Markdown, schema-validated
+        run: |
+          set -o pipefail
+          for d in benchmarks/fixtures/*/ examples/sample-repo/; do
+            n=$(basename "$d"); f="$d/diff.patch"; [ -f "$f" ] || f="$d/change.patch"
+            python -m orchestrator review --profile offline --diff "$f" --format json,sarif,markdown,legacy --out-dir "out/reviews/$n" || [ $? -eq 1 ]
+          done
+          python -m orchestrator.schema_check out/reviews/*/review.json
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: always() && matrix.python == '3.13'
+        with:
+          name: reports
+          path: out/
+          retention-days: 14
+
+  container:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Build image
+        run: make build IMAGE=acr-reviewer:ci
+      - name: Container runs non-root, read-only, rules-only
+        run: |
+          set +e
+          docker run --rm -i --read-only --cap-drop ALL acr-reviewer:ci review --profile offline --format legacy < examples/sample-repo/change.patch
+          [ $? -eq 1 ]
+      - name: Compose end-to-end (fake runtime, health checks, smoke, shutdown)
+        run: make e2e
+      - name: Deploy to disposable environment with rollback check
+        run: |
+          docker tag acr-reviewer:ci acr-reviewer:ci-verified
+          infrastructure/deployment/deploy.sh acr-reviewer:ci-verified
+          printf 'FROM acr-reviewer:ci\nENTRYPOINT ["python","-c","import time; time.sleep(600)"]\n' | docker build -q -t acr-reviewer:ci-broken -
+          if DEPLOY_TIMEOUT=45 infrastructure/deployment/deploy.sh acr-reviewer:ci-broken; then echo "broken image deployed" >&2; exit 1; fi
+          docker ps --filter label=com.docker.compose.project=acr-test --format '{{.Image}}' | grep -qx acr-reviewer:ci-verified
+          infrastructure/deployment/teardown.sh
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: always()
+        with:
+          name: container-diagnostics
+          path: out/
+          retention-days: 7
+
+  self-review:
+    # Dogfooding: the platform reviews its own pull requests (rules only, no model download).
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with: {fetch-depth: 0}
+      - uses: ./integrations/github
+        with:
+          profile: offline
+          runtime-image: ''
+          paths: ':!benchmarks/fixtures :!tests :!skills/security/secrets'
+          enforce: 'false'
+          comment: ${{ github.event.pull_request.head.repo.full_name == github.repository }}

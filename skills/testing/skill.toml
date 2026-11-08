@@ -1,0 +1,42 @@
+id = "testing.hygiene"
+version = "1.0.0"
+interface = "acr.skill/v1"
+category = "testing"
+description = "Changes that silently reduce test coverage or make tests flaky."
+languages = ["java", "python", "javascript", "typescript", "kotlin"]
+file_globs = ["*test*", "*Test*", "*spec*", "tests/*", "test/*", "src/test/*"]
+tier = "none"
+
+[[rules]]
+id = "TST-001"
+title = "Focused test (.only / fit) left in"
+severity = "major"
+confidence = "high"
+languages = ["javascript", "typescript"]
+pattern = '\b(?:describe|it|test|context)\.only\s*\(|\bf(?:it|describe)\s*\('
+explanation = "A focused test makes the runner skip every other test, so CI passes without running the suite."
+remediation = "Remove `.only` / `fit` before merging."
+examples.match = ["describe.only('x', () => {", "  fit('works', () => {"]
+examples.no_match = ["describe('x', () => {", "const fitness = 1"]
+
+[[rules]]
+id = "TST-002"
+title = "Test disabled"
+severity = "minor"
+confidence = "high"
+pattern = '@(?:Disabled|Ignore)\b|@pytest\.mark\.skip\b|\b(?:xit|xdescribe|it\.skip|describe\.skip|test\.skip)\s*\('
+explanation = "Disabled tests reduce coverage silently and tend to stay disabled."
+remediation = "Fix the test, or reference a tracked issue in the skip reason."
+examples.match = ["@Disabled", "@pytest.mark.skip", "it.skip('x', () => {"]
+examples.no_match = ["@DisplayName(\"x\")", "skipLines(2)"]
+
+[[rules]]
+id = "TST-003"
+title = "Fixed sleep in test"
+severity = "info"
+confidence = "medium"
+pattern = 'Thread\.sleep\s*\(|\btime\.sleep\s*\(|\bsetTimeout\s*\([^,]+,\s*\d{3,}\s*\)'
+explanation = "Fixed sleeps make tests slow and flaky."
+remediation = "Wait on a condition (await/poll with timeout) or inject a clock."
+examples.match = ["Thread.sleep(1000);", "time.sleep(2)"]
+examples.no_match = ["await waitFor(() => ready)"]

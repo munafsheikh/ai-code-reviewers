@@ -1,0 +1,35 @@
+# GitLab CI template:  include: {remote: 'https://raw.githubusercontent.com/munafsheikh/ai-code-reviewers/v0.1.0/integrations/gitlab/acr.gitlab-ci.yml'}
+# Rules-only by default (no service); set ACR_PROFILE=balanced to add the Ollama service.
+acr-review:
+  stage: test
+  image:
+    name: ghcr.io/munafsheikh/ai-code-reviewers:0.1.0
+    entrypoint: [""]
+  variables:
+    ACR_PROFILE: offline
+    ACR_MODEL_HOST: http://llm-runtime:11434
+    GIT_DEPTH: "0"
+  services:
+    - name: ollama/ollama:0.12.6@sha256:a61a8fd395dbb931cc8cb1b5da7a2510746575c87113fdc45b647ee59ef7f808
+      alias: llm-runtime
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+  script:
+    # The reviewer image has no git (smaller attack surface); acr-diff produces the diff.
+    - acr review --profile "$ACR_PROFILE" --diff "$CI_PROJECT_DIR/acr.diff" --format json,sarif,markdown,legacy --out-dir acr-review --stdout markdown
+  needs: [acr-diff]
+  artifacts:
+    when: always
+    paths: [acr-review/]   # review.sarif can be imported by SARIF-aware tooling
+
+acr-diff:
+  stage: .pre
+  image: alpine/git:latest   # pin by digest in your project
+  variables: {GIT_DEPTH: "0"}
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+  script:
+    - git fetch origin "$CI_MERGE_REQUEST_TARGET_BRANCH_NAME"
+    - git -c core.fsmonitor=false diff --no-color --no-ext-diff --no-textconv "origin/$CI_MERGE_REQUEST_TARGET_BRANCH_NAME...HEAD" > acr.diff
+  artifacts:
+    paths: [acr.diff]

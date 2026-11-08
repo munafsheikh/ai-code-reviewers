@@ -1,0 +1,30 @@
+id = "lang.typescript.types"
+version = "1.0.0"
+interface = "acr.skill/v1"
+category = "maintainability"
+description = "TypeScript type-safety escapes."
+languages = ["typescript"]
+file_globs = ["*.ts", "*.tsx"]
+tier = "none"
+
+[[rules]]
+id = "TS-001"
+title = "Type checking suppressed"
+severity = "minor"
+confidence = "high"
+pattern = '@ts-(?:ignore|nocheck)\b'
+explanation = "Suppressions hide real type errors and outlive the reason they were added."
+remediation = "Fix the type, or use @ts-expect-error with a comment explaining why."
+examples.match = ["// @ts-ignore", "/* @ts-nocheck */"]
+examples.no_match = ["// @ts-expect-error legacy lib typing"]
+
+[[rules]]
+id = "TS-002"
+title = "Explicit any"
+severity = "info"
+confidence = "high"
+pattern = ':\s*any\b(?!\w)|\bas\s+any\b|<any>'
+explanation = "`any` disables type checking for everything it touches."
+remediation = "Use a precise type or `unknown` plus narrowing."
+examples.match = ["function f(x: any) {", "const y = z as any;"]
+examples.no_match = ["const anyway = 1;", "function f(x: unknown) {"]

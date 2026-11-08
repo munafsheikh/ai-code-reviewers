@@ -1,0 +1,17 @@
+id = "default"
+version = "1.0.0"
+description = "Block on major+ findings; model findings block only at medium+ confidence."
+
+[gate]
+block_on = "major"
+warn_on = "minor"
+model_findings_can_block = true
+model_min_confidence_to_block = "medium"
+fail_on_infrastructure_error = false   # degrade to rules-only (audited) instead of failing
+
+[models]
+require_pinned = false
+forbidden_status = ["rejected"]
+
+[baseline]
+file = "policies/security/baseline.json"

@@ -1,0 +1,26 @@
+diff --git a/web/render.js b/web/render.js
+index cb0ff5c..fac26de 100644
+--- a/web/render.js
++++ b/web/render.js
+@@ -1 +1,8 @@
+-export {};
++export function show(el, msg) {
++  el.innerHTML = msg;
++}
++
++export function calc(expr) {
++  debugger;
++  return eval(expr);
++}
+diff --git a/web/render.test.js b/web/render.test.js
+index 8b13789..9d4bcb7 100644
+--- a/web/render.test.js
++++ b/web/render.test.js
+@@ -1 +1,7 @@
++import { show } from './render.js';
+ 
++describe.only('show', () => {
++  it('renders text', () => {
++    expect(show).toBeDefined();
++  });
++});

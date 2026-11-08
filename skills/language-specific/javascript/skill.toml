@@ -1,0 +1,23 @@
+id = "lang.javascript.core"
+version = "1.0.0"
+interface = "acr.skill/v1"
+category = "security"
+description = "JavaScript DOM and runtime pitfalls."
+languages = ["javascript", "typescript"]
+file_globs = ["*.js", "*.mjs", "*.cjs", "*.jsx", "*.ts", "*.tsx"]
+tier = "small"
+
+[prompt]
+file = "prompt.md"
+output = "findings-json"
+
+[[rules]]
+id = "JS-001"
+title = "Assignment to innerHTML / outerHTML"
+severity = "major"
+confidence = "medium"
+pattern = '\.(?:inner|outer)HTML\s*\+?=(?!=)|dangerouslySetInnerHTML|document\.write\s*\('
+explanation = "Writing unsanitised strings as HTML enables cross-site scripting."
+remediation = "Use textContent, or sanitise with a vetted library before inserting HTML."
+examples.match = ["el.innerHTML = msg;", "<div dangerouslySetInnerHTML={{__html: x}} />"]
+examples.no_match = ["el.textContent = msg;", "if (el.innerHTML === '')"]

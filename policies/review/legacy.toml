@@ -1,0 +1,6 @@
+id = "legacy"
+version = "1.0.0"
+description = "Firefly ReviewGate.java semantics (gate decided by the model's SEVERITY line)."
+
+[gate]
+fail_on_infrastructure_error = true

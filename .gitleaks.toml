@@ -1,0 +1,14 @@
+# Gitleaks configuration: default rules plus explicit, path-scoped allowlists.
+# Only deliberately fake test secrets are allow-listed; real secrets anywhere else fail the scan.
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Intentional fake credentials used to test the secret-detection skill, and local build output"
+paths = [
+  '''(^|/)benchmarks/fixtures/''',
+  '''(^|/)skills/security/secrets/skill\.toml$''',
+  '''(^|/)tests/''',
+  '''(^|/)docs/generated/''',
+  '''(^|/)(out|\.acr-cache|\.venv)/''',
+]

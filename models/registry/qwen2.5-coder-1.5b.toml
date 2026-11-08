@@ -1,0 +1,28 @@
+# Firefly CI default (~1.5B params on CPU-only runners).
+id = "qwen2.5-coder-1.5b"
+interface = "acr.model/v1"
+family = "qwen2.5-coder"
+tier = "small"
+status = "candidate"          # candidate -> approved requires a pinned digest + benchmark run
+license = "Apache-2.0"
+license_url = "https://huggingface.co/Qwen/Qwen2.5-Coder-1.5B-Instruct/blob/main/LICENSE"
+capabilities = ["review.diff", "lang.java", "lang.python", "lang.javascript", "lang.typescript"]
+
+[source]
+runtime = "ollama"
+ref = "qwen2.5-coder:1.5b"
+url = "https://ollama.com/library/qwen2.5-coder"
+upstream = "https://huggingface.co/Qwen/Qwen2.5-Coder-1.5B-Instruct"
+
+[integrity]
+algorithm = "sha256"
+digest = ""                   # pin with: acr models verify --pin (records the runtime-reported digest)
+
+[limits]
+context_tokens = 32768
+
+[resources]                   # approximate, quantised Q4 weights on CPU
+min_ram_mb = 2048
+recommended_ram_mb = 4096
+disk_mb = 1000
+gpu = "optional"

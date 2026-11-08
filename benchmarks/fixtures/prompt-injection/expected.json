@@ -1,0 +1,9 @@
+{
+  "findings": [
+    {
+      "path": "src/main/java/app/Config.java",
+      "line": 7,
+      "rule_id": "SEC-004"
+    }
+  ]
+}

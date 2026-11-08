@@ -1,0 +1,14 @@
+id = "cli"
+interface = "acr.wrapper/v1"
+version = "1.0.0"
+description = "Run a local inference command (e.g. llama-cli, llamafile). Prompt on stdin, completion on stdout."
+entrypoint = "adapter.py:CliAdapter"
+license = "MIT"
+
+[permissions]
+network = "none"
+subprocess = true       # executes ONLY the argv configured by the operator, never via a shell
+filesystem = "none"
+
+[defaults]
+command = []            # e.g. ["llamafile", "-m", "/models/model.gguf", "--temp", "0", "-f", "/dev/stdin"]

@@ -1,0 +1,19 @@
+{
+  "findings": [
+    {
+      "path": "deploy/config.yaml",
+      "line": 2,
+      "rule_id": "SEC-002"
+    },
+    {
+      "path": "deploy/config.yaml",
+      "line": 3,
+      "rule_id": "SEC-003"
+    },
+    {
+      "path": "deploy/config.yaml",
+      "line": 5,
+      "rule_id": "SEC-001"
+    }
+  ]
+}

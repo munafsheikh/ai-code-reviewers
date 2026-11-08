@@ -1,0 +1,34 @@
+id = "lang.python.core"
+version = "1.0.0"
+interface = "acr.skill/v1"
+category = "code-quality"
+description = "Python correctness pitfalls."
+languages = ["python"]
+file_globs = ["*.py"]
+tier = "small"
+
+[prompt]
+file = "prompt.md"
+output = "findings-json"
+
+[[rules]]
+id = "PY-001"
+title = "Mutable default argument"
+severity = "minor"
+confidence = "high"
+pattern = '^\s*(?:async\s+)?def\s+\w+\([^)]*=\s*(?:\[\]|\{\}|set\(\)|list\(\)|dict\(\))'
+explanation = "Default values are evaluated once, so state leaks between calls."
+remediation = "Default to None and create the container inside the function."
+examples.match = ["def add(x, acc=[]):", "async def f(a, opts={}):"]
+examples.no_match = ["def add(x, acc=None):"]
+
+[[rules]]
+id = "PY-002"
+title = "assert used for runtime validation"
+severity = "minor"
+confidence = "low"
+pattern = '^\s*assert\s+(?:request|user|is_|has_|.*\b(?:auth|permission|admin)\b)'
+explanation = "assert statements are removed under python -O, silently disabling the check."
+remediation = "Raise an explicit exception."
+examples.match = ["    assert user.is_admin", "    assert request.method == 'POST'"]
+examples.no_match = ["    assert result == 3"]

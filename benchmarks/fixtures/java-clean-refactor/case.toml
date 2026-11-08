@@ -1,0 +1,2 @@
+description = "Safe Java change: prepared statement, try-with-resources, logged exception. Expect no findings."
+expected_gate = "pass"

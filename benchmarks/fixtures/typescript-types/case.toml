@@ -1,0 +1,2 @@
+description = "TypeScript change suppressing the type checker."
+expected_gate = "warn"

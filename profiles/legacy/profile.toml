@@ -1,0 +1,21 @@
+# Behaviour-compatible with Firefly's tools/review-gate/ReviewGate.java:
+# raw SEVERITY text on stdout, exit 1 on BLOCK, exit 2 when the model is missing
+# or the runtime is unreachable. Model comes from LLM_MODEL, host from LLM_HOST.
+extends = "balanced"
+id = "legacy"
+description = "Firefly ReviewGate.java compatibility mode (text protocol, exit codes 0/1/2)."
+mode = "legacy"
+policy = "legacy"
+skills = ["lang.java.first-pass-gate"]
+
+[routing]
+small_model = ""
+
+[budget]
+call_timeout_s = 120
+
+[retry]
+attempts = 1
+
+[cache]
+enabled = false

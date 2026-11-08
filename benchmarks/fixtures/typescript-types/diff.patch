@@ -1,0 +1,12 @@
+diff --git a/src/api.ts b/src/api.ts
+index cb0ff5c..9bd9083 100644
+--- a/src/api.ts
++++ b/src/api.ts
+@@ -1 +1,6 @@
+-export {};
++// @ts-ignore
++import legacy from './legacy';
++
++export function parse(input: any): number {
++  return (legacy as any).parse(input);
++}

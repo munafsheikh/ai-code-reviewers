@@ -1,0 +1,45 @@
+id = "maintainability.hygiene"
+version = "1.0.0"
+interface = "acr.skill/v1"
+category = "maintainability"
+description = "Debug leftovers and markers that should not reach the main branch."
+languages = ["*"]
+file_globs = ["*"]
+exclude_globs = ["*.md", "docs/*", "CHANGELOG*"]
+tier = "none"
+
+[[rules]]
+id = "MNT-001"
+title = "Debugger statement"
+severity = "major"
+confidence = "high"
+languages = ["javascript", "typescript", "python"]
+pattern = '^\s*(?:debugger\s*;?|breakpoint\(\)|import\s+pdb\s*;\s*pdb\.set_trace\(\)|pdb\.set_trace\(\))\s*$'
+explanation = "Debugger statements halt execution in environments with a debugger attached and leak into production."
+remediation = "Remove the statement."
+examples.match = ["  debugger;", "    breakpoint()", "import pdb; pdb.set_trace()"]
+examples.no_match = ["// debugger notes", "log.debug('x')"]
+
+[[rules]]
+id = "MNT-002"
+title = "Unresolved FIXME/XXX marker"
+severity = "info"
+confidence = "high"
+pattern = '(?:#|//|/\*|\*|--)\s*(?:FIXME|XXX|HACK)\b'
+explanation = "Markers record known defects; they should be tracked as issues rather than merged silently."
+remediation = "Fix it now or link a tracked issue."
+examples.match = ["// FIXME: race here", "# XXX remove"]
+examples.no_match = ["// TODO(#12): follow-up", "fixme = 1"]
+
+[[rules]]
+id = "MNT-003"
+title = "Console output in application code"
+severity = "info"
+confidence = "medium"
+languages = ["java", "javascript", "typescript"]
+pattern = '\bSystem\.(?:out|err)\.print(?:ln)?\s*\(|\bconsole\.(?:log|debug)\s*\('
+unless = '^\s*(?://|\*)'
+explanation = "Direct console output bypasses log levels and structured logging."
+remediation = "Use the project's logger."
+examples.match = ['System.out.println("x");', "console.log(user)"]
+examples.no_match = ['// console.log("x")', 'log.info("x")']

@@ -1,0 +1,2 @@
+description = "Idiomatic Python change. Expect no findings."
+expected_gate = "pass"

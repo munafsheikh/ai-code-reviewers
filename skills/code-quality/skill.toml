@@ -1,0 +1,49 @@
+id = "code-quality.error-handling"
+version = "1.0.0"
+interface = "acr.skill/v1"
+category = "code-quality"
+description = "Swallowed or hidden errors and unsafe error handling."
+languages = ["java", "python", "javascript", "typescript", "kotlin", "csharp"]
+file_globs = ["*"]
+tier = "small"
+
+[prompt]
+file = "prompt.md"
+output = "findings-json"
+
+[[rules]]
+id = "ERR-001"
+title = "Swallowed exception"
+severity = "major"
+confidence = "high"
+scope = "block"   # matched across consecutive added lines, so multi-line handlers are caught
+pattern = '''(?m)catch\s*\([^)]*\)\s*\{\s*\}|^[ \t]*except\b[^\n:]*:[ \t]*(?:#[^\n]*)?\n?[ \t]*(?:pass|\.\.\.)[ \t]*(?:#[^\n]*)?$'''
+unless = '\(\s*[\w.|\s]+\s+(?:ignored|ignore|expected|_)\s*\)'   # intent made explicit by naming
+explanation = "An empty handler discards the error, hiding failures and leaving state inconsistent."
+remediation = "Handle the error, log it with context, or let it propagate."
+examples.match = ["} catch (IOException e) {}", "except Exception: pass", "except: pass", "try { x() } catch (e) { }", "    except OSError:\n        pass", "} catch (Exception e) {\n}"]
+examples.no_match = ["} catch (IOException e) { log.warn(\"x\", e); }", "except KeyError:", "    except OSError:\n        log.warning('x')", "} catch (InterruptedException ignored) { }"]
+
+[[rules]]
+id = "ERR-002"
+title = "Bare except catches everything"
+severity = "minor"
+confidence = "high"
+languages = ["python"]
+pattern = '^\s*except\s*:'
+explanation = "A bare except also catches KeyboardInterrupt and SystemExit and masks programming errors."
+remediation = "Catch the specific exception types you can handle (at minimum `except Exception:`)."
+examples.match = ["    except:"]
+examples.no_match = ["    except ValueError:", "    except Exception as e:"]
+
+[[rules]]
+id = "ERR-003"
+title = "printStackTrace instead of logging"
+severity = "minor"
+confidence = "high"
+languages = ["java", "kotlin"]
+pattern = '\.printStackTrace\s*\(\s*\)'
+explanation = "Stack traces on stderr bypass the logging pipeline and are lost in most deployments."
+remediation = "Log through the application logger with context, or rethrow."
+examples.match = ["    e.printStackTrace();"]
+examples.no_match = ['    log.error("failed", e);']

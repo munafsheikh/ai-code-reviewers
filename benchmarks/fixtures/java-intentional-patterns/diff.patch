@@ -1,0 +1,23 @@
+diff --git a/src/main/java/app/ShellRunner.java b/src/main/java/app/ShellRunner.java
+index 0b60d6e..869104f 100644
+--- a/src/main/java/app/ShellRunner.java
++++ b/src/main/java/app/ShellRunner.java
+@@ -1 +1,18 @@
+ package app;
++
++import java.io.*;
++
++public class ShellRunner {
++    public String run(Process p) throws IOException {
++        try (InputStreamReader isr = new InputStreamReader(p.getInputStream());
++             BufferedReader reader = new BufferedReader(isr)) {
++            return reader.readLine();
++        }
++    }
++
++    public void close(Closeable c) {
++        try {
++            c.close();
++        } catch (IOException ignored) { }
++    }
++}
