@@ -25,7 +25,7 @@ triggering files only.
 
 `maintainability.docs` (`DOC-001`…`DOC-004`) uses these to make the reviewer flag user-facing
 changes (build/CI/deploy definitions, new make targets, CLI options and env vars, schemas/APIs)
-that arrive without a README, docs or CHANGELOG change. Pin bumps (`uses:`, `FROM`, `image:`) and
+that arrive without a README, docs or CHANGELOG change; they are `major`, so the default policy blocks. Pin bumps (`uses:`, `FROM`, `image:`) and
 tests do not trigger it.
 
 ## Add a skill

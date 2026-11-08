@@ -12,7 +12,7 @@ tier = "none"
 [[companions]]
 id = "DOC-001"
 title = "Build, CI or deployment definition changed without documentation"
-severity = "minor"
+severity = "major"
 confidence = "medium"
 when = ["Dockerfile", "Dockerfile.*", "*.Dockerfile", "Containerfile", "compose.yml", "compose.yaml", "docker-compose*.yml", "docker-compose*.yaml", ".github/workflows/*", "action.yml", "action.yaml", ".gitlab-ci.yml", "*gitlab-ci.yml", "azure-pipelines.yml", "Jenkinsfile", "charts/*", "helm/*", "k8s/*", "kubernetes/*"]
 # Any added line that is not a pure pin bump (uses:/FROM/image:), a comment or blank: Dependabot stays quiet.
@@ -37,7 +37,7 @@ examples.pass = [
 [[companions]]
 id = "DOC-002"
 title = "New make target without documentation"
-severity = "minor"
+severity = "major"
 confidence = "medium"
 when = ["Makefile", "GNUmakefile", "*.mk"]
 pattern = '^[A-Za-z0-9][\w.-]*\s*:(?![=:])'
@@ -58,7 +58,7 @@ examples.pass = [
 [[companions]]
 id = "DOC-003"
 title = "New CLI option or environment variable without documentation"
-severity = "minor"
+severity = "major"
 confidence = "medium"
 when = ["*.py", "*.java", "*.kt", "*.js", "*.mjs", "*.cjs", "*.ts", "*.tsx", "*.go", "*.rs", "*.rb", "*.cs"]
 pattern = '''os\.environ(?:\.get)?\s*[\[(]\s*["'][A-Za-z_]|os\.getenv\(\s*["']|System\.getenv\(\s*"|process\.env(?:\.[A-Za-z_]|\[\s*["'])|os\.Getenv\(\s*"|env::var\(\s*"|add_argument\(\s*["']-|click\.option\(\s*["']-'''
@@ -82,7 +82,7 @@ examples.pass = [
 [[companions]]
 id = "DOC-004"
 title = "Interface contract changed without documentation"
-severity = "minor"
+severity = "major"
 confidence = "medium"
 when = ["*.schema.json", "*openapi*.json", "*openapi*.yaml", "*openapi*.yml", "*swagger*.json", "*swagger*.yaml", "*.proto", "*.graphql", "*.graphqls", "*.avsc"]
 requires = ["*.md", "*.rst", "*.adoc", "docs/*", "doc/*"]

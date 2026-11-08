@@ -64,7 +64,7 @@ def _companions(files):
 def test_companion_fires_once_per_diff_on_first_trigger_without_docs():
     found = _companions(_multi(("Dockerfile", "RUN make"), (".github/workflows/x.yml", "  build:"), ("src/a.py", "x = 1")))
     (f,) = [f for f in found if f.rule_id == "DOC-001"]
-    assert (f.location.path, f.location.start_line, f.kind, f.severity) == ("Dockerfile", 1, "hypothesis", "minor")
+    assert (f.location.path, f.location.start_line, f.kind, f.severity) == ("Dockerfile", 1, "hypothesis", "major")
     assert "Dockerfile" in f.evidence and ".github/workflows/x.yml" in f.evidence
 
 

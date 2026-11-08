@@ -11,7 +11,7 @@ All notable changes are documented here. Format: [Keep a Changelog](https://keep
 - `Model matrix` workflow: pulls each model on a runner, records digests, benchmarks through the model, publishes a comparison.
 - OpenAI-compatible servers (vLLM, LM Studio, LocalAI, llama.cpp) receive the manifest's Hugging Face id.
 - Model selection guide.
-- Companion rules (`[[companions]]`): diff-level checks that one kind of change travels with another. New `maintainability.docs` skill (`DOC-001`…`DOC-004`) flags build/CI/deploy, make target, CLI/env and contract changes made without documentation.
+- Companion rules (`[[companions]]`): diff-level checks that one kind of change travels with another. New `maintainability.docs` skill (`DOC-001`…`DOC-004`) blocks (major) build/CI/deploy, make target, CLI/env and contract changes made without documentation.
 - Docker Hub publishing (`Images` workflow): shared base image plus layered reviewer, toolbox and fake-runtime images, multi-arch and signed; `make images`.
 
 ### Changed
