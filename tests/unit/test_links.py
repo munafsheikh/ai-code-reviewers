@@ -64,3 +64,15 @@ def test_every_rule_and_skill_has_an_anchor_in_the_reference():
         assert f'<a id="{links.skill_anchor(s.id)}"></a>' in doc
         for rule in s.rules:
             assert f'<a id="{links.rule_anchor(rule["id"])}"></a>' in doc
+
+
+def test_markdown_reports_what_the_model_contributed(runtime, monkeypatch):
+    fake = {
+        "findings": [
+            {"path": "svc/jobs.py", "line": 9, "severity": "critical", "title": "Shell injection"},
+            {"path": "/etc/passwd", "line": 1, "severity": "critical", "title": "invented"},
+        ]
+    }
+    monkeypatch.setenv("FAKE_RESPONSE_TEXT", json.dumps(fake))
+    md = report.to_markdown(run_review(fixture_diff("python-unsafe"), "balanced"))
+    assert "Model output: 2 findings returned, 1 accepted, 1 discarded" in md

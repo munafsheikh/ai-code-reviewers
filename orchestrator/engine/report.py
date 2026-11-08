@@ -110,6 +110,18 @@ def to_markdown(result: dict[str, Any]) -> str:
         ]
     models = ", ".join(f"`{m['ref']}`" for m in run["models"]) or "none (rules only)"
     lines += ["", f"Models: {models}"]
+    parse = run.get("parse") or []
+    if parse:
+        raw = sum(p["raw"] for p in parse)
+        acc = sum(p["accepted"] for p in parse)
+        disc = sum(p["discarded"] for p in parse)
+        unv = sum(p["unverified_location"] for p in parse)
+        errs = [p["parse_error"] for p in parse if p.get("parse_error")]
+        lines.append(
+            f"Model output: {raw} findings returned, {acc} accepted, {disc} discarded "
+            f"(not in the diff or invalid), {unv} cited lines outside the changed hunks"
+            + (f"; unparseable reply: {errs[0]}" if errs else "")
+        )
     lines += ["", "| Severity | Count |", "|---|---|"]
     lines += [f"| {k} | {v} |" for k, v in s["by_severity"].items()]
     if not result["findings"]:

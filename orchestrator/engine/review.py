@@ -173,6 +173,14 @@ def _model_findings(
             return []
         found, stats = parse.to_findings(text, route.skills, chunk, m.id)
         ctx.parse_stats.append({"model": m.id, **stats})
+        # Visible in CI logs (-v): what the model actually contributed for this chunk.
+        ctx.audit.record(
+            "model_output",
+            model=m.id,
+            chars=len(text),
+            **{k: v for k, v in stats.items() if k != "parse_error"},
+            parse_error=stats.get("parse_error"),
+        )
         return found
 
     workers = max(1, int(ctx.profile.get("budget", {}).get("concurrency", 1)))
