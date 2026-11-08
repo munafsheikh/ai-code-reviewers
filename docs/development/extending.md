@@ -23,10 +23,24 @@ matches) but **no** file matching `requires` changed in the same diff. Fields: `
 (`{files = [...], line = "..."}`) that validation runs. The skill's `exclude_globs` apply to
 triggering files only.
 
-`maintainability.docs` (`DOC-001`…`DOC-004`) uses these to make the reviewer flag user-facing
-changes (build/CI/deploy definitions, new make targets, CLI options and env vars, schemas/APIs)
-that arrive without a README, docs or CHANGELOG change; they are `major`, so the default policy blocks. Pin bumps (`uses:`, `FROM`, `image:`) and
-tests do not trigger it.
+`documentation.sync` (`DOC-001`…`DOC-004`) uses these to block user-facing changes (build/CI/deploy
+definitions, new make targets, CLI options and env vars, schemas/APIs) that arrive without a
+README, docs or CHANGELOG change. Pin bumps (`uses:`, `FROM`, `image:`) and tests do not trigger it.
+
+## Categories and coverage
+
+Every skill has one `category`. Code categories: `security`, `code-quality`, `architecture`,
+`performance`, `maintainability`, `testing`. Documentation category: `documentation`:
+`documentation.sync` (code changed, docs did not) and `documentation.content` (defects inside docs:
+placeholders `DOC-101`, conflict markers `DOC-102`, machine-local paths `DOC-103`, insecure links
+`DOC-104`; plus a model prompt for docs that contradict the code).
+
+Each review records `run.coverage`: for every changed file, which categories actually examined it
+(a rule or companion applies, or its prompt reached an available model). Files matching
+`*.md`, `*.rst`, `*.adoc`, `docs/*` need a `documentation` check; every other file needs a code
+check. With `[gate] require_coverage = true` (`default`, `strict`) an uncovered file blocks the
+review, so a profile that drops a category, or a file type no skill understands, cannot pass
+silently. A new skill should therefore cover a file type or category the existing ones miss.
 
 ## Add a skill
 

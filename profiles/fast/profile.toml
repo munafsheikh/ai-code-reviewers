@@ -1,7 +1,7 @@
 extends = "balanced"
 id = "fast"
 description = "Pre-commit / incremental: rules + 0.5B model, one call, short timeouts."
-skills = ["security.*", "code-quality.*", "maintainability.*", "testing.*", "lang.*"]
+skills = ["security.*", "code-quality.*", "maintainability.*", "testing.*", "documentation.*", "lang.*"]
 
 [routing]
 tiers = ["small"]

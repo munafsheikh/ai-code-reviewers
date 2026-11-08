@@ -93,7 +93,7 @@ Source: `orchestrator/schemas/skill.schema.json`
 | `id` | yes | string |  |
 | `version` | yes | string |  |
 | `interface` | yes | acr.skill/v1 |  |
-| `category` | yes | security \| code-quality \| architecture \| performance \| maintainability \| testing |  |
+| `category` | yes | security \| code-quality \| architecture \| performance \| maintainability \| testing \| documentation |  |
 | `description` | yes | string |  |
 | `languages` |  | array |  |
 | `file_globs` |  | array |  |

@@ -99,6 +99,12 @@ def to_markdown(result: dict[str, Any]) -> str:
         ]
     models = ", ".join(f"`{m['ref']}`" for m in run["models"]) or "none (rules only)"
     lines += ["", f"Models: {models}"]
+    cov = run.get("coverage")
+    if cov:
+        cats = ", ".join(f"{c} ({n})" for c, n in cov["by_category"].items()) or "none"
+        lines += ["", f"Coverage: {cov['by_kind']['code']} code · {cov['by_kind']['docs']} docs files — {cats}"]
+        if cov["uncovered"]:
+            lines += ["", "> **Not reviewed by any check:** " + ", ".join(f"`{p}`" for p in cov["uncovered"][:20])]
     lines += ["", "| Severity | Count |", "|---|---|"]
     lines += [f"| {k} | {v} |" for k, v in s["by_severity"].items()]
     if not result["findings"]:

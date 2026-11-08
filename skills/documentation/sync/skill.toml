@@ -1,7 +1,7 @@
-id = "maintainability.docs"
+id = "documentation.sync"
 version = "1.0.0"
 interface = "acr.skill/v1"
-category = "maintainability"
+category = "documentation"
 description = "User-facing surfaces (build, CI, deployment, make targets, CLI options, env vars, contracts) changed without a documentation change in the same diff."
 languages = ["*"]
 file_globs = ["*"]

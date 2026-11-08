@@ -43,7 +43,7 @@ flowchart LR
 
 | Concept | Where | Reference |
 |---|---|---|
-| Skills (rules + prompts) | `skills/` | [catalog](docs/generated/skills.md) |
+| Skills (rules + prompts): code categories + `documentation` | `skills/` | [catalog](docs/generated/skills.md) · [categories & coverage](docs/development/extending.md#categories-and-coverage) |
 | Models: 18 manifests, 11 families, no weights | `models/registry/` | [catalog](docs/generated/models.md) · [selection guide](docs/operations/model-selection.md) |
 | Profiles `fast · balanced · deep · laptop · gpu · offline · legacy` | `profiles/` | [profiles & policies](docs/generated/profiles.md) |
 | Policies (gate, model trust, baseline) | `policies/` | [profiles & policies](docs/generated/profiles.md) |

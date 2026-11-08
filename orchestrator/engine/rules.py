@@ -92,14 +92,14 @@ def _blocks(added: list[tuple[int, str]]) -> list[tuple[int, str, list[int]]]:
     return blocks
 
 
-def _glob_hit(path: str, globs: list[str]) -> bool:
+def glob_hit(path: str, globs: list[str]) -> bool:
     name = PurePosixPath(path).name
     return any(fnmatch(path, g) or fnmatch(name, g) for g in globs)
 
 
 def companion_trigger(c: dict, f: FileDiff) -> tuple[int, str] | None:
     """First (line, text) of ``f`` that triggers companion ``c``, or None."""
-    if not _glob_hit(f.path, c["when"]):
+    if not glob_hit(f.path, c["when"]):
         return None
     if not c.get("pattern"):
         return f.added[0] if f.added else (1, "")
@@ -116,7 +116,7 @@ def run_companions(skill: Skill, files: list[FileDiff]) -> list[Finding]:
     """
     out: list[Finding] = []
     for c in skill.companions:
-        if any(_glob_hit(f.path, c["requires"]) for f in files):
+        if any(glob_hit(f.path, c["requires"]) for f in files):
             continue
         hits = [(f, t) for f in files if f.matches(skill.file_globs, ["*"], skill.exclude_globs) and (t := companion_trigger(c, f))]
         if not hits:

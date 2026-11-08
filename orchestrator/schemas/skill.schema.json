@@ -9,7 +9,7 @@
     "id": {"type": "string", "pattern": "^[a-z0-9-]+(\\.[a-z0-9-]+)+$"},
     "version": {"type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$"},
     "interface": {"enum": ["acr.skill/v1"]},
-    "category": {"enum": ["security", "code-quality", "architecture", "performance", "maintainability", "testing"]},
+    "category": {"enum": ["security", "code-quality", "architecture", "performance", "maintainability", "testing", "documentation"]},
     "description": {"type": "string"},
     "languages": {"type": "array", "items": {"type": "string"}},
     "file_globs": {"type": "array", "items": {"type": "string"}},
