@@ -31,7 +31,9 @@ sast()       { "${D[@]}" -v "$PWD/$OUT:/out" "$SEMGREP" semgrep scan --metrics=o
                  --config /src/policies/security/semgrep.yml --severity "$SEMGREP_FAIL_SEVERITY" --error \
                  --sarif --output /out/semgrep.sarif --exclude benchmarks/fixtures --exclude tests /src; }
 dockerfile() { docker run --rm "${EXTRA[@]}" -i -v "$PWD/.hadolint.yaml:/.config/hadolint.yaml:ro" "$HADOLINT" \
-                 hadolint --failure-threshold "$HADOLINT_FAIL_THRESHOLD" - < infrastructure/docker/Dockerfile; }
+                 hadolint --failure-threshold "$HADOLINT_FAIL_THRESHOLD" - < infrastructure/docker/Dockerfile \
+              && docker run --rm "${EXTRA[@]}" -i -v "$PWD/.hadolint.yaml:/.config/hadolint.yaml:ro" "$HADOLINT" \
+                 hadolint --failure-threshold "$HADOLINT_FAIL_THRESHOLD" - < infrastructure/docker/Dockerfile.toolbox; }
 deps()       { "${D[@]}" "${TRIVY_CACHE[@]}" -v "$PWD/$OUT:/out" "$TRIVY" fs --scanners vuln,misconfig --exit-code 1 \
                  --severity "$TRIVY_FAIL_SEVERITY" --ignorefile /src/policies/security/trivyignore --secret-config /src/policies/security/trivy-secret.yaml --skip-dirs benchmarks/fixtures \
                  --format sarif --output /out/trivy-fs.sarif /src; }

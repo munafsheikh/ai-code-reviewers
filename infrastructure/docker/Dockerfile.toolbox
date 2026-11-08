@@ -12,5 +12,9 @@ COPY requirements-dev.txt /tmp/requirements-dev.txt
 RUN --mount=type=secret,id=ca,required=false \
     if [ -f /run/secrets/ca ]; then export PIP_CERT=/run/secrets/ca; fi \
  && pip install -q -r /tmp/requirements-dev.txt \
- && git config --system --add safe.directory /src
+ && git config --system --add safe.directory /src \
+ && groupadd --system --gid 10001 acr \
+ && useradd --system --uid 10001 --gid acr --home-dir /tmp --shell /usr/sbin/nologin acr
+# Non-root by default; `make` additionally runs it as the invoking host uid:gid.
+USER 10001:10001
 WORKDIR /src
