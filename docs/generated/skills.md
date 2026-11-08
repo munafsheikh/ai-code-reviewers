@@ -6,12 +6,14 @@
 |---|---|---|---|---|---|
 | `architecture.design` | 1.0.0 | architecture | large | * | 0 |
 | `code-quality.error-handling` | 1.0.0 | code-quality | small | java, python, javascript, typescript, kotlin, csharp | 3 |
+| `documentation.content` | 1.0.0 | documentation | small | * | 4 |
+| `documentation.sync` | 1.0.0 | documentation | none | * | 4 |
 | `lang.java.core` | 1.0.0 | code-quality | small | java | 3 |
 | `lang.java.first-pass-gate` | 1.0.0 | code-quality | small | java | 0 |
 | `lang.javascript.core` | 1.0.0 | security | small | javascript, typescript | 1 |
 | `lang.python.core` | 1.0.0 | code-quality | small | python | 2 |
 | `lang.typescript.types` | 1.0.0 | maintainability | none | typescript | 2 |
-| `maintainability.hygiene` | 1.0.0 | maintainability | none | * | 3 |
+| `maintainability.hygiene` | 1.1.0 | maintainability | none | * | 4 |
 | `performance.deep` | 1.0.0 | performance | large | * | 0 |
 | `security.injection` | 1.0.0 | security | small | java, python, javascript, typescript, kotlin, csharp, go, ruby | 5 |
 | `security.secrets` | 1.0.0 | security | none | * | 4 |
@@ -24,6 +26,10 @@
 | `ERR-001` | `code-quality.error-handling` | major | high | verified | Swallowed exception |
 | `ERR-002` | `code-quality.error-handling` | minor | high | verified | Bare except catches everything |
 | `ERR-003` | `code-quality.error-handling` | minor | high | verified | printStackTrace instead of logging |
+| `DOC-101` | `documentation.content` | major | high | verified | Placeholder text in documentation |
+| `DOC-102` | `documentation.content` | critical | high | verified | Unresolved merge conflict in documentation |
+| `DOC-103` | `documentation.content` | major | medium | hypothesis | Machine-local path in documentation |
+| `DOC-104` | `documentation.content` | minor | high | verified | Insecure link in documentation |
 | `JAVA-001` | `lang.java.core` | major | medium | hypothesis | Closeable opened outside try-with-resources |
 | `JAVA-002` | `lang.java.core` | minor | low | hypothesis | Optional.get() without presence check |
 | `JAVA-003` | `lang.java.core` | major | medium | hypothesis | String compared with == |
@@ -35,6 +41,7 @@
 | `MNT-001` | `maintainability.hygiene` | major | high | verified | Debugger statement |
 | `MNT-002` | `maintainability.hygiene` | info | high | verified | Unresolved FIXME/XXX marker |
 | `MNT-003` | `maintainability.hygiene` | info | medium | hypothesis | Console output in application code |
+| `MNT-004` | `maintainability.hygiene` | critical | high | verified | Unresolved merge conflict marker |
 | `INJ-001` | `security.injection` | critical | medium | hypothesis | SQL built by string concatenation |
 | `INJ-002` | `security.injection` | major | medium | hypothesis | Dynamic code evaluation |
 | `INJ-003` | `security.injection` | critical | medium | hypothesis | Shell command built from variables |
@@ -47,3 +54,14 @@
 | `TST-001` | `testing.hygiene` | major | high | verified | Focused test (.only / fit) left in |
 | `TST-002` | `testing.hygiene` | minor | high | verified | Test disabled |
 | `TST-003` | `testing.hygiene` | info | medium | hypothesis | Fixed sleep in test |
+
+## Companion rules
+
+Diff-level: fire when files matching *When* change and nothing matching *Requires* changes in the same diff.
+
+| Rule | Skill | Severity | When | Line pattern | Requires | Title |
+|---|---|---|---|---|---|---|
+| `DOC-001` | `documentation.sync` | major | `Dockerfile` `Dockerfile.*` `*.Dockerfile` `Containerfile` `compose.yml` `compose.yaml` `docker-compose*.yml` `docker-compose*.yaml` `.github/workflows/*` `action.yml` `action.yaml` `.gitlab-ci.yml` `*gitlab-ci.yml` `azure-pipelines.yml` `Jenkinsfile` `charts/*` `helm/*` `k8s/*` `kubernetes/*` | yes | `*.md` `*.rst` `*.adoc` `docs/*` `doc/*` | Build, CI or deployment definition changed without documentation |
+| `DOC-002` | `documentation.sync` | major | `Makefile` `GNUmakefile` `*.mk` | yes | `*.md` `*.rst` `*.adoc` `docs/*` `doc/*` | New make target without documentation |
+| `DOC-003` | `documentation.sync` | major | `*.py` `*.java` `*.kt` `*.js` `*.mjs` `*.cjs` `*.ts` `*.tsx` `*.go` `*.rs` `*.rb` `*.cs` | yes | `*.md` `*.rst` `*.adoc` `docs/*` `doc/*` | New CLI option or environment variable without documentation |
+| `DOC-004` | `documentation.sync` | major | `*.schema.json` `*openapi*.json` `*openapi*.yaml` `*openapi*.yml` `*swagger*.json` `*swagger*.yaml` `*.proto` `*.graphql` `*.graphqls` `*.avsc` | - | `*.md` `*.rst` `*.adoc` `docs/*` `doc/*` | Interface contract changed without documentation |

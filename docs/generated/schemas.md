@@ -93,7 +93,7 @@ Source: `orchestrator/schemas/skill.schema.json`
 | `id` | yes | string |  |
 | `version` | yes | string |  |
 | `interface` | yes | acr.skill/v1 |  |
-| `category` | yes | security \| code-quality \| architecture \| performance \| maintainability \| testing |  |
+| `category` | yes | security \| code-quality \| architecture \| performance \| maintainability \| testing \| documentation |  |
 | `description` | yes | string |  |
 | `languages` |  | array |  |
 | `file_globs` |  | array |  |
@@ -101,6 +101,7 @@ Source: `orchestrator/schemas/skill.schema.json`
 | `tier` | yes | none \| small \| large | Model tier for the prompt part; none = rules only. |
 | `prompt` |  | object |  |
 | `rules` |  | array |  |
+| `companions` |  | array | Diff-level rules: files matching `when` changed (with an added line matching `pattern`, if set) but nothing matching `requires` did. |
 
 ## `acr.wrapper/v1` — Wrapper manifest (wrappers/**/wrapper.toml)
 

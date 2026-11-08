@@ -65,8 +65,8 @@ def check_skills(root: Path, r: Report) -> None:
             r.err(f"{rel}: prompt file {p.get('file')} not found")
         if d.get("tier", "none") != "none" and not p:
             r.err(f"{rel}: tier {d['tier']} requires a [prompt]")
-        if not p and not d.get("rules"):
-            r.err(f"{rel}: skill has neither rules nor a prompt")
+        if not p and not d.get("rules") and not d.get("companions"):
+            r.err(f"{rel}: skill has neither rules, companions nor a prompt")
         for rule in d.get("rules", []):
             rid = rule.get("id")
             if rid in seen_rules:
@@ -87,6 +87,56 @@ def check_skills(root: Path, r: Report) -> None:
                 r.checked += 1
                 if rx.search(s) and not (neg and neg.search(s)):
                     r.err(f"{rel}: rule {rid} should NOT match example {s!r}")
+        for c in d.get("companions", []):
+            cid = c.get("id")
+            if cid in seen_rules:
+                r.err(f"{rel}: duplicate rule id {cid} (also {seen_rules[cid]})")
+            seen_rules[cid] = rel
+            check_companion(rel, d, c, r)
+
+
+def _simulated_diff(example: dict) -> list:
+    from orchestrator.engine import diff as diffmod
+
+    line = example.get("line", "x")
+    return diffmod.parse("".join(f"--- a/{p}\n+++ b/{p}\n@@ -0,0 +1 @@\n+{line}\n" for p in example.get("files", [])))
+
+
+def check_companion(rel: Path, manifest: dict, c: dict, r: Report) -> None:
+    """A companion's examples are simulated diffs: each `flag` must fire it, each `pass` must not."""
+    from orchestrator.engine.rules import run_companions
+
+    cid = c.get("id")
+    if not c.get("when") or not c.get("requires"):
+        r.err(f"{rel}: companion {cid}: `when` and `requires` must be non-empty")
+        return
+    try:
+        re.compile(c.get("pattern", ""))
+    except re.error as e:
+        r.err(f"{rel}: companion {cid}: invalid regex: {e}")
+        return
+    skill = cfg.Skill(
+        id=manifest.get("id", "?"),
+        version=manifest.get("version", "0.0.0"),
+        category=manifest.get("category", "maintainability"),
+        description="",
+        path=Path(),
+        languages=manifest.get("languages", ["*"]),
+        file_globs=manifest.get("file_globs", ["*"]),
+        exclude_globs=manifest.get("exclude_globs", []),
+        tier="none",
+        prompt=None,
+        output="findings-json",
+        rules=[],
+        companions=[c],
+    )
+    ex = c.get("examples", {})
+    for want, cases in ((True, ex.get("flag", [])), (False, ex.get("pass", []))):
+        for case in cases:
+            r.checked += 1
+            if bool(run_companions(skill, _simulated_diff(case))) != want:
+                verb = "fire" if want else "NOT fire"
+                r.err(f"{rel}: companion {cid} should {verb} for example {case}")
 
 
 def check_models(root: Path, r: Report) -> None:

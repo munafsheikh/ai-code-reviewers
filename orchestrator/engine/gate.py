@@ -7,6 +7,7 @@ import json
 from pathlib import Path
 
 from orchestrator.contracts import Finding, confidence_rank, severity_rank
+from orchestrator.engine.coverage import is_doc
 from orchestrator.recovery.audit import Audit
 
 
@@ -30,7 +31,7 @@ def apply_baseline(findings: list[Finding], exceptions: list[dict], audit: Audit
         f.suppressed = {"reason": e["reason"], "expires": e["expires"], "owner": e.get("owner", "")}
 
 
-def evaluate(findings: list[Finding], policy: dict, infra_errors: list[str]) -> dict:
+def evaluate(findings: list[Finding], policy: dict, infra_errors: list[str], uncovered: list[str] | None = None) -> dict:
     g = policy.get("gate", {})
     block_on = severity_rank(g.get("block_on", "major"))
     warn_on = severity_rank(g.get("warn_on", "minor"))
@@ -45,12 +46,15 @@ def evaluate(findings: list[Finding], policy: dict, infra_errors: list[str]) -> 
         and (f.source == "rule" or (model_can_block and confidence_rank(f.confidence) >= model_min_conf))
     ]
     warning = [f for f in active if severity_rank(f.severity) >= warn_on]
+    # Files no active code / documentation check examined: blocking only when the policy requires coverage.
+    gaps = list(uncovered or []) if g.get("require_coverage", False) else []
     if infra_errors and g.get("fail_on_infrastructure_error", False):
         status, code = "error", 2
         reasons.append("model infrastructure unavailable and policy requires it")
-    elif blocking:
+    elif blocking or gaps:
         status, code = "block", 1
         reasons += [f"{f.severity} {f.rule_id} at {f.location.path}:{f.location.start_line}" for f in blocking[:20]]
+        reasons += [f"no {'documentation' if is_doc(p) else 'code'} review coverage for {p}" for p in gaps[:20]]
     elif warning:
         status, code = "warn", 0
     else:
@@ -63,4 +67,5 @@ def evaluate(findings: list[Finding], policy: dict, infra_errors: list[str]) -> 
         "reasons": reasons,
         "blocking_findings": len(blocking),
         "suppressed_findings": len(findings) - len(active),
+        "uncovered_files": len(gaps),
     }

@@ -3,7 +3,7 @@
 # DevOps, GitLab run identical commands). LOCAL=1 runs the commands in a host .venv.
 SHELL := /bin/bash
 VENV ?= .venv
-TOOLBOX_HASH := $(shell cat requirements-dev.txt infrastructure/docker/Dockerfile.toolbox | sha256sum | cut -c1-12)
+TOOLBOX_HASH := $(shell cat requirements-dev.txt infrastructure/docker/Dockerfile | sha256sum | cut -c1-12)
 TOOLBOX ?= acr-toolbox:$(TOOLBOX_HASH)
 TOOLBOX_BUILD_ARGS ?=
 ifeq ($(LOCAL),1)
@@ -25,14 +25,14 @@ OUT ?= out
 
 .DEFAULT_GOAL := help
 .PHONY: help toolbox dev shell lint fmt test test-fast test-security test-resilience schema-check validate docs docs-check bench bench-gate review review-offline \
-        build up up-test down logs smoke e2e resilience security sbom ci evolve deploy-test rollback watchdog clean
+        build images up up-test down logs smoke e2e resilience security sbom ci evolve deploy-test rollback watchdog clean
 
 help: ## list targets
 	@grep -E '^[a-z-]+:.*## ' $(MAKEFILE_LIST) | sed 's/:[^#]*## /\t/' | awk -F'\t' '{printf "  %-14s %s\n", $$1, $$2}'
 
 toolbox: ## build the pinned tooling image (tagged by content hash; rebuilt only when its inputs change)
 	@docker image inspect $(TOOLBOX) >/dev/null 2>&1 || \
-	  docker build -q $(TOOLBOX_BUILD_ARGS) -f infrastructure/docker/Dockerfile.toolbox -t $(TOOLBOX) .
+	  docker build -q $(TOOLBOX_BUILD_ARGS) -f infrastructure/docker/Dockerfile --target toolbox -t $(TOOLBOX) .
 
 dev: ## LOCAL=1 only: create .venv with the pinned dev tooling
 	python3 -m venv $(VENV) && $(VENV)/bin/pip install -q -r requirements-dev.txt
@@ -87,7 +87,11 @@ review-offline: $(NEED_TOOLBOX) ## review DIFF, rules only, all formats into OUT
 	$(ACR) review --profile offline --diff $(DIFF) --format json,sarif,markdown,legacy --out-dir $(OUT) --stdout markdown
 
 build: ## build the reviewer image
-	docker build -f infrastructure/docker/Dockerfile -t $(IMAGE) --build-arg REVISION=$$(git rev-parse HEAD 2>/dev/null || echo unknown) .
+	docker build -f infrastructure/docker/Dockerfile --target reviewer -t $(IMAGE) --build-arg REVISION=$$(git rev-parse HEAD 2>/dev/null || echo unknown) .
+
+images: ## build every published image locally (base, reviewer, toolbox, fake-runtime) as acr-<target>:local
+	for t in base reviewer toolbox fake-runtime; do \
+	  docker build -q -f infrastructure/docker/Dockerfile --target $$t -t acr-$$t:local . || exit 1; done
 
 up: ## start reviewer + Ollama + model pull, wait for health
 	docker compose --profile model up -d --build --wait
