@@ -56,6 +56,23 @@ Architecture: [overview](docs/architecture/overview.md) · Operations: [runbook]
 [vulnerability baseline](docs/security/vulnerability-baseline.md) · Development: [extending](docs/development/extending.md),
 [implementation log](docs/development/phase-log.md)
 
+## Images
+
+One multi-stage [`Dockerfile`](infrastructure/docker/Dockerfile); derived images are layered on the
+published base digest, so they share its layers. Published to Docker Hub (amd64 + arm64, signed,
+SBOM + provenance) by the [`Images`](.github/workflows/images.yml) workflow: `edge`/`sha-*` from green
+`main`, `X.Y.Z`/`X.Y`/`latest` on release.
+
+| Image | Target | Adds |
+|---|---|---|
+| `munafsheikh/ai-code-reviewers-base` | `base` | python slim, non-root `acr` (10001) |
+| `munafsheikh/ai-code-reviewers` | `reviewer` | application; pip removed |
+| `munafsheikh/ai-code-reviewers-toolbox` | `toolbox` | git + pinned dev tooling |
+| `munafsheikh/ai-code-reviewers-fake-runtime` | `fake-runtime` | deterministic model runtime for e2e |
+
+`make images` builds all four locally. Publishing needs `DOCKERHUB_USERNAME` / `DOCKERHUB_TOKEN`
+secrets (optional `DOCKERHUB_NAMESPACE` variable).
+
 ## CI/CD integrations
 
 | Platform | Adapter |

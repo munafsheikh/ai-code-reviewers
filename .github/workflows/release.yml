@@ -1,5 +1,6 @@
 name: Release
-# Tag vX.Y.Z -> verify -> build multi-arch -> scan (gate) -> SBOM -> push to GHCR -> sign + attest -> GitHub release.
+# Tag vX.Y.Z -> verify -> build multi-arch -> scan (gate) -> SBOM -> push to GHCR -> sign + attest -> GitHub release
+# -> publish all layered images (base, reviewer, toolbox, fake-runtime) to Docker Hub.
 # The `release` environment should require reviewer approval (Settings > Environments).
 on:
   push:
@@ -33,9 +34,10 @@ jobs:
           grep -q "^version = \"$v\"" pyproject.toml
           grep -q "^## \[$v\]" CHANGELOG.md
           echo "version=$v" >> "$GITHUB_OUTPUT"
+      - uses: docker/setup-qemu-action@99012661954931238ded8c8b007157a8430204e1 # v4.4.0
       - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
       - name: Build for scanning (local, amd64)
-        run: docker build -f infrastructure/docker/Dockerfile -t acr-reviewer:release --build-arg VERSION=${{ steps.v.outputs.version }} --build-arg REVISION=$GITHUB_SHA .
+        run: docker build -f infrastructure/docker/Dockerfile --target reviewer -t acr-reviewer:release --build-arg VERSION=${{ steps.v.outputs.version }} --build-arg REVISION=$GITHUB_SHA .
       - name: Vulnerability gate (new critical/high block the release)
         run: infrastructure/scripts/security-scan.sh acr-reviewer:release image
       - name: SBOM
@@ -51,6 +53,7 @@ jobs:
         with:
           context: .
           file: infrastructure/docker/Dockerfile
+          target: reviewer
           platforms: linux/amd64,linux/arm64
           push: true
           provenance: mode=max
@@ -80,3 +83,14 @@ jobs:
           printf '\n**Image:** `%s@%s`\n\nVerify: `cosign verify %s@%s --certificate-identity-regexp "^https://github.com/%s/" --certificate-oidc-issuer https://token.actions.githubusercontent.com`\n' \
             "$IMAGE" "$DIGEST" "$IMAGE" "$DIGEST" "${{ github.repository }}" >> notes.md
           gh release create "$GITHUB_REF_NAME" --title "$GITHUB_REF_NAME" --notes-file notes.md out/security/sbom.cdx.json
+
+  dockerhub:
+    # Runs after the approved `release` environment job; same version, all images.
+    needs: publish
+    permissions:
+      contents: read
+      id-token: write
+    uses: ./.github/workflows/images.yml
+    with:
+      version: ${{ github.ref_name }}
+    secrets: inherit

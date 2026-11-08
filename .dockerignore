@@ -9,6 +9,7 @@ out/
 reports/
 docs/
 tests/
+!tests/support/fake_runtime.py
 infrastructure/
 integrations/
 examples/
