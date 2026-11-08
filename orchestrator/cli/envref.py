@@ -16,6 +16,11 @@ VARIABLES = [
     ("ACR_BIND", "127.0.0.1", "`serve` bind address (compose sets 0.0.0.0 inside the container)."),
     ("ACR_PORT", "8088", "`serve` port."),
     ("ACR_MAX_BODY_BYTES", "2097152", "`serve` maximum request size."),
+    (
+        "ACR_MAX_DRAIN_BYTES",
+        "33554432",
+        "`serve` reads and discards oversized bodies up to this size so clients get HTTP 413; larger ones are cut off.",
+    ),
     ("ACR_MAX_CONCURRENT_REVIEWS", "2", "`serve` concurrent review limit (excess gets HTTP 429)."),
     ("ACR_ALLOWED_PROFILES", "fast,balanced,deep,offline", "Profiles `serve` accepts per request."),
     ("ACR_CLI_COMMAND", "", "argv for the `cli` wrapper when not set in the profile."),

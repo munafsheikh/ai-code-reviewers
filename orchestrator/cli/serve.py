@@ -22,6 +22,9 @@ from orchestrator.engine.review import run_review
 from orchestrator.recovery.audit import Audit
 
 MAX_BODY = int(os.environ.get("ACR_MAX_BODY_BYTES", str(2 * 1024 * 1024)))
+# Oversized bodies are read and discarded up to this cap so the client receives the 413
+# instead of a broken pipe; anything larger is cut off by closing the connection.
+MAX_DRAIN = int(os.environ.get("ACR_MAX_DRAIN_BYTES", str(32 * 1024 * 1024)))
 MAX_CONCURRENT = int(os.environ.get("ACR_MAX_CONCURRENT_REVIEWS", "2"))
 ALLOWED_PROFILES = set(os.environ.get("ACR_ALLOWED_PROFILES", "fast,balanced,deep,offline").split(","))
 
@@ -58,8 +61,18 @@ class Handler(BaseHTTPRequestHandler):
         self.send_header("Content-Type", ctype)
         self.send_header("Content-Length", str(len(data)))
         self.send_header("X-Content-Type-Options", "nosniff")
+        if self.close_connection:
+            self.send_header("Connection", "close")
         self.end_headers()
         self.wfile.write(data)
+
+    def _drain(self, n: int) -> None:
+        remaining = min(n, MAX_DRAIN)
+        while remaining > 0:
+            chunk = self.rfile.read(min(65536, remaining))
+            if not chunk:
+                break
+            remaining -= len(chunk)
 
     def do_GET(self):
         if self.path == "/healthz":
@@ -79,6 +92,9 @@ class Handler(BaseHTTPRequestHandler):
         n = int(self.headers.get("Content-Length") or 0)
         if n <= 0 or n > MAX_BODY:
             _inc(reviews_rejected_total=1)
+            self.close_connection = True
+            if n > MAX_BODY:
+                self._drain(n)
             return self._send(413 if n > MAX_BODY else 400, json.dumps({"error": f"body must be 1..{MAX_BODY} bytes"}))
         raw = self.rfile.read(n).decode("utf-8", errors="replace")
         profile, fmt, diff_text = self.default_profile, "json", raw

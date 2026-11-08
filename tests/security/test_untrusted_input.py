@@ -80,6 +80,8 @@ def test_service_rejects_oversized_and_unknown_profiles(monkeypatch):
 
     try:
         assert post(b"x" * (serve.MAX_BODY + 1)) == 413
+        # Regression: a body several MiB over the limit must still get a 413, not a broken pipe.
+        assert post(b"x" * (serve.MAX_BODY * 4)) == 413
         assert post(json.dumps({"diff": "x", "profile": "../../etc/x"}).encode(), "application/json") == 400
         assert post(json.dumps({"diff": "x", "profile": "legacy"}).encode(), "application/json") == 400
     finally:
