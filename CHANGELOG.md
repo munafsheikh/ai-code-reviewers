@@ -18,6 +18,7 @@ All notable changes are documented here. Format: [Keep a Changelog](https://keep
 - Docker Hub publishing (`Images` workflow): shared base image plus layered reviewer, toolbox and fake-runtime images, multi-arch and signed; `make images`.
 
 ### Changed
+- `Images` workflow passes the base image digest between jobs instead of the full reference (GitHub drops outputs containing a secret value, e.g. a namespace equal to `DOCKERHUB_USERNAME`).
 - Ollama runtime pinned to 0.40.11 (newer model families need it).
 - Single multi-stage Dockerfile replaces `Dockerfile.toolbox`; the toolbox now builds on the slim base (+ git). Compose runs the fake runtime from its own image target.
 - Release builds arm64 under QEMU.

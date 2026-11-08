@@ -75,7 +75,9 @@ jobs:
       contents: read
       id-token: write          # keyless signing
     outputs:
-      ref: ${{ steps.ref.outputs.ref }}
+      # Digest only: GitHub drops job outputs that contain a secret's value, and the
+      # namespace usually equals DOCKERHUB_USERNAME.
+      digest: ${{ steps.push.outputs.digest }}
     env:
       REPO: docker.io/${{ needs.meta.outputs.namespace }}/ai-code-reviewers-base
     steps:
@@ -106,10 +108,8 @@ jobs:
           tags: ${{ steps.tags.outputs.list }}
           cache-from: type=gha,scope=base
           cache-to: type=gha,scope=base,mode=max
-      - id: ref
-        run: echo "ref=$REPO@${{ steps.push.outputs.digest }}" >> "$GITHUB_OUTPUT"
       - uses: sigstore/cosign-installer@756fe2d284c7292c4e9b62c8a28f1e5629c59532 # v4.1.3
-      - run: cosign sign --yes "${{ steps.ref.outputs.ref }}"
+      - run: cosign sign --yes "$REPO@${{ steps.push.outputs.digest }}"
 
   images:
     needs: [meta, base]
@@ -127,8 +127,9 @@ jobs:
           - {target: fake-runtime, repo: ai-code-reviewers-fake-runtime, scan: false}
     env:
       REPO: docker.io/${{ needs.meta.outputs.namespace }}/${{ matrix.repo }}
+      BASE_REF: docker.io/${{ needs.meta.outputs.namespace }}/ai-code-reviewers-base@${{ needs.base.outputs.digest }}
       BUILD_ARGS: |
-        BASE=${{ needs.base.outputs.ref }}
+        BASE=docker.io/${{ needs.meta.outputs.namespace }}/ai-code-reviewers-base@${{ needs.base.outputs.digest }}
         VERSION=${{ needs.meta.outputs.version }}
         REVISION=${{ needs.meta.outputs.revision }}
     steps:
@@ -154,9 +155,13 @@ jobs:
       - name: Vulnerability gate (new critical/high block the push)
         if: matrix.scan
         run: infrastructure/scripts/security-scan.sh acr-${{ matrix.target }}:scan image
+      - name: Base digest must be known
+        run: |
+          [[ "${{ needs.base.outputs.digest }}" =~ ^sha256:[0-9a-f]{64}$ ]] || { echo "::error::base digest missing"; exit 1; }
+          echo "building on $BASE_REF"
       - id: tags
         run: printf 'list<<EOF\n%s\nEOF\n' "$(for t in ${{ needs.meta.outputs.tags }}; do echo "$REPO:$t"; done)" >> "$GITHUB_OUTPUT"
-      - name: Build and push ${{ matrix.target }} on base ${{ needs.base.outputs.ref }}
+      - name: Build and push ${{ matrix.target }}
         id: push
         uses: docker/build-push-action@c3c9e263c25d99ce0380d002d59b67737d91b0dc # v7.4.0
         with:
@@ -173,4 +178,4 @@ jobs:
           cache-to: type=gha,scope=${{ matrix.target }},mode=max
       - uses: sigstore/cosign-installer@756fe2d284c7292c4e9b62c8a28f1e5629c59532 # v4.1.3
       - run: cosign sign --yes "$REPO@${{ steps.push.outputs.digest }}"
-      - run: echo "- \`$REPO@${{ steps.push.outputs.digest }}\` (base \`${{ needs.base.outputs.ref }}\`)" >> "$GITHUB_STEP_SUMMARY"
+      - run: echo "- \`$REPO@${{ steps.push.outputs.digest }}\` (base \`$BASE_REF\`)" >> "$GITHUB_STEP_SUMMARY"
