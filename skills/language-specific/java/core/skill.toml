@@ -1,0 +1,46 @@
+id = "lang.java.core"
+version = "1.0.0"
+interface = "acr.skill/v1"
+category = "code-quality"
+description = "Java resource safety, null-safety and concurrency (structured successor of the first-pass gate)."
+languages = ["java"]
+file_globs = ["*.java"]
+tier = "small"
+
+[prompt]
+file = "prompt.md"
+output = "findings-json"
+
+[[rules]]
+id = "JAVA-001"
+title = "Closeable opened outside try-with-resources"
+severity = "major"
+confidence = "medium"
+pattern = '\b(?:new\s+(?:FileInputStream|FileOutputStream|FileReader|FileWriter|BufferedReader|BufferedWriter|RandomAccessFile|Scanner\s*\(\s*new\s+File)|DriverManager\.getConnection|\.getConnection\(\)|Files\.(?:newBufferedReader|newInputStream|lines|list|walk)\s*\()'
+unless = 'try\s*\(|return\s|\)\)\s*\{\s*$'   # last resource of a multi-line try-with-resources
+explanation = "The resource is not closed on every path, which leaks file handles or connections."
+remediation = "Open it in a try-with-resources statement."
+examples.match = ['FileInputStream in = new FileInputStream(path);', 'Connection c = DriverManager.getConnection(url);', 'Stream<String> s = Files.lines(p);']
+examples.no_match = ['try (FileInputStream in = new FileInputStream(path)) {', 'return dataSource.getConnection();', '     BufferedReader r = new BufferedReader(isr)) {']
+
+[[rules]]
+id = "JAVA-002"
+title = "Optional.get() without presence check"
+severity = "minor"
+confidence = "low"
+pattern = '\.(?:findFirst|findAny|max|min)\(\)[^;]*\.get\(\)'
+explanation = "Calling get() on an empty Optional throws NoSuchElementException."
+remediation = "Use orElse/orElseThrow with a meaningful exception, or ifPresent."
+examples.match = ["var u = users.stream().findFirst().get();"]
+examples.no_match = ["users.stream().findFirst().orElseThrow();"]
+
+[[rules]]
+id = "JAVA-003"
+title = "String compared with =="
+severity = "major"
+confidence = "medium"
+pattern = '''(?:"[^"]*"\s*[!=]=\s*\w|\w\s*[!=]=\s*"[^"]*")'''
+explanation = "== compares references, not contents; equal strings may compare unequal."
+remediation = "Use equals() (or Objects.equals for nullable values)."
+examples.match = ['if (status == "OK") {', 'if ("x" != name)']
+examples.no_match = ['if ("OK".equals(status)) {', "if (count == 0)"]

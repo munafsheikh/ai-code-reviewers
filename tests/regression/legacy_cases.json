@@ -1,0 +1,13 @@
+[
+  {"name": "clean", "response": "SEVERITY: NONE\nSUMMARY: looks fine"},
+  {"name": "minor", "response": "SEVERITY: MINOR\nSUMMARY: naming nit\nISSUES:\n- A.java:3 rename variable"},
+  {"name": "block", "response": "SEVERITY: BLOCK\nSUMMARY: resource leak\nISSUES:\n- A.java:10 stream never closed"},
+  {"name": "block_lowercase", "response": "severity: block\nsummary: leak"},
+  {"name": "block_decorated", "response": "Here is my review.\n  SEVERITY: **BLOCK**\nSUMMARY: injection"},
+  {"name": "unparseable_fails_open", "response": "I think this code is dangerous and must be blocked."},
+  {"name": "unknown_value_is_none", "response": "SEVERITY: HIGH\nSUMMARY: ?"},
+  {"name": "first_severity_wins", "response": "SEVERITY: MINOR\nSEVERITY: BLOCK"},
+  {"name": "empty_diff", "diff": "   \n", "response": "SEVERITY: BLOCK"},
+  {"name": "no_model", "model": "", "response": "SEVERITY: BLOCK"},
+  {"name": "runtime_unreachable", "host": "http://127.0.0.1:9", "response": "SEVERITY: BLOCK"}
+]

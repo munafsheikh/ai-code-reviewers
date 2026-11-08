@@ -1,0 +1,35 @@
+diff --git a/src/main/java/app/OrderDao.java b/src/main/java/app/OrderDao.java
+index e89e0a0..9a191dc 100644
+--- a/src/main/java/app/OrderDao.java
++++ b/src/main/java/app/OrderDao.java
+@@ -1,4 +1,30 @@
+ package app;
+ 
++import java.nio.file.*;
++import java.sql.*;
++
+ public class OrderDao {
++    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(OrderDao.class);
++
++    public Order find(Connection conn, long id) throws SQLException {
++        try (PreparedStatement ps = conn.prepareStatement("SELECT * FROM orders WHERE id = ?")) {
++            ps.setLong(1, id);
++            try (ResultSet rs = ps.executeQuery()) {
++                return rs.next() ? map(rs) : null;
++            }
++        }
++    }
++
++    public String read(Path p) {
++        try (var r = Files.newBufferedReader(p)) {
++            return r.readLine();
++        } catch (java.io.IOException e) {
++            log.warn("cannot read {}", p, e);
++            throw new IllegalStateException(e);
++        }
++    }
++
++    boolean isOpen(String status) {
++        return "OPEN".equals(status);
++    }
+ }

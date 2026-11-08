@@ -1,0 +1,2 @@
+description = "Python service change: shell injection, pickle, disabled TLS, swallowed exception, mutable default."
+expected_gate = "block"

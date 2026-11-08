@@ -1,0 +1,11 @@
+id = "example-echo"
+interface = "acr.wrapper/v1"
+version = "1.0.0"
+description = "Reference wrapper for contributors and contract tests: always returns no findings."
+entrypoint = "adapter.py:EchoAdapter"
+license = "MIT"
+
+[permissions]
+network = "none"
+subprocess = false
+filesystem = "none"

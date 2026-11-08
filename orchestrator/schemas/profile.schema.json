@@ -1,0 +1,29 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "acr.profile/v1",
+  "title": "Execution profile (profiles/<id>/profile.toml, after `extends` is resolved)",
+  "type": "object",
+  "required": ["id", "description", "policy", "skills", "runtime", "routing", "budget", "retry", "circuit", "cache"],
+  "properties": {
+    "id": {"type": "string"},
+    "description": {"type": "string"},
+    "mode": {"enum": ["standard", "legacy"]},
+    "policy": {"type": "string"},
+    "skills": {"type": "array", "items": {"type": "string"}},
+    "rules": {"type": "object", "properties": {"enabled": {"type": "boolean"}}},
+    "runtime": {"type": "object", "required": ["wrapper"], "properties": {"wrapper": {"type": "string"}, "base_url": {"type": "string"}, "auto_pull": {"type": "boolean"}}},
+    "routing": {"type": "object", "required": ["tiers"], "properties": {
+      "tiers": {"type": "array", "items": {"enum": ["small", "large"]}},
+      "small_model": {"type": "string"}, "large_model": {"type": "string"},
+      "fallback": {"type": "array", "items": {"enum": ["small", "rules"]}}}},
+    "generation": {"type": "object"},
+    "budget": {"type": "object", "required": ["max_model_calls", "call_timeout_s", "review_timeout_s", "max_diff_chars"], "properties": {
+      "max_files": {"type": "integer", "minimum": 1}, "max_diff_chars": {"type": "integer", "minimum": 1000},
+      "max_model_calls": {"type": "integer", "minimum": 0}, "call_timeout_s": {"type": "number", "minimum": 1},
+      "review_timeout_s": {"type": "number", "minimum": 1}, "memory_budget_mb": {"type": "integer", "minimum": 0},
+      "concurrency": {"type": "integer", "minimum": 1}}},
+    "retry": {"type": "object", "required": ["attempts"], "properties": {"attempts": {"type": "integer", "minimum": 1}}},
+    "circuit": {"type": "object", "required": ["failure_threshold", "cooldown_s"]},
+    "cache": {"type": "object", "required": ["enabled"]}
+  }
+}

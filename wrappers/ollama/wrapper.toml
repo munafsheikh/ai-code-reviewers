@@ -1,0 +1,14 @@
+id = "ollama"
+interface = "acr.wrapper/v1"
+version = "1.0.0"
+description = "Ollama HTTP API (/api/generate, /api/chat, /api/tags, /api/pull)."
+entrypoint = "adapter.py:OllamaAdapter"
+license = "MIT"
+
+[permissions]
+network = "allowlist"   # only hosts in ACR_ALLOWED_HOSTS / loopback / compose service names
+subprocess = false
+filesystem = "none"
+
+[defaults]
+base_url = "http://llm-runtime:11434"

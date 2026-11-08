@@ -1,0 +1,29 @@
+{
+  "findings": [
+    {
+      "path": "svc/jobs.py",
+      "line": 8,
+      "rule_id": "PY-001"
+    },
+    {
+      "path": "svc/jobs.py",
+      "line": 9,
+      "rule_id": "INJ-003"
+    },
+    {
+      "path": "svc/jobs.py",
+      "line": 13,
+      "rule_id": "INJ-005"
+    },
+    {
+      "path": "svc/jobs.py",
+      "line": 18,
+      "rule_id": "INJ-004"
+    },
+    {
+      "path": "svc/jobs.py",
+      "line": 19,
+      "rule_id": "ERR-001"
+    }
+  ]
+}

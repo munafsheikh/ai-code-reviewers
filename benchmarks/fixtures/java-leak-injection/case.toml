@@ -1,0 +1,2 @@
+description = "Firefly-style Java DAO change: resource leak, SQL concatenation, swallowed exception, hardcoded password."
+expected_gate = "block"

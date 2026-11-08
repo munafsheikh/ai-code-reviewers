@@ -1,0 +1,14 @@
+id = "llama-cpp"
+interface = "acr.wrapper/v1"
+version = "1.0.0"
+description = "llama.cpp server (OpenAI-compatible /v1/chat/completions). Also fits vLLM, LocalAI, LM Studio."
+entrypoint = "adapter.py:LlamaCppAdapter"
+license = "MIT"
+
+[permissions]
+network = "allowlist"
+subprocess = false
+filesystem = "none"
+
+[defaults]
+base_url = "http://llm-runtime:8080"

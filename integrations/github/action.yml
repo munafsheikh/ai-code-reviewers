@@ -1,0 +1,157 @@
+name: AI code review (ai-code-reviewers)
+description: Offline review of the pull-request diff with rules + a local model. Posts a PR comment, uploads SARIF, enforces the gate.
+author: munafsheikh
+branding: {icon: check-circle, color: blue}
+
+inputs:
+  profile:
+    description: fast | balanced | deep | offline | legacy
+    default: balanced
+  policy:
+    description: Review policy id (default from profile)
+    default: ''
+  base-ref:
+    description: Base ref to diff against (default the PR base)
+    default: ''
+  paths:
+    description: Space-separated git pathspecs to limit the diff (e.g. "*.java")
+    default: ''
+  model:
+    description: Small-tier model (registry id or runtime ref). Empty = profile default.
+    default: ''
+  pull-models:
+    description: Space-separated runtime refs to pull into the model runtime
+    default: qwen2.5-coder:1.5b
+  runtime-image:
+    description: Model runtime image. Empty = no runtime (review degrades to rules-only unless profile is offline).
+    default: ollama/ollama:0.12.6@sha256:a61a8fd395dbb931cc8cb1b5da7a2510746575c87113fdc45b647ee59ef7f808
+  image:
+    description: Reviewer image. Empty = build from this action's source (pinned by the ref you use).
+    default: ''
+  comment:
+    description: Upsert a PR comment with the Markdown report
+    default: 'true'
+  enforce:
+    description: Fail the job when the gate blocks
+    default: 'true'
+  output-dir:
+    description: Where review.{json,sarif,md,txt} are written
+    default: acr-review
+
+outputs:
+  gate:
+    description: pass | warn | block | error
+    value: ${{ steps.review.outputs.gate }}
+  exit-code:
+    description: 0 pass/warn, 1 block, 2 error
+    value: ${{ steps.review.outputs.exit_code }}
+  sarif:
+    description: Path to the SARIF report
+    value: ${{ inputs.output-dir }}/review.sarif
+
+runs:
+  using: composite
+  steps:
+    - name: Compute diff
+      shell: bash
+      env:
+        BASE: ${{ inputs.base-ref || github.event.pull_request.base.ref || github.event.repository.default_branch }}
+        PATHS: ${{ inputs.paths }}
+      run: |
+        set -euo pipefail
+        git fetch --no-tags --depth=200 origin "$BASE"
+        read -r -a specs <<< "$PATHS"
+        git -c core.fsmonitor=false diff --no-color --no-ext-diff --no-textconv "origin/$BASE...HEAD" -- "${specs[@]}" > "$RUNNER_TEMP/acr.diff"
+        echo "diff lines: $(wc -l < "$RUNNER_TEMP/acr.diff")"
+
+    - name: Prepare reviewer image
+      id: image
+      shell: bash
+      env:
+        IMAGE: ${{ inputs.image }}
+      run: |
+        set -euo pipefail
+        if [ -z "$IMAGE" ]; then
+          IMAGE="acr-reviewer:action-$(git -C "$GITHUB_ACTION_PATH" rev-parse --short HEAD 2>/dev/null || echo local)"
+          docker build -q -f "$GITHUB_ACTION_PATH/../../infrastructure/docker/Dockerfile" -t "$IMAGE" "$GITHUB_ACTION_PATH/../.."
+        else
+          docker pull -q "$IMAGE"
+        fi
+        echo "image=$IMAGE" >> "$GITHUB_OUTPUT"
+
+    - name: Start model runtime
+      if: inputs.runtime-image != '' && inputs.profile != 'offline'
+      shell: bash
+      env:
+        RUNTIME_IMAGE: ${{ inputs.runtime-image }}
+        MODELS: ${{ inputs.pull-models }}
+      run: |
+        set -euo pipefail
+        docker network create acr-net >/dev/null 2>&1 || true
+        docker run -d --name llm-runtime --network acr-net -v acr-models:/root/.ollama "$RUNTIME_IMAGE" >/dev/null
+        for i in $(seq 1 30); do docker exec llm-runtime ollama list >/dev/null 2>&1 && break; sleep 2; done
+        for m in $MODELS; do
+          for attempt in 1 2 3; do docker exec llm-runtime ollama pull "$m" && break || sleep $((attempt * 5)); done
+        done
+        docker exec llm-runtime ollama list
+
+    - name: Review
+      id: review
+      shell: bash
+      env:
+        IMAGE: ${{ steps.image.outputs.image }}
+        PROFILE: ${{ inputs.profile }}
+        POLICY: ${{ inputs.policy }}
+        MODEL: ${{ inputs.model }}
+        OUT: ${{ inputs.output-dir }}
+      run: |
+        set +e -uo pipefail   # composite steps run with bash -e; the exit code is handled below
+        mkdir -p "$OUT" && chmod 0777 "$OUT"
+        net=(); docker network inspect acr-net >/dev/null 2>&1 && net=(--network acr-net)
+        args=(review --profile "$PROFILE" --format json,sarif,markdown,legacy --out-dir /out --stdout markdown -v
+              --revision "$GITHUB_SHA" --repository "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY")
+        [ -n "$POLICY" ] && args+=(--policy "$POLICY")
+        [ -n "$MODEL" ] && args+=(--model "$MODEL")
+        docker run --rm -i "${net[@]}" --read-only --cap-drop ALL --security-opt no-new-privileges:true \
+          --tmpfs /tmp -v "$PWD/$OUT:/out" -e ACR_MODEL_HOST=http://llm-runtime:11434 \
+          -e LLM_MODEL="${LLM_MODEL:-}" "$IMAGE" "${args[@]}" < "$RUNNER_TEMP/acr.diff" 2> "$OUT/review.log"
+        code=$?
+        cat "$OUT/review.log" >&2
+        gate=$(docker run --rm -i --entrypoint python "$IMAGE" -c 'import json,sys; print(json.load(sys.stdin)["gate"]["status"])' < "$OUT/review.json" 2>/dev/null || echo error)
+        echo "exit_code=$code" >> "$GITHUB_OUTPUT"
+        echo "gate=$gate" >> "$GITHUB_OUTPUT"
+        [ -f "$OUT/review.md" ] && cat "$OUT/review.md" >> "$GITHUB_STEP_SUMMARY"
+        exit 0
+
+    - name: Comment on PR
+      if: inputs.comment == 'true' && github.event.pull_request.number
+      uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+      env:
+        REPORT: ${{ inputs.output-dir }}/review.md
+      with:
+        script: |
+          const fs = require('fs');
+          const marker = '<!-- acr-review -->';
+          const report = fs.existsSync(process.env.REPORT) ? fs.readFileSync(process.env.REPORT, 'utf8') : 'Review did not produce a report; see job logs.';
+          const body = `${marker}\n${report}`.slice(0, 65000);
+          const { owner, repo } = context.repo;
+          const issue_number = context.issue.number;
+          const comments = await github.paginate(github.rest.issues.listComments, { owner, repo, issue_number });
+          const existing = comments.find(c => c.body && c.body.includes(marker));
+          if (existing) await github.rest.issues.updateComment({ owner, repo, comment_id: existing.id, body });
+          else await github.rest.issues.createComment({ owner, repo, issue_number, body });
+
+    - name: Stop model runtime
+      if: always()
+      shell: bash
+      run: docker rm -f llm-runtime >/dev/null 2>&1 || true
+
+    - name: Enforce gate
+      if: inputs.enforce == 'true' && steps.review.outputs.exit_code != '0'
+      shell: bash
+      env:
+        CODE: ${{ steps.review.outputs.exit_code }}
+        GATE: ${{ steps.review.outputs.gate }}
+      run: |
+        echo "::error::AI review gate: $GATE (exit $CODE). See the PR comment / job summary."
+        exit "$CODE"

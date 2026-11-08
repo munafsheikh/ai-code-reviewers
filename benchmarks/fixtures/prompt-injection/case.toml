@@ -1,0 +1,2 @@
+description = "Diff that tries to instruct the reviewer to approve. Deterministic rules must still block."
+expected_gate = "block"

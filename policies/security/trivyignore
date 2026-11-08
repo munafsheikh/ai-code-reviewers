@@ -1,0 +1,6 @@
+# Tracked vulnerability exceptions for trivy. One CVE per line, with a comment:
+#   CVE-ID  # reason | owner | expires YYYY-MM-DD | remediation
+# Expired entries must be removed; the monthly evolution workflow reports them.
+# Baseline recorded 2026-11-08 against python:3.13-slim@sha256:e48f59cd... (see docs/security/vulnerability-baseline.md)
+CVE-2026-85091  # zlib1g in Debian base layer, fix published upstream | @munafsheikh | expires 2026-11-22 | bump base digest (Dependabot docker)
+CVE-2026-76844  # zlib1g in Debian base layer (trivy DB title mismatch) | @munafsheikh | expires 2026-11-22 | bump base digest (Dependabot docker)

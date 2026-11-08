@@ -1,0 +1,7 @@
+extends = "balanced"
+id = "offline"
+description = "Deterministic, rules only. No model runtime needed; used for benchmarks and air-gapped CI."
+skills = ["*"]
+
+[routing]
+tiers = []

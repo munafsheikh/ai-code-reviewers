@@ -1,0 +1,18 @@
+# Thresholds enforced by `acr bench --gate --profile <id>`.
+# Rules-only results are deterministic, so the offline gate is strict.
+# Model profiles are probabilistic; thresholds start loose and tighten as evidence accumulates.
+
+[offline]
+min_precision = 1.0
+min_recall = 1.0
+min_gate_accuracy = 1.0
+min_stability_min = 1.0
+
+[balanced]
+min_precision = 0.6
+min_recall = 1.0          # rules guarantee the recall floor; models may only add findings
+min_gate_accuracy = 0.85
+min_stability_min = 0.8
+
+[default]
+min_recall = 1.0

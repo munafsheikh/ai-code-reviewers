@@ -1,0 +1,13 @@
+id = "performance.deep"
+version = "1.0.0"
+interface = "acr.skill/v1"
+category = "performance"
+description = "Model-driven performance review (N+1 queries, blocking I/O, quadratic work)."
+languages = ["*"]
+file_globs = ["*"]
+exclude_globs = ["*.md", "*.txt", "docs/*"]
+tier = "large"
+
+[prompt]
+file = "prompt.md"
+output = "findings-json"

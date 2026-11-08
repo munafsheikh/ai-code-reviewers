@@ -1,0 +1,43 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "acr.skill/v1",
+  "title": "Skill manifest (skills/**/skill.toml)",
+  "type": "object",
+  "required": ["id", "version", "interface", "category", "description", "tier"],
+  "additionalProperties": false,
+  "properties": {
+    "id": {"type": "string", "pattern": "^[a-z0-9-]+(\\.[a-z0-9-]+)+$"},
+    "version": {"type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$"},
+    "interface": {"enum": ["acr.skill/v1"]},
+    "category": {"enum": ["security", "code-quality", "architecture", "performance", "maintainability", "testing"]},
+    "description": {"type": "string"},
+    "languages": {"type": "array", "items": {"type": "string"}},
+    "file_globs": {"type": "array", "items": {"type": "string"}},
+    "exclude_globs": {"type": "array", "items": {"type": "string"}},
+    "tier": {"enum": ["none", "small", "large"], "description": "Model tier for the prompt part; none = rules only."},
+    "prompt": {
+      "type": "object", "required": ["file", "output"], "additionalProperties": false,
+      "properties": {"file": {"type": "string"}, "output": {"enum": ["findings-json", "legacy-severity"]}}
+    },
+    "rules": {"type": "array", "items": {
+      "type": "object",
+      "required": ["id", "title", "severity", "confidence", "pattern", "explanation", "remediation", "examples"],
+      "additionalProperties": false,
+      "properties": {
+        "id": {"type": "string", "pattern": "^[A-Z]+-\\d{3}$"},
+        "title": {"type": "string"},
+        "severity": {"enum": ["info", "minor", "major", "critical"]},
+        "confidence": {"enum": ["low", "medium", "high"]},
+        "pattern": {"type": "string"},
+        "unless": {"type": "string"},
+        "scope": {"enum": ["line", "block"], "description": "line (default) or block = consecutive added lines, for multi-line patterns."},
+        "languages": {"type": "array", "items": {"type": "string"}},
+        "explanation": {"type": "string"},
+        "remediation": {"type": "string"},
+        "examples": {"type": "object", "required": ["match", "no_match"], "properties": {
+          "match": {"type": "array", "items": {"type": "string"}},
+          "no_match": {"type": "array", "items": {"type": "string"}}}}
+      }
+    }}
+  }
+}

@@ -1,0 +1,20 @@
+# syntax=docker/dockerfile:1.7@sha256:a57df69d0ea827fb7266491f2813635de6f17269be881f696fbfdf2d83dda33e
+# Developer/CI toolbox: every repository tool (validate, lint, tests, docs, benchmarks,
+# supply-chain checks) runs in this image, so the only host requirement is Docker.
+# The full python image already ships git (needed by tests), so there is no apt step.
+ARG PYTHON_IMAGE=python:3.13@sha256:ecbe213fb818d557fd19db4078244339e2e2e52874f9c81052d3094ea114d797
+FROM ${PYTHON_IMAGE}
+ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1 PIP_DISABLE_PIP_VERSION_CHECK=1 PIP_NO_CACHE_DIR=1 \
+    HOME=/tmp RUFF_CACHE_DIR=/tmp/.ruff_cache
+COPY requirements-dev.txt /tmp/requirements-dev.txt
+# Optional corporate CA for TLS-intercepting proxies: `--secret id=ca,src=/path/ca.crt`
+# (used only during the build, never stored in a layer). Proxies: `--build-arg HTTPS_PROXY=...`.
+RUN --mount=type=secret,id=ca,required=false \
+    if [ -f /run/secrets/ca ]; then export PIP_CERT=/run/secrets/ca; fi \
+ && pip install -q -r /tmp/requirements-dev.txt \
+ && git config --system --add safe.directory /src \
+ && groupadd --system --gid 10001 acr \
+ && useradd --system --uid 10001 --gid acr --home-dir /tmp --shell /usr/sbin/nologin acr
+# Non-root by default; `make` additionally runs it as the invoking host uid:gid.
+USER 10001:10001
+WORKDIR /src

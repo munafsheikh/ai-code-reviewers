@@ -1,0 +1,2 @@
+description = "Idioms found in real code: multi-line try-with-resources and explicitly ignored exceptions. Expect no findings."
+expected_gate = "pass"

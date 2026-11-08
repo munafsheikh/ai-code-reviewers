@@ -1,0 +1,24 @@
+{
+  "findings": [
+    {
+      "path": "web/render.js",
+      "line": 2,
+      "rule_id": "JS-001"
+    },
+    {
+      "path": "web/render.js",
+      "line": 6,
+      "rule_id": "MNT-001"
+    },
+    {
+      "path": "web/render.js",
+      "line": 7,
+      "rule_id": "INJ-002"
+    },
+    {
+      "path": "web/render.test.js",
+      "line": 3,
+      "rule_id": "TST-001"
+    }
+  ]
+}

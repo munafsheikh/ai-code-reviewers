@@ -1,0 +1,15 @@
+# Extracted verbatim from Firefly tools/review-gate/ReviewGate.java (SYSTEM_PROMPT).
+# Used by the `legacy` profile, whose output and exit codes are regression-tested
+# against tests/regression/legacy_gate_golden.json.
+id = "lang.java.first-pass-gate"
+version = "1.0.0"
+interface = "acr.skill/v1"
+category = "code-quality"
+description = "Firefly-compatible first-pass Java gate (SEVERITY: NONE|MINOR|BLOCK text protocol)."
+languages = ["java"]
+file_globs = ["*.java"]
+tier = "small"
+
+[prompt]
+file = "prompt.md"
+output = "legacy-severity"

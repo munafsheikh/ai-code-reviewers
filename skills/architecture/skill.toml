@@ -1,0 +1,13 @@
+id = "architecture.design"
+version = "1.0.0"
+interface = "acr.skill/v1"
+category = "architecture"
+description = "Model-driven design review: layering, coupling, error boundaries, API contracts."
+languages = ["*"]
+file_globs = ["*"]
+exclude_globs = ["*.md", "*.txt", "*.lock"]
+tier = "large"
+
+[prompt]
+file = "prompt.md"
+output = "findings-json"

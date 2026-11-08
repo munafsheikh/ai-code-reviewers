@@ -1,0 +1,45 @@
+# Azure DevOps template: same container, same exit codes as the GitHub adapter.
+# Use from a consumer pipeline:
+#   resources: {repositories: [{repository: acr, type: github, name: munafsheikh/ai-code-reviewers, ref: refs/tags/v0.1.0, endpoint: github}]}
+#   steps: [{template: integrations/azure-devops/azure-pipelines.yml@acr, parameters: {profile: balanced}}]
+parameters:
+  - name: profile
+    type: string
+    default: balanced
+  - name: image
+    type: string
+    default: ghcr.io/munafsheikh/ai-code-reviewers:0.1.0
+  - name: runtimeImage
+    type: string
+    default: ollama/ollama:0.12.6@sha256:a61a8fd395dbb931cc8cb1b5da7a2510746575c87113fdc45b647ee59ef7f808
+  - name: pullModels
+    type: string
+    default: qwen2.5-coder:1.5b
+
+steps:
+  - checkout: self
+    fetchDepth: 0
+  - bash: |
+      set -euo pipefail
+      BASE="${SYSTEM_PULLREQUEST_TARGETBRANCH:-refs/heads/main}"; BASE="${BASE#refs/heads/}"
+      git fetch --no-tags origin "$BASE"
+      git -c core.fsmonitor=false diff --no-color --no-ext-diff --no-textconv "origin/$BASE...HEAD" > "$(Agent.TempDirectory)/acr.diff"
+      if [ "${{ parameters.profile }}" != "offline" ]; then
+        docker network create acr-net >/dev/null 2>&1 || true
+        docker run -d --name llm-runtime --network acr-net "${{ parameters.runtimeImage }}"
+        for i in $(seq 1 30); do docker exec llm-runtime ollama list >/dev/null 2>&1 && break; sleep 2; done
+        for m in ${{ parameters.pullModels }}; do docker exec llm-runtime ollama pull "$m" || true; done
+        NET="--network acr-net"
+      fi
+      mkdir -p acr-review && chmod 0777 acr-review
+      set +e
+      docker run --rm -i ${NET:-} --read-only --cap-drop ALL -v "$PWD/acr-review:/out" -e ACR_MODEL_HOST=http://llm-runtime:11434 \
+        "${{ parameters.image }}" review --profile "${{ parameters.profile }}" --format json,sarif,markdown,legacy \
+        --out-dir /out --stdout markdown --revision "$(Build.SourceVersion)" < "$(Agent.TempDirectory)/acr.diff"
+      code=$?
+      docker rm -f llm-runtime >/dev/null 2>&1
+      exit $code
+    displayName: AI code review
+  - task: PublishBuildArtifacts@1
+    condition: always()
+    inputs: {PathtoPublish: acr-review, ArtifactName: acr-review}

@@ -1,0 +1,20 @@
+diff --git a/svc/util.py b/svc/util.py
+index 8b13789..d03309c 100644
+--- a/svc/util.py
++++ b/svc/util.py
+@@ -1 +1,15 @@
++import json
++import subprocess
++from pathlib import Path
+ 
++
++def load(path: Path, defaults: dict | None = None) -> dict:
++    data = dict(defaults or {})
++    with path.open(encoding="utf-8") as fh:
++        data.update(json.load(fh))
++    return data
++
++
++def git_rev(repo: Path) -> str:
++    out = subprocess.run(["git", "-C", str(repo), "rev-parse", "HEAD"], capture_output=True, text=True, check=True)
++    return out.stdout.strip()

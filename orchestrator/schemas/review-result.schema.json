@@ -1,0 +1,318 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "acr.result/v1",
+  "title": "Review result",
+  "type": "object",
+  "required": [
+    "schema",
+    "tool",
+    "run",
+    "findings",
+    "summary",
+    "gate"
+  ],
+  "properties": {
+    "schema": {
+      "enum": [
+        "acr.result/v1"
+      ]
+    },
+    "tool": {
+      "type": "object",
+      "required": [
+        "name",
+        "version"
+      ]
+    },
+    "run": {
+      "type": "object",
+      "required": [
+        "id",
+        "started_at",
+        "duration_ms",
+        "profile",
+        "policy",
+        "source",
+        "skills",
+        "models",
+        "routing",
+        "calls",
+        "degraded",
+        "infrastructure_errors",
+        "recovery_events"
+      ],
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "started_at": {
+          "type": "string"
+        },
+        "duration_ms": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "profile": {
+          "type": "string"
+        },
+        "policy": {
+          "type": "object",
+          "required": [
+            "id",
+            "version"
+          ]
+        },
+        "revision": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "repository": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "source": {
+          "type": "object",
+          "required": [
+            "files_reviewed",
+            "files_skipped",
+            "added_lines"
+          ]
+        },
+        "skills": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "id",
+              "version"
+            ]
+          }
+        },
+        "models": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "id",
+              "ref",
+              "tier",
+              "status",
+              "license"
+            ]
+          }
+        },
+        "routing": {
+          "type": "array"
+        },
+        "calls": {
+          "type": "object",
+          "required": [
+            "total",
+            "cached",
+            "failed"
+          ]
+        },
+        "degraded": {
+          "type": "boolean"
+        },
+        "infrastructure_errors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "recovery_events": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "ts",
+              "action"
+            ]
+          }
+        }
+      }
+    },
+    "findings": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/finding"
+      }
+    },
+    "summary": {
+      "type": "object",
+      "required": [
+        "total",
+        "by_severity",
+        "by_source",
+        "verified"
+      ]
+    },
+    "gate": {
+      "type": "object",
+      "required": [
+        "status",
+        "exit_code",
+        "legacy_severity",
+        "reasons"
+      ],
+      "properties": {
+        "status": {
+          "enum": [
+            "pass",
+            "warn",
+            "block",
+            "error"
+          ]
+        },
+        "exit_code": {
+          "enum": [
+            0,
+            1,
+            2
+          ]
+        },
+        "legacy_severity": {
+          "enum": [
+            "NONE",
+            "MINOR",
+            "BLOCK"
+          ]
+        },
+        "reasons": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  },
+  "definitions": {
+    "finding": {
+      "title": "Review finding",
+      "type": "object",
+      "required": [
+        "rule_id",
+        "skill",
+        "title",
+        "severity",
+        "category",
+        "location",
+        "explanation",
+        "evidence",
+        "remediation",
+        "confidence",
+        "kind",
+        "source",
+        "fingerprint"
+      ],
+      "properties": {
+        "rule_id": {
+          "type": "string",
+          "description": "Rule id (rule findings) or model.<skill> (model findings)."
+        },
+        "skill": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "severity": {
+          "enum": [
+            "info",
+            "minor",
+            "major",
+            "critical"
+          ]
+        },
+        "category": {
+          "type": "string"
+        },
+        "location": {
+          "type": "object",
+          "required": [
+            "path",
+            "start_line",
+            "verified"
+          ],
+          "properties": {
+            "path": {
+              "type": "string"
+            },
+            "start_line": {
+              "type": "integer",
+              "minimum": 1
+            },
+            "end_line": {
+              "type": [
+                "integer",
+                "null"
+              ]
+            },
+            "verified": {
+              "type": "boolean",
+              "description": "False when a model cited a line outside the changed hunks."
+            }
+          }
+        },
+        "explanation": {
+          "type": "string"
+        },
+        "evidence": {
+          "type": "string",
+          "description": "Quoted code, secrets redacted."
+        },
+        "remediation": {
+          "type": "string"
+        },
+        "confidence": {
+          "enum": [
+            "low",
+            "medium",
+            "high"
+          ]
+        },
+        "kind": {
+          "enum": [
+            "verified",
+            "hypothesis"
+          ],
+          "description": "verified = deterministic high-confidence rule match; hypothesis = everything else."
+        },
+        "source": {
+          "enum": [
+            "rule",
+            "model"
+          ]
+        },
+        "model": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "corroborated_by": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "suppressed": {
+          "type": [
+            "object",
+            "null"
+          ]
+        },
+        "fingerprint": {
+          "type": "string",
+          "pattern": "^[0-9a-f]{16}$"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,2 @@
+description = "Frontend change: innerHTML sink, eval, debugger statement and a focused test left in."
+expected_gate = "block"

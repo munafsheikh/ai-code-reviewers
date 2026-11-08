@@ -1,0 +1,2 @@
+description = "Configuration change committing a private key, an AWS key id and a GitHub token."
+expected_gate = "block"

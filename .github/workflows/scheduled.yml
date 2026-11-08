@@ -1,0 +1,109 @@
+name: Scheduled
+# Daily: quick regression, dependency + security checks, docs validation.
+# Weekly: model evaluation, benchmark stability, resilience (fault-injection) tests.
+# Monthly: evidence-based improvement proposal (issue), policy/architecture drift report.
+# Failures open a reproducible issue. Heavy jobs only run on their own cadence.
+on:
+  schedule:
+    - cron: "23 4 * * *"      # daily
+    - cron: "11 5 * * 0"      # weekly (Sunday)
+    - cron: "37 6 1 * *"      # monthly (1st)
+  workflow_dispatch:
+    inputs:
+      cadence:
+        type: choice
+        options: [daily, weekly, monthly]
+        default: daily
+
+permissions:
+  contents: read
+
+jobs:
+  plan:
+    runs-on: ubuntu-latest
+    outputs:
+      cadence: ${{ steps.c.outputs.cadence }}
+    steps:
+      - id: c
+        run: |
+          case "${{ github.event.schedule }}" in
+            "11 5 * * 0") c=weekly ;; "37 6 1 * *") c=monthly ;; "") c="${{ inputs.cadence }}" ;; *) c=daily ;;
+          esac
+          echo "cadence=$c" >> "$GITHUB_OUTPUT"
+
+  daily:
+    needs: plan
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - run: make validate
+      - name: Quick regression
+        run: make test-fast
+      - run: make docs-check
+      - name: Dependency and secret checks
+        run: |
+          infrastructure/scripts/security-scan.sh - deps
+          infrastructure/scripts/security-scan.sh - secrets
+
+  weekly:
+    needs: plan
+    if: needs.plan.outputs.cadence == 'weekly' || needs.plan.outputs.cadence == 'monthly'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Benchmark stability (repeat 3) and comparison artifact
+        run: make bench-gate BENCH_ARGS="--repeat 3"
+      - name: Resilience tests (retry, circuit breaker, cache corruption, runtime loss, deadline)
+        run: make test-resilience
+      - name: Compose resilience (watchdog restart + circuit open, deploy rollback)
+        run: tests/end-to-end/resilience.sh
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        if: always()
+        with: {name: weekly, path: out/, retention-days: 90}
+
+  model-evaluation:
+    needs: plan
+    if: needs.plan.outputs.cadence == 'weekly'
+    uses: ./.github/workflows/model-e2e.yml
+
+  monthly:
+    needs: plan
+    if: needs.plan.outputs.cadence == 'monthly'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      issues: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Improvement proposal
+        run: make evolve && cp out/proposal.md proposal.md
+      - name: Open or update the proposal issue
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        with:
+          script: |
+            const body = require('fs').readFileSync('proposal.md', 'utf8');
+            const title = `Monthly improvement proposal ${new Date().toISOString().slice(0, 7)}`;
+            const open = await github.rest.issues.listForRepo({ ...context.repo, labels: 'evolution', state: 'open' });
+            const existing = open.data.find(i => i.title === title);
+            if (existing) await github.rest.issues.update({ ...context.repo, issue_number: existing.number, body });
+            else await github.rest.issues.create({ ...context.repo, title, body, labels: ['evolution', 'automated'] });
+
+  report-failure:
+    needs: [daily, weekly, monthly]
+    if: failure()
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+    steps:
+      - uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
+        with:
+          script: |
+            const url = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
+            const title = `Scheduled automation failed (${new Date().toISOString().slice(0, 10)})`;
+            const dup = (await github.rest.issues.listForRepo({ ...context.repo, labels: 'automated', state: 'open' })).data
+              .find(i => i.title === title);
+            if (!dup) await github.rest.issues.create({ ...context.repo, title, labels: ['automated', 'bug'],
+              body: `Run: ${url}\n\nReproduce locally: \`make ci\` (daily), \`make e2e && tests/end-to-end/resilience.sh\` (weekly).\nArtifacts attached to the run contain diagnostics.` });

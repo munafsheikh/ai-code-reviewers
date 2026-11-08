@@ -1,0 +1,24 @@
+{
+  "findings": [
+    {
+      "path": "src/main/java/app/UserDao.java",
+      "line": 7,
+      "rule_id": "SEC-004"
+    },
+    {
+      "path": "src/main/java/app/UserDao.java",
+      "line": 10,
+      "rule_id": "INJ-001"
+    },
+    {
+      "path": "src/main/java/app/UserDao.java",
+      "line": 17,
+      "rule_id": "JAVA-001"
+    },
+    {
+      "path": "src/main/java/app/UserDao.java",
+      "line": 19,
+      "rule_id": "ERR-001"
+    }
+  ]
+}

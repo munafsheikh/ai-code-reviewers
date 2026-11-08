@@ -1,0 +1,118 @@
+# ai-code-reviewers — local stack.
+#   make up        reviewer + Ollama runtime + one-shot model pull   (profile: model)
+#   make up-test   reviewer + deterministic fake runtime, no weights (profile: test)
+#   make down      stop and remove containers (volumes are kept)
+name: ai-code-reviewers
+
+x-hardening: &hardening
+  read_only: true
+  security_opt: ["no-new-privileges:true"]
+  cap_drop: ["ALL"]
+  tmpfs: ["/tmp:size=64m,mode=1777"]
+
+x-runtime-image: &runtime-image ${LLM_RUNTIME_IMAGE:-ollama/ollama:0.12.6@sha256:a61a8fd395dbb931cc8cb1b5da7a2510746575c87113fdc45b647ee59ef7f808}
+
+services:
+  reviewer:
+    <<: *hardening
+    build:
+      context: .
+      dockerfile: infrastructure/docker/Dockerfile
+      args:
+        VERSION: ${ACR_VERSION:-0.0.0-dev}
+    image: ${ACR_IMAGE:-acr-reviewer:local}
+    command: ["serve", "--profile", "${ACR_PROFILE:-balanced}"]
+    environment:
+      ACR_MODEL_HOST: ${ACR_MODEL_HOST:-http://llm-runtime:11434}
+      ACR_SMALL_MODEL: ${ACR_SMALL_MODEL:-qwen2.5-coder-1.5b}
+      ACR_LARGE_MODEL: ${ACR_LARGE_MODEL:-qwen2.5-coder-7b}
+      ACR_PORT: "8088"
+      ACR_MAX_CONCURRENT_REVIEWS: ${ACR_MAX_CONCURRENT_REVIEWS:-2}
+    ports:
+      - "127.0.0.1:${ACR_HOST_PORT:-8088}:8088"   # loopback only
+    volumes:
+      - acr-cache:/var/cache/acr
+      - ${ACR_WORKDIR:-./examples}:/work:ro        # code under review is mounted read-only
+    networks: [backend, edge]
+    depends_on:
+      llm-runtime: {condition: service_healthy, required: false}
+      model-init: {condition: service_completed_successfully, required: false}
+      fake-runtime: {condition: service_healthy, required: false}
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request as u; u.build_opener(u.ProxyHandler({})).open('http://127.0.0.1:8088/healthz', timeout=3)"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    restart: unless-stopped
+    stop_grace_period: 20s
+    deploy:
+      resources:
+        limits: {cpus: "${ACR_CPUS:-1.0}", memory: "${ACR_MEMORY:-512m}"}
+
+  llm-runtime:
+    <<: *hardening
+    profiles: ["model"]
+    image: *runtime-image
+    environment:
+      OLLAMA_KEEP_ALIVE: ${OLLAMA_KEEP_ALIVE:-10m}
+      OLLAMA_NUM_PARALLEL: ${OLLAMA_NUM_PARALLEL:-1}
+      HOME: /root
+    volumes:
+      - llm-models:/root/.ollama
+    networks: [backend, edge]                       # edge only for model downloads
+    healthcheck:
+      test: ["CMD", "ollama", "list"]
+      interval: 15s
+      timeout: 10s
+      retries: 5
+      start_period: 20s
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits: {cpus: "${LLM_CPUS:-4.0}", memory: "${LLM_MEMORY:-6g}"}
+
+  model-init:
+    <<: *hardening
+    profiles: ["model"]
+    image: *runtime-image
+    entrypoint: ["/bin/sh", "/scripts/pull-model.sh"]
+    environment:
+      OLLAMA_HOST: http://llm-runtime:11434
+      MODELS: ${ACR_PULL_MODELS:-qwen2.5-coder:1.5b}
+      PULL_ATTEMPTS: "3"
+    volumes:
+      - ./infrastructure/scripts/pull-model.sh:/scripts/pull-model.sh:ro
+    networks: [backend]
+    depends_on:
+      llm-runtime: {condition: service_healthy}
+    restart: "no"
+
+  fake-runtime:
+    <<: *hardening
+    profiles: ["test"]
+    image: python:3.13-slim@sha256:e48f59cdba69a3cbd9ed2cf0f348d90d45a8d350d98134cf1070bc106ee9ed90
+    user: "10001:10001"
+    command: ["python", "/fake/fake_runtime.py"]
+    environment:
+      FAKE_PORT: "11434"
+      PYTHONDONTWRITEBYTECODE: "1"
+    volumes:
+      - ./tests/support/fake_runtime.py:/fake/fake_runtime.py:ro
+    networks:
+      backend:
+        aliases: [llm-runtime]
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request as u; u.urlopen('http://127.0.0.1:11434/api/tags', timeout=3)"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+networks:
+  backend:
+    internal: true          # no route to the internet
+  edge: {}
+
+volumes:
+  llm-models: {}
+  acr-cache: {}

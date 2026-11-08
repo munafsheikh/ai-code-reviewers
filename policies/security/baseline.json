@@ -1,0 +1,5 @@
+{
+  "schema": "acr.baseline/v1",
+  "description": "Accepted, time-boxed exceptions to review findings. Each entry needs a reason, owner and expiry. Expired entries stop suppressing automatically.",
+  "exceptions": []
+}

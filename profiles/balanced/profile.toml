@@ -1,0 +1,47 @@
+id = "balanced"
+description = "Default: rules + small model for every diff, large-tier skills downgrade to the small model."
+policy = "default"
+skills = ["security.*", "code-quality.*", "maintainability.*", "testing.*", "lang.java.core", "lang.python.*", "lang.javascript.*", "lang.typescript.*", "performance.*"]
+
+[rules]
+enabled = true
+
+[runtime]
+wrapper = "ollama"
+base_url = "http://llm-runtime:11434"
+auto_pull = false
+
+[routing]
+tiers = ["small"]
+small_model = "qwen2.5-coder-1.5b"
+large_model = "qwen2.5-coder-7b"
+fallback = ["small", "rules"]
+
+[generation]
+temperature = 0.0
+seed = 42
+max_tokens = 1024
+num_ctx = 8192
+json_mode = true
+
+[budget]
+max_files = 200
+max_diff_chars = 24000
+max_model_calls = 6
+call_timeout_s = 120
+review_timeout_s = 600
+memory_budget_mb = 4096
+concurrency = 1
+
+[retry]
+attempts = 3
+base_delay_s = 1
+max_delay_s = 8
+
+[circuit]
+failure_threshold = 3
+cooldown_s = 60
+
+[cache]
+enabled = true
+dir = ".acr-cache"

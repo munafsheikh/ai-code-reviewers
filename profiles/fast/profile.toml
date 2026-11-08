@@ -1,0 +1,15 @@
+extends = "balanced"
+id = "fast"
+description = "Pre-commit / incremental: rules + 0.5B model, one call, short timeouts."
+skills = ["security.*", "code-quality.*", "maintainability.*", "testing.*", "lang.*"]
+
+[routing]
+tiers = ["small"]
+small_model = "qwen2.5-coder-0.5b"
+
+[budget]
+max_diff_chars = 12000
+max_model_calls = 1
+call_timeout_s = 60
+review_timeout_s = 120
+memory_budget_mb = 2048

@@ -1,0 +1,7 @@
+# Protected paths: changes need owner review (enable branch protection "Require review from Code Owners").
+*                       @munafsheikh
+/policies/              @munafsheikh
+/benchmarks/fixtures/   @munafsheikh
+/.github/               @munafsheikh
+/infrastructure/        @munafsheikh
+/models/registry/       @munafsheikh
