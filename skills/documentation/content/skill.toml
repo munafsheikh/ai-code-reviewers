@@ -1,0 +1,56 @@
+id = "documentation.content"
+version = "1.0.0"
+interface = "acr.skill/v1"
+category = "documentation"
+description = "Defects inside documentation: placeholders, conflict markers, machine-local paths, insecure links; model check for docs that contradict the code."
+languages = ["*"]
+file_globs = ["*.md", "*.markdown", "*.rst", "*.adoc", "docs/*", "doc/*"]
+tier = "small"
+
+[prompt]
+file = "prompt.md"
+output = "findings-json"
+
+[[rules]]
+id = "DOC-101"
+title = "Placeholder text in documentation"
+severity = "major"
+confidence = "high"
+pattern = '(?i)\blorem ipsum\b|\[(?:TODO|TBD|WIP)\]|<(?:TODO|TBD)>|\bTBD\b|^\s*(?:[-*]\s+)?TODO\s*:?\s*$'
+explanation = "Placeholders publish unfinished documentation as if it were complete; readers cannot tell what is missing."
+remediation = "Write the section, or remove it and track the gap as an issue."
+examples.match = ["Usage: TBD", "## Install [TODO]", "- TODO", "<TBD>", "Lorem ipsum dolor sit amet"]
+examples.no_match = ["Unresolved FIXME/XXX marker", "Use `TODO(#12)` comments for follow-ups", "tbdx"]
+
+[[rules]]
+id = "DOC-102"
+title = "Unresolved merge conflict in documentation"
+severity = "critical"
+confidence = "high"
+pattern = '^(?:<{7}|>{7}) \S'
+explanation = "Conflict markers mean a merge was committed unresolved; the rendered page shows both versions."
+remediation = "Resolve the conflict and remove the markers."
+examples.match = ["<<<<<<< HEAD", ">>>>>>> feature/x"]
+examples.no_match = ["=======", "> quoted", "<<< not a marker"]
+
+[[rules]]
+id = "DOC-103"
+title = "Machine-local path in documentation"
+severity = "major"
+confidence = "medium"
+pattern = '(?:/home/|/Users/)(?!(?:user|you|me|name|example|runner|<)[/\s`]?)[A-Za-z][\w.-]*/|\b[A-Za-z]:\\Users\\(?!(?:user|you|name|example)\\)'
+explanation = "A path from one person's machine does not exist for readers, and leaks a username."
+remediation = "Use a repository-relative path, `~`, or a placeholder such as `/home/user`."
+examples.match = ["cd /home/alice/src/app", "open /Users/bob.smith/Downloads/x", 'C:\Users\carol\repo']
+examples.no_match = ["cd /home/user/ai-code-reviewers", "/Users/you/project", "~/src/app", "/home/runner/work"]
+
+[[rules]]
+id = "DOC-104"
+title = "Insecure link in documentation"
+severity = "minor"
+confidence = "high"
+pattern = '\]\(http://(?!localhost|127\.0\.0\.1|0\.0\.0\.0|\[::1\])|<http://(?!localhost|127\.0\.0\.1)'
+explanation = "Plain-HTTP links can be tampered with in transit and are often stale redirects."
+remediation = "Link the https:// URL."
+examples.match = ["see [docs](http://example.com/x)", "<http://example.org>"]
+examples.no_match = ["[local](http://localhost:8088/healthz)", "[docs](https://example.com)", "curl http://127.0.0.1:8088"]

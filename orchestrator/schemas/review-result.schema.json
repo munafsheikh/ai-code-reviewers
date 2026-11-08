@@ -155,6 +155,72 @@
               "type": "string"
             }
           }
+        },
+        "coverage": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "description": "Which check categories examined each changed file; null in legacy mode.",
+          "required": [
+            "files",
+            "by_category",
+            "by_kind",
+            "uncovered"
+          ],
+          "properties": {
+            "files": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": [
+                  "path",
+                  "kind",
+                  "categories",
+                  "covered"
+                ],
+                "properties": {
+                  "path": {
+                    "type": "string"
+                  },
+                  "kind": {
+                    "enum": [
+                      "code",
+                      "docs"
+                    ]
+                  },
+                  "categories": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  },
+                  "covered": {
+                    "type": "boolean"
+                  }
+                }
+              }
+            },
+            "by_category": {
+              "type": "object",
+              "additionalProperties": {
+                "type": "integer"
+              }
+            },
+            "by_kind": {
+              "type": "object",
+              "required": [
+                "code",
+                "docs"
+              ]
+            },
+            "uncovered": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
         }
       }
     },
@@ -209,6 +275,10 @@
           "items": {
             "type": "string"
           }
+        },
+        "uncovered_files": {
+          "type": "integer",
+          "minimum": 0
         }
       }
     }

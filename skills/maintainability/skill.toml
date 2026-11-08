@@ -1,5 +1,5 @@
 id = "maintainability.hygiene"
-version = "1.0.0"
+version = "1.1.0"
 interface = "acr.skill/v1"
 category = "maintainability"
 description = "Debug leftovers and markers that should not reach the main branch."
@@ -43,3 +43,14 @@ explanation = "Direct console output bypasses log levels and structured logging.
 remediation = "Use the project's logger."
 examples.match = ['System.out.println("x");', "console.log(user)"]
 examples.no_match = ['// console.log("x")', 'log.info("x")']
+
+[[rules]]
+id = "MNT-004"
+title = "Unresolved merge conflict marker"
+severity = "critical"
+confidence = "high"
+pattern = '^(?:<{7}|>{7}) \S'
+explanation = "Conflict markers mean a merge was committed unresolved; the file no longer parses or behaves as either side intended."
+remediation = "Resolve the conflict and remove the markers."
+examples.match = ["<<<<<<< HEAD", ">>>>>>> main"]
+examples.no_match = ["x = '<<<<<<<'", "# >>>>>>>"]

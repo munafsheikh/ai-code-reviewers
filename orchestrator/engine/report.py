@@ -122,6 +122,12 @@ def to_markdown(result: dict[str, Any]) -> str:
             f"(not in the diff or invalid), {unv} cited lines outside the changed hunks"
             + (f"; unparseable reply: {errs[0]}" if errs else "")
         )
+    cov = run.get("coverage")
+    if cov:
+        cats = ", ".join(f"{c} ({n})" for c, n in cov["by_category"].items()) or "none"
+        lines += ["", f"Coverage: {cov['by_kind']['code']} code · {cov['by_kind']['docs']} docs files — {cats}"]
+        if cov["uncovered"]:
+            lines += ["", "> **Not reviewed by any check:** " + ", ".join(f"`{p}`" for p in cov["uncovered"][:20])]
     lines += ["", "| Severity | Count |", "|---|---|"]
     lines += [f"| {k} | {v} |" for k, v in s["by_severity"].items()]
     if not result["findings"]:

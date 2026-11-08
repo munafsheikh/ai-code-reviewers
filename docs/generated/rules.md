@@ -50,6 +50,60 @@ Stack traces on stderr bypass the logging pipeline and are lost in most deployme
 
 **Fix:** Log through the application logger with context, or rethrow.
 
+<a id="skill-documentation-content"></a>
+
+## Skill `documentation.content` (v1.0.0)
+
+Defects inside documentation: placeholders, conflict markers, machine-local paths, insecure links; model check for docs that contradict the code. Category: documentation. Model tier: small.
+
+Model findings from this skill are reported as `model.documentation.content` and are always hypotheses.
+
+<a id="doc-101"></a>
+
+### DOC-101: Placeholder text in documentation
+
+Severity **major** · confidence high (verified) · languages: *
+
+Placeholders publish unfinished documentation as if it were complete; readers cannot tell what is missing.
+
+**Fix:** Write the section, or remove it and track the gap as an issue.
+
+<a id="doc-102"></a>
+
+### DOC-102: Unresolved merge conflict in documentation
+
+Severity **critical** · confidence high (verified) · languages: *
+
+Conflict markers mean a merge was committed unresolved; the rendered page shows both versions.
+
+**Fix:** Resolve the conflict and remove the markers.
+
+<a id="doc-103"></a>
+
+### DOC-103: Machine-local path in documentation
+
+Severity **major** · confidence medium (hypothesis) · languages: *
+
+A path from one person's machine does not exist for readers, and leaks a username.
+
+**Fix:** Use a repository-relative path, `~`, or a placeholder such as `/home/user`.
+
+<a id="doc-104"></a>
+
+### DOC-104: Insecure link in documentation
+
+Severity **minor** · confidence high (verified) · languages: *
+
+Plain-HTTP links can be tampered with in transit and are often stale redirects.
+
+**Fix:** Link the https:// URL.
+
+<a id="skill-documentation-sync"></a>
+
+## Skill `documentation.sync` (v1.0.0)
+
+User-facing surfaces (build, CI, deployment, make targets, CLI options, env vars, contracts) changed without a documentation change in the same diff. Category: documentation. Model tier: none.
+
 <a id="skill-lang-java-core"></a>
 
 ## Skill `lang.java.core` (v1.0.0)
@@ -170,7 +224,7 @@ Severity **info** · confidence high (verified) · languages: typescript
 
 <a id="skill-maintainability-hygiene"></a>
 
-## Skill `maintainability.hygiene` (v1.0.0)
+## Skill `maintainability.hygiene` (v1.1.0)
 
 Debug leftovers and markers that should not reach the main branch. Category: maintainability. Model tier: none.
 
@@ -203,6 +257,16 @@ Severity **info** · confidence medium (hypothesis) · languages: java, javascri
 Direct console output bypasses log levels and structured logging.
 
 **Fix:** Use the project's logger.
+
+<a id="mnt-004"></a>
+
+### MNT-004: Unresolved merge conflict marker
+
+Severity **critical** · confidence high (verified) · languages: *
+
+Conflict markers mean a merge was committed unresolved; the file no longer parses or behaves as either side intended.
+
+**Fix:** Resolve the conflict and remove the markers.
 
 <a id="skill-performance-deep"></a>
 

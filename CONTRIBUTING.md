@@ -10,6 +10,6 @@
    owner and expiry instead.
 5. Third-party wrappers, skills and models are never auto-installed: include provenance,
    license and a security review in the PR.
-6. Keep the runtime dependency-free (stdlib only). Dev tooling is pinned in `requirements-dev.txt` and baked into `infrastructure/docker/Dockerfile.toolbox`; behind a TLS-intercepting proxy build it with `make toolbox TOOLBOX_BUILD_ARGS="--build-arg HTTPS_PROXY=... --secret id=ca,src=/path/ca.crt"`.
+6. Keep the runtime dependency-free (stdlib only). Dev tooling is pinned in `requirements-dev.txt` and baked into the `toolbox` stage of `infrastructure/docker/Dockerfile`; behind a TLS-intercepting proxy build it with `make toolbox TOOLBOX_BUILD_ARGS="--build-arg HTTPS_PROXY=... --secret id=ca,src=/path/ca.crt"`.
 
 Commit messages: imperative, scoped (`engine: ...`, `skills: ...`). One logical change per PR.

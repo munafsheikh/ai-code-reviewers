@@ -87,7 +87,10 @@ jobs:
           retention-days: 7
 
   self-review:
-    # Dogfooding: the platform reviews its own pull requests (rules only, no model download).
+    # Dogfooding, enforced: the platform reviews its own pull requests (rules only, no model
+    # download) with every code and documentation category in one pass; the gate blocks on
+    # major findings and on any changed file that no code / documentation check covered.
+    # Excluded: files that carry attack and secret samples on purpose (rule tests, fixtures).
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     timeout-minutes: 10
@@ -101,6 +104,6 @@ jobs:
         with:
           profile: offline
           runtime-image: ''
-          paths: ':!benchmarks/fixtures :!tests :!skills/security/secrets'
-          enforce: 'false'
+          paths: ':!benchmarks/fixtures :!skills/security/secrets :!tests/unit/test_rules.py :!tests/integration/test_review_pipeline.py'
+          enforce: 'true'
           comment: ${{ github.event.pull_request.head.repo.full_name == github.repository }}

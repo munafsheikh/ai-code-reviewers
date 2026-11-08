@@ -18,6 +18,7 @@ services:
     build:
       context: .
       dockerfile: infrastructure/docker/Dockerfile
+      target: reviewer
       args:
         VERSION: ${ACR_VERSION:-0.0.0-dev}
     image: ${ACR_IMAGE:-acr-reviewer:local}
@@ -91,14 +92,11 @@ services:
   fake-runtime:
     <<: *hardening
     profiles: ["test"]
-    image: python:3.13-slim@sha256:e48f59cdba69a3cbd9ed2cf0f348d90d45a8d350d98134cf1070bc106ee9ed90
-    user: "10001:10001"
-    command: ["python", "/fake/fake_runtime.py"]
-    environment:
-      FAKE_PORT: "11434"
-      PYTHONDONTWRITEBYTECODE: "1"
-    volumes:
-      - ./tests/support/fake_runtime.py:/fake/fake_runtime.py:ro
+    build:
+      context: .
+      dockerfile: infrastructure/docker/Dockerfile
+      target: fake-runtime
+    image: ${ACR_FAKE_RUNTIME_IMAGE:-acr-fake-runtime:local}
     networks:
       backend:
         aliases: [llm-runtime]

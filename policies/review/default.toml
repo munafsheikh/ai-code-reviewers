@@ -1,5 +1,5 @@
 id = "default"
-version = "1.0.0"
+version = "1.1.0"
 description = "Block on major+ findings; model findings block only at medium+ confidence."
 
 [gate]
@@ -8,6 +8,7 @@ warn_on = "minor"
 model_findings_can_block = true
 model_min_confidence_to_block = "medium"
 fail_on_infrastructure_error = false   # degrade to rules-only (audited) instead of failing
+require_coverage = true               # block when a changed file got no code check (or, for docs, no documentation check)
 
 [models]
 require_pinned = false

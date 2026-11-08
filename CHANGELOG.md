@@ -14,12 +14,20 @@ All notable changes are documented here. Format: [Keep a Changelog](https://keep
 - OpenAI-compatible servers (vLLM, LM Studio, LocalAI, llama.cpp) receive the manifest's Hugging Face id.
 - Model selection guide.
 - Traceable reviews: every finding links to the exact lines at the reviewed commit and to its rule documentation (`docs/generated/rules.md`, versioned anchors); review comments link the commit, the CI run and its report artifacts; JSON results carry `links`, SARIF rules carry `helpUri`. The GitHub action uploads the reports as an artifact and reviews the PR head commit (new `head-ref` input), so permalinks survive the PR.
+- Companion rules (`[[companions]]`): diff-level checks that one kind of change travels with another.
+- `documentation` skill category: `documentation.sync` (`DOC-001`…`DOC-004`, major) blocks build/CI/deploy, make target, CLI/env and contract changes made without docs; `documentation.content` (`DOC-101`…`DOC-104` + model prompt) reviews the docs themselves. `MNT-004` flags conflict markers in code.
+- Review coverage: `run.coverage` records which categories examined each changed file; `require_coverage` (default and strict policies) blocks when a code file got no code check or a doc file no documentation check.
+- CI self-review is enforced and now reviews tests (except the rule-sample files).
+- Docker Hub publishing (`Images` workflow): shared base image plus layered reviewer, toolbox and fake-runtime images, multi-arch and signed; `make images`.
 
 ### Changed
 - Ollama runtime pinned to 0.40.11 (newer model families need it).
 - Docs and CI templates reference release tags (`@v0.2.0`, image `0.2.0`); a `Tag version` workflow creates verified tags.
+- Single multi-stage Dockerfile replaces `Dockerfile.toolbox`; the toolbox now builds on the slim base (+ git). Compose runs the fake runtime from its own image target.
+- Release builds arm64 under QEMU.
 
 ### Fixed
+- `Images` workflow passes the base image digest between jobs instead of the full reference (GitHub drops outputs containing a secret value, e.g. a namespace equal to `DOCKERHUB_USERNAME`).
 - Empty `LLM_MODEL` / `ACR_SMALL_MODEL` no longer disable the profile's model outside the legacy profile; the GitHub action no longer forwards an empty `LLM_MODEL`.
 - Model-matrix planner no longer requires git in its container.
 

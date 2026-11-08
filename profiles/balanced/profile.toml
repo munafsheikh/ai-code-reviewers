@@ -1,7 +1,7 @@
 id = "balanced"
 description = "Default: rules + small model for every diff, large-tier skills downgrade to the small model."
 policy = "default"
-skills = ["security.*", "code-quality.*", "maintainability.*", "testing.*", "lang.java.core", "lang.python.*", "lang.javascript.*", "lang.typescript.*", "performance.*"]
+skills = ["security.*", "code-quality.*", "maintainability.*", "testing.*", "documentation.*", "lang.java.core", "lang.python.*", "lang.javascript.*", "lang.typescript.*", "performance.*"]
 
 [rules]
 enabled = true

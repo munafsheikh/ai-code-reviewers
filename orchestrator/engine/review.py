@@ -12,10 +12,10 @@ from typing import Any
 from orchestrator import __version__
 from orchestrator import config as cfg
 from orchestrator.contracts import RESULT_SCHEMA, SEVERITIES, AdapterError, Finding, GenerationRequest, ModelAdapter
+from orchestrator.engine import coverage, gate, links, parse, prompt
 from orchestrator.engine import diff as diffmod
-from orchestrator.engine import gate, links, parse, prompt
 from orchestrator.engine.adapters import load_adapter
-from orchestrator.engine.rules import run_rules
+from orchestrator.engine.rules import run_companions, run_rules
 from orchestrator.recovery.audit import Audit
 from orchestrator.recovery.cache import CompletionCache, key_for
 from orchestrator.recovery.retry import CircuitBreaker, call_with_retry
@@ -234,12 +234,14 @@ def run_review(
     legacy_raw = None
     findings: list[Finding] = []
     routes: list[router.Route] = []
+    model_backed: set[str] = set()
+    cov = None
     if profile.get("mode") == "legacy":
         legacy_raw = _legacy(ctx, skills, diff_text, models)
     else:
         if profile.get("rules", {}).get("enabled", True):
             for s in skills:
-                findings += run_rules(s, files)
+                findings += run_rules(s, files) + run_companions(s, files)
         routes = router.plan(skills, profile, models, policy)
         if files and profile.get("routing", {}).get("tiers"):
             for r in routes:
@@ -249,11 +251,15 @@ def run_review(
             adapter, digests = _prepare_runtime(ctx, routes)
             for r in routes:
                 if adapter and r.model:
+                    errors_before = len(ctx.infra_errors)
                     findings += _model_findings(ctx, adapter, r, files, digests.get(r.model.ref), skipped)
+                    if len(ctx.infra_errors) == errors_before:  # a failed tier does not count as coverage
+                        model_backed.update(s.id for s in r.skills)
         findings = merge(findings)
+    cov = coverage.compute(skills, files, model_backed)
     baseline_file = policy.get("baseline", {}).get("file")
     gate.apply_baseline(findings, gate.load_baseline(root / baseline_file if baseline_file else None), audit)
-    g = gate.evaluate(findings, policy, ctx.infra_errors)
+    g = gate.evaluate(findings, policy, ctx.infra_errors, cov["uncovered"] if cov else None)
     if legacy_raw is not None:
         g = _legacy_gate(ctx, legacy_raw)
 
@@ -291,6 +297,7 @@ def run_review(
             "parse": ctx.parse_stats,
             "degraded": bool(ctx.infra_errors),
             "infrastructure_errors": ctx.infra_errors,
+            "coverage": cov,
             "recovery_events": audit.events,
             "links": {
                 "commit": links.commit_url(repository, revision),

@@ -16,7 +16,7 @@
 
 | Policy | Version | Block on | Model findings block | Fail on infra error | Description |
 |---|---|---|---|---|---|
-| `default` | 1.0.0 | major | True (≥medium) | False | Block on major+ findings; model findings block only at medium+ confidence. |
+| `default` | 1.1.0 | major | True (≥medium) | False | Block on major+ findings; model findings block only at medium+ confidence. |
 | `evaluation` | 1.0.0 | critical | False (≥low) | True | Benchmarking only: any license class (incl. non-production), never used to gate merges. |
 | `legacy` | 1.0.0 | major | True (≥low) | True | Firefly ReviewGate.java semantics (gate decided by the model's SEVERITY line). |
-| `strict` | 1.0.0 | major | True (≥low) | True | Release branches: block on major+, fail when model infrastructure is unavailable, pinned models only. |
+| `strict` | 1.1.0 | major | True (≥low) | True | Release branches: block on major+, fail when model infrastructure is unavailable, pinned models only. |
