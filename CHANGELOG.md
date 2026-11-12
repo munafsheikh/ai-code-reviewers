@@ -4,6 +4,10 @@ All notable changes are documented here. Format: [Keep a Changelog](https://keep
 
 ## [Unreleased]
 
+### Fixed
+
+- The Tag version workflow was invalid YAML, so GitHub could not run it; a test now parses every workflow and action file.
+
 ## [0.2.0] - 2026-11-08
 
 ### Added

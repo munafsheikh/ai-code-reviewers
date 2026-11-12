@@ -10,7 +10,7 @@ on:
         description: Version to tag (X.Y.Z)
         required: true
       commit:
-        description: Commit to tag (default: tip of main)
+        description: "Commit to tag (default: tip of main)"
         required: false
         default: ''
 
