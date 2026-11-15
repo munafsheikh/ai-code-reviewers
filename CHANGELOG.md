@@ -4,6 +4,8 @@ All notable changes are documented here. Format: [Keep a Changelog](https://keep
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-11-15
+
 ### Added
 - Automatic releases: every green CI run on `main` plans the next version from `[Unreleased]` (or a `release:*` PR label), bumps every version reference, re-tests, commits and tags `vX.Y.Z`, publishes the signed GHCR image, the GitHub release and all Docker Hub images, then deploys the test environment. `infrastructure/scripts/release.py` with `make release-plan|apply|check|notes|image-tags`.
 
