@@ -1,10 +1,14 @@
 name: Deploy (test environment)
 # Disposable test environment on the runner: deploy the last verified release first,
 # then the candidate; smoke-test; roll back automatically when the candidate is unhealthy.
+# Called by Release after publishing; can also be run by hand.
 on:
-  workflow_run:
-    workflows: [Release]
-    types: [completed]
+  workflow_call:
+    inputs:
+      image:
+        description: candidate image (ref or digest)
+        type: string
+        required: true
   workflow_dispatch:
     inputs:
       image:
@@ -16,7 +20,6 @@ permissions:
 
 jobs:
   deploy:
-    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
@@ -43,11 +46,11 @@ jobs:
             --certificate-oidc-issuer https://token.actions.githubusercontent.com > /dev/null
       - name: Establish last verified release
         if: steps.r.outputs.previous != ''
-        run: docker pull -q "${{ steps.r.outputs.previous }}" && infrastructure/deployment/deploy.sh "${{ steps.r.outputs.previous }}"
+        run: docker pull -q "${{ steps.r.outputs.previous }}" && make -s deploy-test IMAGE="${{ steps.r.outputs.previous }}"
       - name: Deploy candidate (auto-rollback on failure)
-        run: docker pull -q "${{ steps.r.outputs.candidate }}" && infrastructure/deployment/deploy.sh "${{ steps.r.outputs.candidate }}"
+        run: docker pull -q "${{ steps.r.outputs.candidate }}" && make -s deploy-test IMAGE="${{ steps.r.outputs.candidate }}"
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         if: always()
         with: {name: deploy-state, path: out/deploy, retention-days: 90}
       - if: always()
-        run: infrastructure/deployment/teardown.sh
+        run: make -s teardown

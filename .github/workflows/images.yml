@@ -4,7 +4,8 @@ name: Images
 #   2. layered on the base *digest*  -> <ns>/ai-code-reviewers (reviewer, scan-gated)
 #                                       <ns>/ai-code-reviewers-toolbox
 #                                       <ns>/ai-code-reviewers-fake-runtime
-# Tags: green CI on main -> edge, sha-<12>; release vX.Y.Z -> X.Y.Z, X.Y, latest.
+# Tags (infrastructure/scripts/release.py image-tags): green CI on main -> edge, sha-<12>;
+# a release (called by Release) -> X.Y.Z, X.Y, latest.
 # Multi-arch (amd64, arm64), BuildKit SBOM + provenance, keyless cosign signatures.
 # Setup: secrets DOCKERHUB_USERNAME, DOCKERHUB_TOKEN (read/write access token);
 # optional variable DOCKERHUB_NAMESPACE (defaults to the GitHub owner).
@@ -23,6 +24,10 @@ on:
     inputs:
       version:
         description: release version (X.Y.Z or vX.Y.Z); empty publishes edge tags
+        type: string
+        default: ""
+      revision:
+        description: commit to build (default the triggering commit); the release passes its tagged commit
         type: string
         default: ""
     secrets:
@@ -44,28 +49,23 @@ jobs:
   meta:
     if: github.event_name != 'workflow_run' || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push')
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 10
     outputs:
       namespace: ${{ steps.m.outputs.namespace }}
       revision: ${{ steps.m.outputs.revision }}
       version: ${{ steps.m.outputs.version }}
       tags: ${{ steps.m.outputs.tags }}
     steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with: {ref: "${{ inputs.revision || github.event.workflow_run.head_sha || github.sha }}"}
       - id: m
         env:
           NS: ${{ vars.DOCKERHUB_NAMESPACE || github.repository_owner }}
           VERSION: ${{ inputs.version }}
-          REVISION: ${{ github.event.workflow_run.head_sha || github.sha }}
         run: |
-          v="${VERSION#v}"
-          if [ -n "$v" ]; then
-            [[ "$v" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || { echo "bad version: $VERSION" >&2; exit 1; }
-            tags="$v ${v%.*} latest"
-          else
-            v="0.0.0-edge"; tags="edge sha-${REVISION:0:12}"
-          fi
-          { echo "namespace=${NS,,}"; echo "revision=$REVISION"; echo "version=$v"; echo "tags=$tags"; } >> "$GITHUB_OUTPUT"
-          echo "Publishing \`${NS,,}/ai-code-reviewers*\` tags: \`$tags\` @ \`$REVISION\`" >> "$GITHUB_STEP_SUMMARY"
+          make -s release-image-tags VERSION="$VERSION" REVISION="$(git rev-parse HEAD)" NAMESPACE="$NS" > out-meta.env
+          cat out-meta.env >> "$GITHUB_OUTPUT"
+          { echo '```'; cat out-meta.env; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
 
   base:
     needs: meta

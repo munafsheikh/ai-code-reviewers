@@ -1,22 +1,19 @@
-# Docker-first entry points: every target runs in a container, so the only host
-# requirement is Docker. CI systems call these same targets (GitHub Actions, Azure
-# DevOps, GitLab run identical commands). LOCAL=1 runs the commands in a host .venv.
+# The only launcher. Containers are the runtimes: every target runs a native command
+# (python -m ..., pytest, ruff, the scripts' own CLIs) inside an image built from
+# infrastructure/docker/Dockerfile (`toolbox` for repository tooling, `reviewer` for the
+# product) or orchestrates those images with docker / docker compose. CI systems (GitHub
+# Actions, Azure DevOps, GitLab) call these targets and nothing else; Docker and make are the
+# only host requirements.
 SHELL := /bin/bash
-VENV ?= .venv
-TOOLBOX_HASH := $(shell cat requirements-dev.txt infrastructure/docker/Dockerfile | sha256sum | cut -c1-12)
+# Base interpreter for the toolbox; CI also builds it on the minimum supported Python.
+PYTHON_IMAGE ?=
+TOOLBOX_HASH := $(shell { cat requirements-dev.txt infrastructure/docker/Dockerfile; echo "$(PYTHON_IMAGE)"; } | sha256sum | cut -c1-12)
 TOOLBOX ?= acr-toolbox:$(TOOLBOX_HASH)
 TOOLBOX_BUILD_ARGS ?=
-ifeq ($(LOCAL),1)
-  RUN :=
-  PY := $(VENV)/bin/python
-  BIN := $(VENV)/bin/
-  NEED_TOOLBOX :=
-else
-  RUN := docker run --rm -i -u $$(id -u):$$(id -g) -v "$(CURDIR):/src" -w /src -e ACR_CACHE_DIR=/tmp/acr-cache $(TOOLBOX)
-  PY := python
-  BIN :=
-  NEED_TOOLBOX := toolbox
-endif
+RUN := docker run --rm -i -u $$(id -u):$$(id -g) -v "$(CURDIR):/src" -w /src -e ACR_CACHE_DIR=/tmp/acr-cache $(TOOLBOX)
+PY := python
+BIN :=
+NEED_TOOLBOX := toolbox
 ACR := $(RUN) $(PY) -m orchestrator
 IMAGE ?= acr-reviewer:local
 DIFF ?= examples/sample-repo/change.patch
@@ -24,18 +21,20 @@ PROFILE ?= balanced
 OUT ?= out
 
 .DEFAULT_GOAL := help
-.PHONY: help toolbox dev shell lint fmt test test-fast test-security test-resilience schema-check validate docs docs-check bench bench-gate review review-offline \
-        build images up up-test down logs smoke e2e resilience security sbom ci evolve deploy-test rollback watchdog clean
+.PHONY: help toolbox toolbox-ref shell lint fmt test test-fast test-security test-resilience schema-check validate docs docs-check bench bench-gate review review-offline \
+        build images up up-test down logs smoke e2e resilience security security-image sbom ci evolve deploy-test teardown rollback watchdog clean \
+        release-plan release-apply release-check release-notes release-image-tags
 
 help: ## list targets
 	@grep -E '^[a-z-]+:.*## ' $(MAKEFILE_LIST) | sed 's/:[^#]*## /\t/' | awk -F'\t' '{printf "  %-14s %s\n", $$1, $$2}'
 
 toolbox: ## build the pinned tooling image (tagged by content hash; rebuilt only when its inputs change)
 	@docker image inspect $(TOOLBOX) >/dev/null 2>&1 || \
-	  docker build -q $(TOOLBOX_BUILD_ARGS) -f infrastructure/docker/Dockerfile --target toolbox -t $(TOOLBOX) .
+	  docker build -q $(TOOLBOX_BUILD_ARGS) $(if $(PYTHON_IMAGE),--build-arg PYTHON_IMAGE=$(PYTHON_IMAGE)) \
+	    -f infrastructure/docker/Dockerfile --target toolbox -t $(TOOLBOX) . >/dev/null
 
-dev: ## LOCAL=1 only: create .venv with the pinned dev tooling
-	python3 -m venv $(VENV) && $(VENV)/bin/pip install -q -r requirements-dev.txt
+toolbox-ref: toolbox ## print the toolbox image reference (used by infrastructure/scripts/py.sh)
+	@echo $(TOOLBOX)
 
 shell: toolbox ## interactive shell in the toolbox
 	docker run --rm -it -u $$(id -u):$$(id -g) -v "$(CURDIR):/src" -w /src $(TOOLBOX) bash
@@ -117,11 +116,17 @@ resilience: ## watchdog bounded restart + circuit, deploy auto-rollback
 security: ## secrets, dependencies, SAST, Dockerfile and image scans (pinned scanner images)
 	infrastructure/scripts/security-scan.sh $(IMAGE)
 
+security-image: ## vulnerability gate for IMAGE only (new critical/high fail)
+	infrastructure/scripts/security-scan.sh $(IMAGE) image
+
 sbom: ## CycloneDX SBOM for the image
 	infrastructure/scripts/security-scan.sh $(IMAGE) sbom
 
 deploy-test: ## deploy IMAGE to a disposable test environment, smoke, auto-rollback on failure
 	infrastructure/deployment/deploy.sh $(IMAGE)
+
+teardown: ## remove the disposable test environment
+	infrastructure/deployment/teardown.sh
 
 rollback: ## roll back the test environment to the last verified release
 	infrastructure/deployment/rollback.sh
@@ -134,6 +139,22 @@ evolve: $(NEED_TOOLBOX) ## evidence-based improvement proposal
 	$(ACR) evolve --out $(OUT)/proposal.md
 
 ci: validate lint test docs-check bench-gate ## everything CI runs before the container jobs
+
+RELEASE := $(RUN) $(PY) infrastructure/scripts/release.py
+release-plan: $(NEED_TOOLBOX) ## next version from CHANGELOG [Unreleased] (+ LABELS="release:minor ..."), as JSON
+	@$(RELEASE) plan $(foreach l,$(LABELS),--label $(l))
+
+release-apply: $(NEED_TOOLBOX) ## write VERSION into pyproject, __version__, CHANGELOG and integration templates
+	$(RELEASE) apply $(VERSION)
+
+release-check: $(NEED_TOOLBOX) ## fail unless every version reference equals VERSION
+	$(RELEASE) check $(VERSION)
+
+release-notes: $(NEED_TOOLBOX) ## CHANGELOG section for VERSION
+	@$(RELEASE) notes $(VERSION)
+
+release-image-tags: $(NEED_TOOLBOX) ## image tags for VERSION (empty = edge) at REVISION, as KEY=VALUE lines
+	@$(RELEASE) image-tags --version "$(VERSION)" --revision "$(REVISION)" --namespace "$(NAMESPACE)"
 
 clean: ## remove local build/test outputs
 	rm -rf ./out ./.acr-cache ./.pytest_cache ./.coverage

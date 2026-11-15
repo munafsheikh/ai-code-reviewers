@@ -4,6 +4,17 @@ All notable changes are documented here. Format: [Keep a Changelog](https://keep
 
 ## [Unreleased]
 
+### Added
+- Automatic releases: every green CI run on `main` plans the next version from `[Unreleased]` (or a `release:*` PR label), bumps every version reference, re-tests, commits and tags `vX.Y.Z`, publishes the signed GHCR image, the GitHub release and all Docker Hub images, then deploys the test environment. `infrastructure/scripts/release.py` with `make release-plan|apply|check|notes|image-tags`.
+
+### Changed
+- One tooling model: Docker and make are the only host requirements; every make target runs native commands in the `toolbox` image, CI calls only make targets, and `py.sh` runs in the toolbox instead of a separate Python image. The minimum-Python job builds the toolbox on Python 3.11 instead of using a host interpreter.
+- `Deploy` is called by `Release` after publishing, instead of running after every Release run.
+
+### Removed
+- `LOCAL=1` host-venv mode and `make dev`.
+- `Tag version` workflow: `Release` tags and publishes (manual `version` input for backfills).
+
 ### Fixed
 
 - The Tag version workflow was invalid YAML, so GitHub could not run it; a test now parses every workflow and action file.

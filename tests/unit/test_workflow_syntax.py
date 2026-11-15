@@ -23,4 +23,4 @@ def test_parses(path: Path) -> None:
 
 
 def test_found_files() -> None:
-    assert any(p.name == "tag.yml" for p in FILES)
+    assert any(p.name == "release.yml" for p in FILES)
