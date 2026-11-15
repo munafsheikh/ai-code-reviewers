@@ -87,13 +87,14 @@ jobs:
           retention-days: 7
 
   self-review:
-    # Dogfooding, enforced: the platform reviews its own pull requests (rules only, no model
-    # download) with every code and documentation category in one pass; the gate blocks on
-    # major findings and on any changed file that no code / documentation check covered.
+    # Dogfooding, enforced: the platform reviews its own pull requests with every code and
+    # documentation category in one pass: deterministic rules plus a real local model
+    # (Ollama + qwen2.5-coder 1.5B on the CPU runner, `balanced` profile). The gate blocks on
+    # major findings, on any changed file no check covered, and when the model did not run.
     # Excluded: files that carry attack and secret samples on purpose (rule tests, fixtures).
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 40
     permissions:
       contents: read
       pull-requests: write
@@ -102,8 +103,9 @@ jobs:
         with: {fetch-depth: 0}
       - uses: ./integrations/github
         with:
-          profile: offline
-          runtime-image: ''
+          profile: balanced
+          pull-models: qwen2.5-coder:1.5b
+          require-model: 'true'
           paths: ':!benchmarks/fixtures :!skills/security/secrets :!tests/unit/test_rules.py :!tests/integration/test_review_pipeline.py'
           enforce: 'true'
           comment: ${{ github.event.pull_request.head.repo.full_name == github.repository }}
