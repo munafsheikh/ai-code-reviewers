@@ -4,6 +4,8 @@ All notable changes are documented here. Format: [Keep a Changelog](https://keep
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-11-15
+
 ### Added
 - Pull requests to this repository are reviewed by a real local model: CI self-review runs the `balanced` profile (rules + Ollama `qwen2.5-coder:1.5b` on the CPU runner) instead of rules only, and fails if the model did not run.
 - GitHub action input `require-model` (fail when the review ran degraded) and output `degraded`.
