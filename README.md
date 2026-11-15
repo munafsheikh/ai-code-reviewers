@@ -89,10 +89,15 @@ across CI systems.
 
 ```bash
 make ci                  # validate · lint · tests (coverage gate) · docs check · benchmark gate, in the toolbox image
-make shell               # interactive toolbox shell; LOCAL=1 runs targets in a host .venv instead
+make shell               # interactive toolbox shell
 make e2e                 # Compose end-to-end with a deterministic fake runtime
 make security            # gitleaks · semgrep · hadolint · trivy (fs, image) · SBOM
 ```
+
+Docker and make are the only host requirements: every target runs a native command (Python
+CLIs, pytest, ruff) inside the `toolbox` image or orchestrates the published images, and CI
+calls nothing but these targets. Merging to `main` releases automatically: see
+[releases](docs/operations/runbook.md#releases).
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) and [SECURITY.md](SECURITY.md). Licensed under MIT;
 model weights are downloaded by the runtime under their own licenses (recorded per manifest).
