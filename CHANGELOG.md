@@ -4,6 +4,13 @@ All notable changes are documented here. Format: [Keep a Changelog](https://keep
 
 ## [Unreleased]
 
+### Added
+- Pull requests to this repository are reviewed by a real local model: CI self-review runs the `balanced` profile (rules + Ollama `qwen2.5-coder:1.5b` on the CPU runner) instead of rules only, and fails if the model did not run.
+- GitHub action input `require-model` (fail when the review ran degraded) and output `degraded`.
+
+### Fixed
+- Test-environment deploy and rollback build the fake model runtime when the host lacks it; the first automatic release (0.3.0) published everything but failed at deploy.
+
 ## [0.3.0] - 2026-11-15
 
 ### Added

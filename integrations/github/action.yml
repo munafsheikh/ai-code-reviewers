@@ -37,6 +37,9 @@ inputs:
   enforce:
     description: Fail the job when the gate blocks
     default: 'true'
+  require-model:
+    description: Fail the job when the review ran degraded (model runtime or model unavailable) instead of passing on rules alone
+    default: 'false'
   output-dir:
     description: Where review.{json,sarif,md,txt} are written
     default: acr-review
@@ -54,6 +57,9 @@ outputs:
   exit-code:
     description: 0 pass/warn, 1 block, 2 error
     value: ${{ steps.review.outputs.exit_code }}
+  degraded:
+    description: true when model-backed checks could not run and the review fell back to rules
+    value: ${{ steps.review.outputs.degraded }}
   sarif:
     description: Path to the SARIF report
     value: ${{ inputs.output-dir }}/review.sarif
@@ -133,9 +139,12 @@ runs:
           ${LLM_MODEL:+-e LLM_MODEL="$LLM_MODEL"} "$IMAGE" "${args[@]}" < "$RUNNER_TEMP/acr.diff" 2> "$OUT/review.log"
         code=$?
         cat "$OUT/review.log" >&2
-        gate=$(docker run --rm -i --entrypoint python "$IMAGE" -c 'import json,sys; print(json.load(sys.stdin)["gate"]["status"])' < "$OUT/review.json" 2>/dev/null || echo error)
+        read -r gate degraded < <(docker run --rm -i --entrypoint python "$IMAGE" -c \
+          'import json,sys; r=json.load(sys.stdin); print(r["gate"]["status"], str(r["run"]["degraded"]).lower())' \
+          < "$OUT/review.json" 2>/dev/null || echo "error true")
         echo "exit_code=$code" >> "$GITHUB_OUTPUT"
         echo "gate=$gate" >> "$GITHUB_OUTPUT"
+        echo "degraded=$degraded" >> "$GITHUB_OUTPUT"
         [ -f "$OUT/review.md" ] && cat "$OUT/review.md" >> "$GITHUB_STEP_SUMMARY"
         exit 0
 
@@ -170,6 +179,13 @@ runs:
       if: always()
       shell: bash
       run: docker rm -f llm-runtime >/dev/null 2>&1 || true
+
+    - name: Require the model
+      if: inputs.require-model == 'true' && steps.review.outputs.degraded != 'false'
+      shell: bash
+      run: |
+        echo "::error::Review ran degraded (rules only): the model runtime or model was unavailable. See review.log."
+        exit 2
 
     - name: Enforce gate
       if: inputs.enforce == 'true' && steps.review.outputs.exit_code != '0'
