@@ -79,7 +79,7 @@ def test_feature_without_acceptance_criteria_or_with_placeholders():
 
 def test_code_skills_never_review_artifacts_and_refinement_never_reviews_code():
     skills = cfg.load_skills()
-    issue = diff.parse(artifact.issue_diff(dict(READY, body='password = "hunter2hunter2"\n\n## Acceptance criteria\n- [ ] x')))
+    issue = diff.parse(artifact.issue_diff(dict(READY, body="Notes only.\n\n## Acceptance criteria\n- [ ] x")))
     code = diff.parse("--- a/a.py\n+++ b/a.py\n@@ -0,0 +1 @@\n+# Add export TBD\n")
     reaching_issue = {s.id for s in skills.values() if issue[0].matches(s.file_globs, s.languages, s.exclude_globs)}
     assert reaching_issue == {"refinement.issue"}
