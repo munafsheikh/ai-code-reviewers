@@ -1,0 +1,2 @@
+description = "Feature request with untestable wording, a placeholder and no acceptance criteria."
+expected_gate = "block"

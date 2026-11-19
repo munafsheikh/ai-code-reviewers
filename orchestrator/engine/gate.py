@@ -7,6 +7,7 @@ import json
 from pathlib import Path
 
 from orchestrator.contracts import Finding, confidence_rank, severity_rank
+from orchestrator.engine import artifact
 from orchestrator.engine.coverage import is_doc
 from orchestrator.recovery.audit import Audit
 
@@ -29,6 +30,10 @@ def apply_baseline(findings: list[Finding], exceptions: list[dict], audit: Audit
             continue
         # Suppressed findings stay in every report; only the gate ignores them.
         f.suppressed = {"reason": e["reason"], "expires": e["expires"], "owner": e.get("owner", "")}
+
+
+def _coverage_kind(path: str) -> str:
+    return artifact.stage_for(path) or ("documentation" if is_doc(path) else "code")
 
 
 def evaluate(findings: list[Finding], policy: dict, infra_errors: list[str], uncovered: list[str] | None = None) -> dict:
@@ -54,7 +59,7 @@ def evaluate(findings: list[Finding], policy: dict, infra_errors: list[str], unc
     elif blocking or gaps:
         status, code = "block", 1
         reasons += [f"{f.severity} {f.rule_id} at {f.location.path}:{f.location.start_line}" for f in blocking[:20]]
-        reasons += [f"no {'documentation' if is_doc(p) else 'code'} review coverage for {p}" for p in gaps[:20]]
+        reasons += [f"no {_coverage_kind(p)} review coverage for {p}" for p in gaps[:20]]
     elif warning:
         status, code = "warn", 0
     else:

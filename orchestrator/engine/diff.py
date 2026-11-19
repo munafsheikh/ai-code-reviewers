@@ -48,6 +48,9 @@ class FileDiff:
     def matches(self, globs: list[str], languages: list[str], exclude: list[str] | None = None) -> bool:
         if exclude and any(fnmatch(self.path, g) for g in exclude):
             return False
+        # Lifecycle artifacts (virtual "@" paths) are opt-in: code skills' "*" never reaches them.
+        if self.path.startswith("@") and not any(g.startswith("@") for g in globs):
+            return False
         lang_ok = "*" in languages or self.language in languages
         glob_ok = any(fnmatch(self.path, g) or fnmatch(PurePosixPath(self.path).name, g) for g in globs)
         return lang_ok and glob_ok

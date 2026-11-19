@@ -15,7 +15,18 @@ from orchestrator.engine import report
 from orchestrator.recovery.audit import Audit
 
 
+def _read_issue(source: str) -> str:
+    from orchestrator.engine import artifact
+
+    raw = sys.stdin.read() if source == "-" else Path(source).read_text(encoding="utf-8", errors="replace")
+    return artifact.issue_diff(json.loads(raw))
+
+
 def _read_diff(args) -> str:
+    if args.issue:
+        if args.diff or args.git_range:
+            raise ValueError("--issue cannot be combined with --diff or --git-range")
+        return _read_issue(args.issue)
     if args.git_range:
         repo = args.repo or "."
         # The repository is untrusted: disable every git feature that can execute repo-controlled commands.
@@ -52,8 +63,8 @@ def cmd_review(args) -> int:
         os.environ["ACR_SMALL_MODEL"] = args.model
     try:
         diff_text = _read_diff(args)
-    except (OSError, subprocess.CalledProcessError) as e:
-        print(f"[acr] cannot read diff: {e}", file=sys.stderr)
+    except (OSError, subprocess.CalledProcessError, ValueError) as e:  # JSONDecodeError is a ValueError
+        print(f"[acr] cannot read {'issue' if args.issue else 'diff'}: {e}", file=sys.stderr)
         return 2
     result = run_review(
         diff_text,
@@ -256,9 +267,14 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--version", action="version", version=f"acr {__version__}")
     sub = p.add_subparsers(dest="command", required=True)
 
-    r = sub.add_parser("review", help="review a unified diff")
+    r = sub.add_parser("review", help="review a unified diff or a GitHub issue")
     r.add_argument("--diff", help="diff file, or - for stdin (default)")
     r.add_argument("--git-range", help="review `git diff RANGE`, e.g. origin/main...HEAD")
+    r.add_argument(
+        "--issue",
+        help="review a GitHub issue (refinement stage): JSON file or - for stdin, e.g. "
+        "`gh issue view N --json number,title,body,labels,url`",
+    )
     r.add_argument("--repo", help="repository for --git-range (default: cwd)")
     r.add_argument("--paths", nargs="*", help="limit --git-range to these pathspecs")
     r.add_argument(

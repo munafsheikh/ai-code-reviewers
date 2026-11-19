@@ -107,6 +107,50 @@ def companion_trigger(c: dict, f: FileDiff) -> tuple[int, str] | None:
     return next(((n, t) for n, t in f.added if rx.search(t)), None)
 
 
+def expectation_fires(e: dict, document: str) -> bool:
+    """True when ``document`` is in scope for expectation ``e`` and lacks its required content."""
+    if e.get("when") and not _rx(e["when"]).search(document):
+        return False
+    if e.get("unless") and _rx(e["unless"]).search(document):
+        return False
+    return not _rx(e["pattern"]).search(document)
+
+
+def run_expectations(skill: Skill, files: list[FileDiff]) -> list[Finding]:
+    """Absence checks: each matching file, read as one document, must contain ``pattern``.
+
+    Built for lifecycle artifacts (issues, plans, designs) where the defect is what is
+    missing: no acceptance criteria, no steps to reproduce, only a screenshot. Optional
+    ``when`` limits an expectation to documents that match it; ``unless`` exempts documents.
+    """
+    out: list[Finding] = []
+    for f in files:
+        if not f.added or not f.matches(skill.file_globs, skill.languages, skill.exclude_globs):
+            continue
+        document = "\n".join(t for _, t in f.added)
+        for e in skill.expectations:
+            if not expectation_fires(e, document):
+                continue
+            conf = e.get("confidence", "medium")
+            out.append(
+                Finding(
+                    rule_id=e["id"],
+                    skill=skill.id,
+                    title=e["title"],
+                    severity=e["severity"],
+                    category=skill.category,
+                    location=Location(f.path, f.added[0][0], f.added[0][0]),
+                    explanation=e["explanation"],
+                    evidence=redact(f"{f.path}: expected content not found ({e['title']})"),
+                    remediation=e["remediation"],
+                    confidence=conf,
+                    kind="verified" if conf == "high" else "hypothesis",
+                    source="rule",
+                )
+            )
+    return out
+
+
 def run_companions(skill: Skill, files: list[FileDiff]) -> list[Finding]:
     """Diff-level checks: a change to one kind of file must travel with a change to another.
 

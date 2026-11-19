@@ -9,7 +9,7 @@
     "id": {"type": "string", "pattern": "^[a-z0-9-]+(\\.[a-z0-9-]+)+$"},
     "version": {"type": "string", "pattern": "^\\d+\\.\\d+\\.\\d+$"},
     "interface": {"enum": ["acr.skill/v1"]},
-    "category": {"enum": ["security", "code-quality", "architecture", "performance", "maintainability", "testing", "documentation"]},
+    "category": {"enum": ["security", "code-quality", "architecture", "performance", "maintainability", "testing", "documentation", "refinement"]},
     "description": {"type": "string"},
     "languages": {"type": "array", "items": {"type": "string"}},
     "file_globs": {"type": "array", "items": {"type": "string"}},
@@ -56,6 +56,25 @@
         "examples": {"type": "object", "required": ["flag", "pass"], "additionalProperties": false, "properties": {
           "flag": {"type": "array", "items": {"$ref": "#/definitions/companionExample"}},
           "pass": {"type": "array", "items": {"$ref": "#/definitions/companionExample"}}}}
+      }
+    }},
+    "expects": {"type": "array", "description": "Document-level absence checks: each matching file must contain `pattern` (scoped by optional `when` / `unless`).", "items": {
+      "type": "object",
+      "required": ["id", "title", "severity", "confidence", "pattern", "explanation", "remediation", "examples"],
+      "additionalProperties": false,
+      "properties": {
+        "id": {"type": "string", "pattern": "^[A-Z]+-\\d{3}$"},
+        "title": {"type": "string"},
+        "severity": {"enum": ["info", "minor", "major", "critical"]},
+        "confidence": {"enum": ["low", "medium", "high"]},
+        "pattern": {"type": "string", "description": "Content the document must contain."},
+        "when": {"type": "string", "description": "Apply only to documents matching this pattern."},
+        "unless": {"type": "string", "description": "Skip documents matching this pattern."},
+        "explanation": {"type": "string"},
+        "remediation": {"type": "string"},
+        "examples": {"type": "object", "required": ["flag", "pass"], "additionalProperties": false, "properties": {
+          "flag": {"type": "array", "items": {"type": "string"}, "description": "Whole documents the expectation must fire on."},
+          "pass": {"type": "array", "items": {"type": "string"}, "description": "Whole documents it must not fire on."}}}
       }
     }}
   },

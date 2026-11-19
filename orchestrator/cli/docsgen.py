@@ -25,7 +25,8 @@ def skills_md() -> str:
     out = ["# Skill catalog", "", "| Skill | Version | Category | Model tier | Languages | Rules |", "|---|---|---|---|---|---|"]
     skills = cfg.load_skills()
     for s in skills.values():
-        out.append(f"| `{s.id}` | {s.version} | {s.category} | {s.tier} | {', '.join(s.languages)} | {len(s.rules) + len(s.companions)} |")
+        n = len(s.rules) + len(s.companions) + len(s.expectations)
+        out.append(f"| `{s.id}` | {s.version} | {s.category} | {s.tier} | {', '.join(s.languages)} | {n} |")
     out += ["", "## Rules", "", "| Rule | Skill | Severity | Confidence | Kind | Title |", "|---|---|---|---|---|---|"]
     for s in skills.values():
         for r in s.rules:
@@ -48,6 +49,20 @@ def skills_md() -> str:
                 f"| `{c['id']}` | `{s.id}` | {c['severity']} | {' '.join(f'`{g}`' for g in c['when'])} | {pat} | "
                 f"{' '.join(f'`{g}`' for g in c['requires'])} | {c['title']} |"
             )
+    expectations = [(s, e) for s in skills.values() for e in s.expectations]
+    if expectations:
+        out += [
+            "",
+            "## Expectations",
+            "",
+            "Document-level: fire when a matching file (e.g. an issue) does not contain the expected content.",
+            "",
+            "| Rule | Skill | Severity | Confidence | Scope | Title |",
+            "|---|---|---|---|---|---|",
+        ]
+        for s, e in expectations:
+            scope = "; ".join(x for x in (e.get("when") and "when matched", e.get("unless") and "unless matched") if x) or "all"
+            out.append(f"| `{e['id']}` | `{s.id}` | {e['severity']} | {e['confidence']} | {scope} | {e['title']} |")
     return "\n".join(out) + "\n"
 
 
@@ -72,7 +87,7 @@ def rules_md() -> str:
         ]
         if s.prompt:
             out += ["Model findings from this skill are reported as `model." + s.id + "` and are always hypotheses.", ""]
-        for r in s.rules:
+        for r in [*s.rules, *s.expectations]:
             kind = "verified" if r["confidence"] == "high" else "hypothesis"
             out += [
                 f'<a id="{rule_anchor(r["id"])}"></a>',

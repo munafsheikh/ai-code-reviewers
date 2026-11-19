@@ -94,7 +94,7 @@ Source: `orchestrator/schemas/skill.schema.json`
 | `id` | yes | string |  |
 | `version` | yes | string |  |
 | `interface` | yes | acr.skill/v1 |  |
-| `category` | yes | security \| code-quality \| architecture \| performance \| maintainability \| testing \| documentation |  |
+| `category` | yes | security \| code-quality \| architecture \| performance \| maintainability \| testing \| documentation \| refinement |  |
 | `description` | yes | string |  |
 | `languages` |  | array |  |
 | `file_globs` |  | array |  |
@@ -103,6 +103,7 @@ Source: `orchestrator/schemas/skill.schema.json`
 | `prompt` |  | object |  |
 | `rules` |  | array |  |
 | `companions` |  | array | Diff-level rules: files matching `when` changed (with an added line matching `pattern`, if set) but nothing matching `requires` did. |
+| `expects` |  | array | Document-level absence checks: each matching file must contain `pattern` (scoped by optional `when` / `unless`). |
 
 ## `acr.wrapper/v1` — Wrapper manifest (wrappers/**/wrapper.toml)
 

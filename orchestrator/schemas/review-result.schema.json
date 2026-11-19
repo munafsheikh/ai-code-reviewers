@@ -186,7 +186,8 @@
                   "kind": {
                     "enum": [
                       "code",
-                      "docs"
+                      "docs",
+                      "artifact"
                     ]
                   },
                   "categories": {
@@ -348,6 +349,13 @@
             "verified": {
               "type": "boolean",
               "description": "False when a model cited a line outside the changed hunks."
+            },
+            "anchor": {
+              "type": [
+                "string",
+                "null"
+              ],
+              "description": "Section of a lifecycle artifact (nearest heading); null for code."
             }
           }
         },

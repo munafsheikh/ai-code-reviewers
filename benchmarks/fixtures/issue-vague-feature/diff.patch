@@ -1,0 +1,10 @@
+--- /dev/null
++++ b/@issue/52
+@@ -0,0 +1,7 @@
++# Better checkout
++Labels: enhancement
++Issue: https://github.com/example/shop/issues/52
++
++Checkout should be fast and user-friendly for all customers.
++
++Payment providers: TBD

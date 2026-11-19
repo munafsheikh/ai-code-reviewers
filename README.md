@@ -32,6 +32,16 @@ make down
 
 Exit codes: `0` pass/warn, `1` blocked, `2` could not review (strict policy, bad input).
 
+### Review a GitHub issue (refinement stage)
+
+```bash
+gh issue view 42 --json number,title,body,labels,url | acr review --issue - --profile offline
+```
+
+The issue is checked against a Definition of Ready (acceptance criteria, reproducible bug
+reports, no placeholders, no screenshot-only descriptions) by the same rules, model and gate.
+See [lifecycle artifacts](docs/development/extending.md#lifecycle-artifacts).
+
 ## How it works
 
 ```mermaid
@@ -43,7 +53,7 @@ flowchart LR
 
 | Concept | Where | Reference |
 |---|---|---|
-| Skills (rules + prompts): code categories + `documentation` | `skills/` | [catalog](docs/generated/skills.md) · [categories & coverage](docs/development/extending.md#categories-and-coverage) |
+| Skills (rules + prompts): code categories, `documentation`, `refinement` | `skills/` | [catalog](docs/generated/skills.md) · [categories & coverage](docs/development/extending.md#categories-and-coverage) |
 | Models: 18 manifests, 11 families, no weights | `models/registry/` | [catalog](docs/generated/models.md) · [selection guide](docs/operations/model-selection.md) |
 | Profiles `fast · balanced · deep · laptop · gpu · offline · legacy` | `profiles/` | [profiles & policies](docs/generated/profiles.md) |
 | Policies (gate, model trust, baseline) | `policies/` | [profiles & policies](docs/generated/profiles.md) |

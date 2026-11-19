@@ -276,6 +276,84 @@ Model-driven performance review (N+1 queries, blocking I/O, quadratic work). Cat
 
 Model findings from this skill are reported as `model.performance.deep` and are always hypotheses.
 
+<a id="skill-refinement-issue"></a>
+
+## Skill `refinement.issue` (v1.0.0)
+
+Definition of Ready for GitHub issues: acceptance criteria, reproducible bug reports, no placeholders or untestable wording. Category: refinement. Model tier: small.
+
+Model findings from this skill are reported as `model.refinement.issue` and are always hypotheses.
+
+<a id="ref-001"></a>
+
+### REF-001: Untestable wording
+
+Severity **minor** · confidence medium (hypothesis) · languages: *
+
+Wording with no measurable meaning cannot be tested, so the implementer (or an agent) has to guess what done looks like.
+
+**Fix:** Replace it with an observable, testable statement: a number, a named case, or a Given/When/Then.
+
+<a id="ref-002"></a>
+
+### REF-002: Placeholder left in work item
+
+Severity **major** · confidence high (verified) · languages: *
+
+A placeholder means part of the requirement has not been decided. Work started now builds on a guess.
+
+**Fix:** Decide the missing detail before the item is marked ready, or split the undecided part into its own issue.
+
+<a id="ref-101"></a>
+
+### REF-101: Missing acceptance criteria
+
+Severity **major** · confidence high (verified) · languages: *
+
+Without acceptance criteria there is no agreed test for done. Review, QA and UAT each invent their own, and the change thrashes.
+
+**Fix:** Add an `## Acceptance criteria` section: a checklist or Given/When/Then statements a test can verify.
+
+<a id="ref-102"></a>
+
+### REF-102: Bug report without steps to reproduce
+
+Severity **major** · confidence high (verified) · languages: *
+
+Developers rank steps to reproduce as the most useful part of a bug report, and inaccurate or missing steps as the biggest hurdle (Bettenburg et al., FSE 2008).
+
+**Fix:** Add numbered steps from a known starting state, including data, environment and version.
+
+<a id="ref-103"></a>
+
+### REF-103: Bug report without expected and actual behaviour
+
+Severity **major** · confidence medium (hypothesis) · languages: *
+
+Without expected and actual behaviour side by side, nobody can tell whether a fix fixed the right thing.
+
+**Fix:** Add `Expected:` and `Actual:` lines (or sections) describing both behaviours.
+
+<a id="ref-104"></a>
+
+### REF-104: Description is only images
+
+Severity **major** · confidence high (verified) · languages: *
+
+A screenshot with circles drawn on it is not a requirement: it cannot be searched, quoted, tested or read by an agent, and every reader guesses what the marks mean.
+
+**Fix:** Describe in words what is wrong and what should happen instead. Keep the image as supporting evidence.
+
+<a id="ref-105"></a>
+
+### REF-105: Empty description
+
+Severity **major** · confidence high (verified) · languages: *
+
+A title alone leaves the scope, the reason and the acceptance test to whoever picks the item up.
+
+**Fix:** Describe the problem or outcome, why it matters, and how done will be checked.
+
 <a id="skill-security-injection"></a>
 
 ## Skill `security.injection` (v1.0.0)

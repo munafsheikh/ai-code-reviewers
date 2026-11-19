@@ -1,0 +1,2 @@
+description = "Refined feature with a reason and testable acceptance criteria."
+expected_gate = "pass"

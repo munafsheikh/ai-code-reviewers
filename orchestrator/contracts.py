@@ -34,6 +34,7 @@ class Location:
     start_line: int
     end_line: int | None = None
     verified: bool = True  # False when a model cited a line outside the changed hunks
+    anchor: str | None = None  # section inside a lifecycle artifact (nearest heading), e.g. "Acceptance criteria"
 
 
 @dataclass

@@ -17,7 +17,7 @@ def test_docs_need_a_documentation_check_and_code_needs_a_code_check():
     assert rows["README.md"]["kind"] == "docs" and "documentation" in rows["README.md"]["categories"]
     assert rows["src/app.py"]["kind"] == "code" and "security" in rows["src/app.py"]["categories"]
     assert cov["uncovered"] == []
-    assert cov["by_kind"] == {"code": 2, "docs": 2}
+    assert cov["by_kind"] == {"code": 2, "docs": 2, "artifact": 0}
 
 
 def test_profile_without_documentation_skills_leaves_docs_uncovered():
@@ -43,6 +43,6 @@ def test_review_result_reports_coverage_for_code_and_docs():
     d = "--- a/README.md\n+++ b/README.md\n@@ -0,0 +1 @@\n+Install: TBD\n--- a/m.py\n+++ b/m.py\n@@ -0,0 +1 @@\n+x = 1\n"
     result = run_review(d, profile_name="offline")
     cov = result["run"]["coverage"]
-    assert cov["by_kind"] == {"code": 1, "docs": 1} and cov["uncovered"] == []
+    assert cov["by_kind"] == {"code": 1, "docs": 1, "artifact": 0} and cov["uncovered"] == []
     assert {f["rule_id"] for f in result["findings"]} >= {"DOC-101"}
     assert result["gate"]["status"] == "block"

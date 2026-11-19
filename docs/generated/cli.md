@@ -10,7 +10,7 @@ Offline, model-agnostic AI code review.
 
 positional arguments:
   {review,validate,bench,models,skills,health,serve,docs,evolve}
-    review              review a unified diff
+    review              review a unified diff or a GitHub issue
     validate            validate manifests, schemas, rule examples,
                         permissions, fixtures
     bench               run the benchmark suite
@@ -29,9 +29,9 @@ options:
 ## `acr review`
 
 ```text
-usage: acr review [-h] [--diff DIFF] [--git-range GIT_RANGE] [--repo REPO]
-                  [--paths [PATHS ...]] [--profile PROFILE] [--policy POLICY]
-                  [--format FORMAT] [--out-dir OUT_DIR]
+usage: acr review [-h] [--diff DIFF] [--git-range GIT_RANGE] [--issue ISSUE]
+                  [--repo REPO] [--paths [PATHS ...]] [--profile PROFILE]
+                  [--policy POLICY] [--format FORMAT] [--out-dir OUT_DIR]
                   [--stdout {json,sarif,markdown,legacy}] [--model MODEL]
                   [--model-host MODEL_HOST] [--revision REVISION]
                   [--repository REPOSITORY] [-v]
@@ -41,6 +41,9 @@ options:
   --diff DIFF           diff file, or - for stdin (default)
   --git-range GIT_RANGE
                         review `git diff RANGE`, e.g. origin/main...HEAD
+  --issue ISSUE         review a GitHub issue (refinement stage): JSON file or
+                        - for stdin, e.g. `gh issue view N --json
+                        number,title,body,labels,url`
   --repo REPO           repository for --git-range (default: cwd)
   --paths [PATHS ...]   limit --git-range to these pathspecs
   --profile PROFILE     profile id or path (default: $ACR_PROFILE or balanced)

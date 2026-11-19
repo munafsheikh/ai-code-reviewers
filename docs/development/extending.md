@@ -27,6 +27,27 @@ triggering files only.
 definitions, new make targets, CLI options and env vars, schemas/APIs) that arrive without a
 README, docs or CHANGELOG change. Pin bumps (`uses:`, `FROM`, `image:`) and tests do not trigger it.
 
+## Add an expectation (document-level)
+
+Line rules find what is present. An `[[expects]]` entry finds what is missing: it reads each
+matching file as one document and fires when `pattern` is **not** found. Optional `when` limits it
+to documents that match (e.g. issues labelled `bug`); `unless` exempts documents. Fields: `id`,
+`title`, `severity`, `confidence`, `pattern`, optional `when` / `unless`, `explanation`,
+`remediation`, and `examples.flag` / `examples.pass` (whole documents, run by validation). The
+finding is reported at the document's first line.
+
+## Lifecycle artifacts
+
+Work items other than code are reviewed as one added file at a virtual path starting with `@`.
+`acr review --issue` renders a GitHub issue as `@issue/<number>`: a `# title` line, `Labels:`
+and `Issue:` lines, a blank line, then the body. Rules, expectations and model prompts see that
+text; findings link to the issue and carry `location.anchor`, the nearest heading.
+
+Artifacts are opt-in: a skill reaches them only through a `file_globs` entry starting with `@`
+(`refinement.issue` uses `@issue/*`), so code skills with `*` never review an issue. Coverage
+reports them as kind `artifact`, and each needs a check from its stage's category
+(`refinement` for issues).
+
 ## Categories and coverage
 
 Every skill has one `category`. Code categories: `security`, `code-quality`, `architecture`,

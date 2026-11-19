@@ -1,0 +1,12 @@
+--- /dev/null
++++ b/@issue/63
+@@ -0,0 +1,9 @@
++# Export invoices to CSV
++Labels: enhancement
++Issue: https://github.com/example/shop/issues/63
++
++Finance reconciles invoices in spreadsheets every month.
++
++## Acceptance criteria
++- [ ] Given 3 invoices in March, when I export March, then the .csv has 3 data rows
++- [ ] Amounts use a dot decimal separator regardless of locale
