@@ -1,0 +1,2 @@
+description = "GitHub bug report that is only a marked-up screenshot: no words, no steps, no expected vs actual."
+expected_gate = "block"

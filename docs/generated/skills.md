@@ -15,6 +15,7 @@
 | `lang.typescript.types` | 1.0.0 | maintainability | none | typescript | 2 |
 | `maintainability.hygiene` | 1.1.0 | maintainability | none | * | 4 |
 | `performance.deep` | 1.0.0 | performance | large | * | 0 |
+| `refinement.issue` | 1.0.0 | refinement | small | * | 7 |
 | `security.injection` | 1.0.0 | security | small | java, python, javascript, typescript, kotlin, csharp, go, ruby | 5 |
 | `security.secrets` | 1.0.0 | security | none | * | 4 |
 | `testing.hygiene` | 1.0.0 | testing | none | java, python, javascript, typescript, kotlin | 3 |
@@ -42,6 +43,8 @@
 | `MNT-002` | `maintainability.hygiene` | info | high | verified | Unresolved FIXME/XXX marker |
 | `MNT-003` | `maintainability.hygiene` | info | medium | hypothesis | Console output in application code |
 | `MNT-004` | `maintainability.hygiene` | critical | high | verified | Unresolved merge conflict marker |
+| `REF-001` | `refinement.issue` | minor | medium | hypothesis | Untestable wording |
+| `REF-002` | `refinement.issue` | major | high | verified | Placeholder left in work item |
 | `INJ-001` | `security.injection` | critical | medium | hypothesis | SQL built by string concatenation |
 | `INJ-002` | `security.injection` | major | medium | hypothesis | Dynamic code evaluation |
 | `INJ-003` | `security.injection` | critical | medium | hypothesis | Shell command built from variables |
@@ -65,3 +68,15 @@ Diff-level: fire when files matching *When* change and nothing matching *Require
 | `DOC-002` | `documentation.sync` | major | `Makefile` `GNUmakefile` `*.mk` | yes | `*.md` `*.rst` `*.adoc` `docs/*` `doc/*` | New make target without documentation |
 | `DOC-003` | `documentation.sync` | major | `*.py` `*.java` `*.kt` `*.js` `*.mjs` `*.cjs` `*.ts` `*.tsx` `*.go` `*.rs` `*.rb` `*.cs` | yes | `*.md` `*.rst` `*.adoc` `docs/*` `doc/*` | New CLI option or environment variable without documentation |
 | `DOC-004` | `documentation.sync` | major | `*.schema.json` `*openapi*.json` `*openapi*.yaml` `*openapi*.yml` `*swagger*.json` `*swagger*.yaml` `*.proto` `*.graphql` `*.graphqls` `*.avsc` | - | `*.md` `*.rst` `*.adoc` `docs/*` `doc/*` | Interface contract changed without documentation |
+
+## Expectations
+
+Document-level: fire when a matching file (e.g. an issue) does not contain the expected content.
+
+| Rule | Skill | Severity | Confidence | Scope | Title |
+|---|---|---|---|---|---|
+| `REF-101` | `refinement.issue` | major | high | unless matched | Missing acceptance criteria |
+| `REF-102` | `refinement.issue` | major | high | when matched | Bug report without steps to reproduce |
+| `REF-103` | `refinement.issue` | major | medium | when matched | Bug report without expected and actual behaviour |
+| `REF-104` | `refinement.issue` | major | high | when matched | Description is only images |
+| `REF-105` | `refinement.issue` | major | high | all | Empty description |

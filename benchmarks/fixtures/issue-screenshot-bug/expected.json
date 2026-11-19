@@ -1,0 +1,19 @@
+{
+  "findings": [
+    {
+      "path": "@issue/41",
+      "line": 1,
+      "rule_id": "REF-102"
+    },
+    {
+      "path": "@issue/41",
+      "line": 1,
+      "rule_id": "REF-103"
+    },
+    {
+      "path": "@issue/41",
+      "line": 1,
+      "rule_id": "REF-104"
+    }
+  ]
+}

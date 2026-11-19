@@ -125,7 +125,13 @@ def to_markdown(result: dict[str, Any]) -> str:
     cov = run.get("coverage")
     if cov:
         cats = ", ".join(f"{c} ({n})" for c, n in cov["by_category"].items()) or "none"
-        lines += ["", f"Coverage: {cov['by_kind']['code']} code · {cov['by_kind']['docs']} docs files — {cats}"]
+        arts = cov["by_kind"].get("artifact", 0)
+        lines += [
+            "",
+            f"Coverage: {cov['by_kind']['code']} code · {cov['by_kind']['docs']} docs files"
+            + (f" · {arts} work items" if arts else "")
+            + f" — {cats}",
+        ]
         if cov["uncovered"]:
             lines += ["", "> **Not reviewed by any check:** " + ", ".join(f"`{p}`" for p in cov["uncovered"][:20])]
     lines += ["", "| Severity | Count |", "|---|---|"]

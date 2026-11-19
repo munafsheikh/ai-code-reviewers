@@ -65,8 +65,8 @@ def check_skills(root: Path, r: Report) -> None:
             r.err(f"{rel}: prompt file {p.get('file')} not found")
         if d.get("tier", "none") != "none" and not p:
             r.err(f"{rel}: tier {d['tier']} requires a [prompt]")
-        if not p and not d.get("rules") and not d.get("companions"):
-            r.err(f"{rel}: skill has neither rules, companions nor a prompt")
+        if not p and not d.get("rules") and not d.get("companions") and not d.get("expects"):
+            r.err(f"{rel}: skill has neither rules, companions, expectations nor a prompt")
         for rule in d.get("rules", []):
             rid = rule.get("id")
             if rid in seen_rules:
@@ -93,6 +93,12 @@ def check_skills(root: Path, r: Report) -> None:
                 r.err(f"{rel}: duplicate rule id {cid} (also {seen_rules[cid]})")
             seen_rules[cid] = rel
             check_companion(rel, d, c, r)
+        for e in d.get("expects", []):
+            eid = e.get("id")
+            if eid in seen_rules:
+                r.err(f"{rel}: duplicate rule id {eid} (also {seen_rules[eid]})")
+            seen_rules[eid] = rel
+            check_expectation(rel, e, r)
 
 
 def _simulated_diff(example: dict) -> list:
@@ -137,6 +143,30 @@ def check_companion(rel: Path, manifest: dict, c: dict, r: Report) -> None:
             if bool(run_companions(skill, _simulated_diff(case))) != want:
                 verb = "fire" if want else "NOT fire"
                 r.err(f"{rel}: companion {cid} should {verb} for example {case}")
+
+
+def check_expectation(rel: Path, e: dict, r: Report) -> None:
+    """An expectation's examples are whole documents: each `flag` must fire it, each `pass` must not."""
+    from orchestrator.engine.rules import expectation_fires
+
+    eid = e.get("id")
+    if not e.get("pattern"):
+        r.err(f"{rel}: expectation {eid}: `pattern` must be non-empty")
+        return
+    try:
+        for key in ("pattern", "when", "unless"):
+            if e.get(key):
+                re.compile(e[key])
+    except re.error as err:
+        r.err(f"{rel}: expectation {eid}: invalid regex: {err}")
+        return
+    ex = e.get("examples", {})
+    for want, docs in ((True, ex.get("flag", [])), (False, ex.get("pass", []))):
+        for doc in docs:
+            r.checked += 1
+            if expectation_fires(e, doc) != want:
+                verb = "fire" if want else "NOT fire"
+                r.err(f"{rel}: expectation {eid} should {verb} for example {doc!r}")
 
 
 def check_models(root: Path, r: Report) -> None:

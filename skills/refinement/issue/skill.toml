@@ -1,0 +1,93 @@
+id = "refinement.issue"
+version = "1.0.0"
+interface = "acr.skill/v1"
+category = "refinement"
+description = "Definition of Ready for GitHub issues: acceptance criteria, reproducible bug reports, no placeholders or untestable wording."
+languages = ["*"]
+file_globs = ["@issue/*"]
+tier = "small"
+
+[prompt]
+file = "prompt.md"
+output = "findings-json"
+
+[[rules]]
+id = "REF-001"
+title = "Untestable wording"
+severity = "minor"
+confidence = "medium"
+pattern = '''(?i)\b(?:user[- ]friendly|intuitive(?:ly)?|seamless(?:ly)?|robust(?:ly)?|blazing(?:ly)? fast|as (?:fast|soon|quickly) as possible|asap|and so on|as needed|as appropriate|if possible|where possible|handles? (?:all|any) (?:edge )?cases|should (?:just )?work|works? (?:properly|correctly|as expected|fine))\b|\betc\b'''
+explanation = "Wording with no measurable meaning cannot be tested, so the implementer (or an agent) has to guess what done looks like."
+remediation = "Replace it with an observable, testable statement: a number, a named case, or a Given/When/Then."
+examples.match = ["The page should be fast and user-friendly", "Handle all edge cases", "Export to CSV, PDF, etc.", "Login should work properly", "Load results as fast as possible"]
+examples.no_match = ["Then the page loads in under 2 seconds at p95", "Given an expired card, when paying, then show error E-402", "The fix etches the value"]
+
+[[rules]]
+id = "REF-002"
+title = "Placeholder left in work item"
+severity = "major"
+confidence = "high"
+pattern = '''\b(?:TBD|TBC|TODO|FIXME)\b|\?{3,}|<(?:insert|add|fill in|describe)\b[^>]*>|(?i:lorem ipsum)'''
+explanation = "A placeholder means part of the requirement has not been decided. Work started now builds on a guess."
+remediation = "Decide the missing detail before the item is marked ready, or split the undecided part into its own issue."
+examples.match = ["Limit: TBD", "Owner: ???", "Steps: <insert steps here>", "Lorem ipsum dolor"]
+examples.no_match = ["Limit: 5 per day", "Is this still needed?", "Use <details> to collapse logs"]
+
+[[expects]]
+id = "REF-101"
+title = "Missing acceptance criteria"
+severity = "major"
+confidence = "high"
+pattern = '''(?im)^\s{0,3}#{1,6}\s*(?:acceptance criteria|definition of done)\b|^\s*(?:\*\*)?(?:acceptance criteria|ac)(?:\*\*)?\s*:|^\s*(?:[-*]\s*)?(?:\*\*)?(?:given|when|then)(?:\*\*)?\s+\S|^\s*[-*]\s+\[[ xX]\]\s+\S'''
+unless = '''(?im)^Labels:.*\bbug\b'''
+explanation = "Without acceptance criteria there is no agreed test for done. Review, QA and UAT each invent their own, and the change thrashes."
+remediation = "Add an `## Acceptance criteria` section: a checklist or Given/When/Then statements a test can verify."
+examples.flag = ["# Add CSV export\n\nUsers want to export reports."]
+examples.pass = ["# Add CSV export\n\n## Acceptance criteria\n- [ ] Export button downloads a .csv", "# Add CSV export\n\nGiven a report, when I click export, then a .csv downloads", "# Crash on save\nLabels: bug\n\nIt crashes."]
+
+[[expects]]
+id = "REF-102"
+title = "Bug report without steps to reproduce"
+severity = "major"
+confidence = "high"
+pattern = '''(?im)^\s{0,3}#{1,6}\s*(?:steps to reproduce|steps|reproduction|repro|how to reproduce)\b|^\s*(?:\*\*)?(?:steps to reproduce|repro steps|steps)(?:\*\*)?\s*:|^\s*1[.)]\s+\S'''
+when = '''(?im)^Labels:.*\bbug\b'''
+explanation = "Developers rank steps to reproduce as the most useful part of a bug report, and inaccurate or missing steps as the biggest hurdle (Bettenburg et al., FSE 2008)."
+remediation = "Add numbered steps from a known starting state, including data, environment and version."
+examples.flag = ["# Crash on save\nLabels: bug\n\nIt crashes when I save."]
+examples.pass = ["# Crash on save\nLabels: bug\n\n## Steps to reproduce\n1. Open a draft\n2. Click save", "# Crash on save\nLabels: bug\n\n1. Open a draft\n2. Click save", "# Add export\n\nNo label, not a bug."]
+
+[[expects]]
+id = "REF-103"
+title = "Bug report without expected and actual behaviour"
+severity = "major"
+confidence = "medium"
+pattern = '''(?is)\bexpected\b.*\bactual\b|\bactual\b.*\bexpected\b'''
+when = '''(?im)^Labels:.*\bbug\b'''
+explanation = "Without expected and actual behaviour side by side, nobody can tell whether a fix fixed the right thing."
+remediation = "Add `Expected:` and `Actual:` lines (or sections) describing both behaviours."
+examples.flag = ["# Crash on save\nLabels: bug\n\n1. Click save\nIt crashes."]
+examples.pass = ["# Crash on save\nLabels: bug\n\nExpected: the draft saves\nActual: error 500", "# Add export\n\nNo label."]
+
+[[expects]]
+id = "REF-104"
+title = "Description is only images"
+severity = "major"
+confidence = "high"
+pattern = '''(?m)^(?![ \t]*(?:#|Labels:|Issue:|!\[|<img))[^\n]*?\w+(?:[^\w\n]+\w+){5,}'''
+when = '''!\[[^\]]*\]\([^)]+\)|<img\b'''
+explanation = "A screenshot with circles drawn on it is not a requirement: it cannot be searched, quoted, tested or read by an agent, and every reader guesses what the marks mean."
+remediation = "Describe in words what is wrong and what should happen instead. Keep the image as supporting evidence."
+examples.flag = ["# Fix this\n\n![image](https://github.com/user-attachments/assets/abc)", "# Fix this\n\n<img width=\"800\" src=\"https://example.com/a.png\">"]
+examples.pass = ["# Fix this\n\nThe total on the invoice page ignores the discount line.\n\n![image](https://github.com/user-attachments/assets/abc)", "# Add export\n\nNo images here."]
+
+[[expects]]
+id = "REF-105"
+title = "Empty description"
+severity = "major"
+confidence = "high"
+pattern = '''(?m)^(?![ \t]*(?:#|Labels:|Issue:))[ \t]*\S'''
+explanation = "A title alone leaves the scope, the reason and the acceptance test to whoever picks the item up."
+remediation = "Describe the problem or outcome, why it matters, and how done will be checked."
+examples.flag = ["# Improve search\nLabels: enhancement\nIssue: https://github.com/o/r/issues/1\n\n"]
+examples.pass = ["# Improve search\n\nSearch ignores accents."]

@@ -41,6 +41,7 @@ class Skill:
     rules: list[dict[str, Any]]
     raw: dict[str, Any] = field(repr=False, default_factory=dict)
     companions: list[dict[str, Any]] = field(default_factory=list)
+    expectations: list[dict[str, Any]] = field(default_factory=list)
 
 
 @dataclass
@@ -92,6 +93,7 @@ def load_skills(root: Path | None = None) -> dict[str, Skill]:
             rules=d.get("rules", []),
             raw=d,
             companions=d.get("companions", []),
+            expectations=d.get("expects", []),
         )
     return out
 

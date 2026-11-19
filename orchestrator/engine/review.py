@@ -12,10 +12,10 @@ from typing import Any
 from orchestrator import __version__
 from orchestrator import config as cfg
 from orchestrator.contracts import RESULT_SCHEMA, SEVERITIES, AdapterError, Finding, GenerationRequest, ModelAdapter
-from orchestrator.engine import coverage, gate, links, parse, prompt
+from orchestrator.engine import artifact, coverage, gate, links, parse, prompt
 from orchestrator.engine import diff as diffmod
 from orchestrator.engine.adapters import load_adapter
-from orchestrator.engine.rules import run_companions, run_rules
+from orchestrator.engine.rules import run_companions, run_expectations, run_rules
 from orchestrator.recovery.audit import Audit
 from orchestrator.recovery.cache import CompletionCache, key_for
 from orchestrator.recovery.retry import CircuitBreaker, call_with_retry
@@ -241,7 +241,7 @@ def run_review(
     else:
         if profile.get("rules", {}).get("enabled", True):
             for s in skills:
-                findings += run_rules(s, files) + run_companions(s, files)
+                findings += run_rules(s, files) + run_companions(s, files) + run_expectations(s, files)
         routes = router.plan(skills, profile, models, policy)
         if files and profile.get("routing", {}).get("tiers"):
             for r in routes:
@@ -256,6 +256,10 @@ def run_review(
                     if len(ctx.infra_errors) == errors_before:  # a failed tier does not count as coverage
                         model_backed.update(s.id for s in r.skills)
         findings = merge(findings)
+        by_path = {f.path: f for f in files}
+        for f in findings:  # place findings inside lifecycle artifacts by section
+            if artifact.is_artifact(f.location.path) and f.location.path in by_path:
+                f.location.anchor = artifact.anchor(by_path[f.location.path].added, f.location.start_line)
     cov = coverage.compute(skills, files, model_backed)
     baseline_file = policy.get("baseline", {}).get("file")
     gate.apply_baseline(findings, gate.load_baseline(root / baseline_file if baseline_file else None), audit)
@@ -268,7 +272,9 @@ def run_review(
     for d in fdicts:  # traceability: exact lines at the reviewed revision + the rule's documentation
         loc = d["location"]
         d["links"] = {
-            "location": links.location_url(repository, revision, loc["path"], loc["start_line"], loc["end_line"]),
+            "location": artifact.web_url(repository, loc["path"])
+            if artifact.is_artifact(loc["path"])
+            else links.location_url(repository, revision, loc["path"], loc["start_line"], loc["end_line"]),
             "rule": links.rule_url(d["rule_id"], d["skill"], __version__),
         }
     return {
