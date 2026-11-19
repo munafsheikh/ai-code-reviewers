@@ -4,6 +4,8 @@ All notable changes are documented here. Format: [Keep a Changelog](https://keep
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-11-19
+
 ### Added
 - Refinement-stage review of GitHub issues: `acr review --issue FILE|-` takes `gh issue view N --json number,title,body,labels,url`, a REST issue or an `issues` webhook payload and reviews it with the same rules, model, gate and outputs as a diff. New skill `refinement.issue` (REF-001, REF-002, REF-101 to REF-105): untestable wording, placeholders, missing acceptance criteria, bug reports without steps to reproduce or expected vs actual, image-only descriptions, empty descriptions.
 - Expectation rules (`[[expects]]` in `skill.toml`): document-level absence checks with optional `when` / `unless` scope and self-testing `examples.flag` / `examples.pass`.
