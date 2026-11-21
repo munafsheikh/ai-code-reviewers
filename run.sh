@@ -3,4 +3,6 @@
 # Podman is the only host requirement; the task logic lives in infrastructure/scripts/tasks.py.
 set -eu
 cd "$(dirname "$0")"
-exec podman compose run --rm --build -T toolbox python infrastructure/scripts/tasks.py "$@"
+# Build output goes to stderr, so a task's stdout stays clean for callers that capture it.
+podman compose build toolbox >&2
+exec podman compose run --rm -T toolbox python infrastructure/scripts/tasks.py "$@"

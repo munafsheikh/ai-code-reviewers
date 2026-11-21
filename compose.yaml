@@ -119,6 +119,7 @@ services:
       target: toolbox
       args: [PYTHON_IMAGE]          # unset = the Dockerfile default; CI sets it for the minimum Python
     image: ${ACR_TOOLBOX_IMAGE:-acr-toolbox:local}
+    pull_policy: never            # local image: built by ./run.sh and py.sh, never pulled
     # Rootless Podman maps container root to the invoking user: files written to /src stay yours.
     user: "0:0"
     network_mode: none
@@ -138,6 +139,7 @@ services:
       dockerfile: infrastructure/docker/Dockerfile
       target: base
     image: acr-base:local
+    pull_policy: never
 
 networks:
   backend:

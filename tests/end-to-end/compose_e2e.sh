@@ -4,7 +4,19 @@
 set -euo pipefail
 cd "$(dirname "$0")/../.."
 export ACR_HOST_PORT="${ACR_HOST_PORT:-18089}" COMPOSE_PROJECT_NAME="${COMPOSE_PROJECT_NAME:-acr-e2e}"
-cleanup() { podman compose --profile test down --volumes --remove-orphans >/dev/null 2>&1 || true; }
+cleanup() {
+  local rc=$?
+  if [ "$rc" != 0 ]; then  # keep diagnostics (uploaded by CI) before tearing down
+    mkdir -p out/e2e
+    podman compose --profile test ps -a > out/e2e/ps.txt 2>&1 || true
+    podman compose --profile test logs --no-color --tail=200 > out/e2e/logs.txt 2>&1 || true
+    for c in $(podman ps -aq --filter "label=com.docker.compose.project=$COMPOSE_PROJECT_NAME"); do
+      podman inspect --format '{{.Name}} {{json .State.Health}}' "$c"
+    done > out/e2e/health.txt 2>&1 || true
+    cat out/e2e/ps.txt out/e2e/health.txt out/e2e/logs.txt >&2 || true
+  fi
+  podman compose --profile test down --volumes --remove-orphans >/dev/null 2>&1 || true
+}
 trap cleanup EXIT
 podman compose --profile test up -d --build --wait --wait-timeout 180
 BASE_URL="http://127.0.0.1:$ACR_HOST_PORT" infrastructure/scripts/smoke.sh
