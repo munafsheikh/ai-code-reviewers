@@ -4,6 +4,12 @@ All notable changes are documented here. Format: [Keep a Changelog](https://keep
 
 ## [Unreleased]
 
+### Added
+- `AGENTS.md`: entry point for AI coding agents, linking to the documents that own each fact, with agent-only rules. `CLAUDE.md`, `GEMINI.md` and `.github/copilot-instructions.md` are symlinks to it; the README, CONTRIBUTING, SECURITY and the architecture, development, operations and security docs link back. `validate` requires it.
+
+### Fixed
+- The link checker skips symlinked Markdown files, whose relative links resolve from their target.
+
 ## [0.5.0] - 2026-11-19
 
 ### Added

@@ -111,3 +111,5 @@ calls nothing but these targets. Merging to `main` releases automatically: see
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) and [SECURITY.md](SECURITY.md). Licensed under MIT;
 model weights are downloaded by the runtime under their own licenses (recorded per manifest).
+
+<sub>For AI coding agents: [agent guide](AGENTS.md).</sub>

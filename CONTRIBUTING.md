@@ -13,3 +13,5 @@
 6. Keep the runtime dependency-free (stdlib only). Dev tooling is pinned in `requirements-dev.txt` and baked into the `toolbox` stage of `infrastructure/docker/Dockerfile`; behind a TLS-intercepting proxy build it with `make toolbox TOOLBOX_BUILD_ARGS="--build-arg HTTPS_PROXY=... --secret id=ca,src=/path/ca.crt"`.
 
 Commit messages: imperative, scoped (`engine: ...`, `skills: ...`). One logical change per PR.
+
+<sub>For AI coding agents: [agent guide](AGENTS.md).</sub>

@@ -84,3 +84,5 @@ manifest under `evidence`):
 [Phi-4-mini card](https://huggingface.co/microsoft/Phi-4-mini-instruct).
 Several of these are secondary sources; the model-matrix pull and each upstream license file
 remain authoritative.
+
+<sub>For AI coding agents: [agent guide](../../AGENTS.md).</sub>
