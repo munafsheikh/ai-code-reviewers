@@ -1,6 +1,7 @@
 name: CI
 # Every PR and push to main: validate, lint, test, docs, benchmarks, container build,
-# compose end-to-end, fixture reviews with schema validation, quality gates.
+# compose end-to-end, fixture reviews with schema validation, quality gates, and the
+# platform's own review in three parallel lanes (code, security, docs) merged into one gate.
 on:
   pull_request:
   push:
@@ -86,26 +87,58 @@ jobs:
           path: out/
           retention-days: 7
 
-  self-review:
-    # Dogfooding, enforced: the platform reviews its own pull requests with every code and
-    # documentation category in one pass: deterministic rules plus a real local model
-    # (Ollama + qwen2.5-coder 1.5B on the CPU runner, `balanced` profile). The gate blocks on
-    # major findings, on any changed file no check covered, and when the model did not run.
-    # Excluded: files that carry attack and secret samples on purpose (rule tests, fixtures).
-    if: github.event_name == 'pull_request'
+  review:
+    # Dogfooding, in three parallel lanes. Each runs the reviewer with rules plus a real local
+    # model (qwen2.5-coder 1.5B on the CPU runner) on its own skill set; `review-gate` merges
+    # them and enforces one gate. Pull requests are reviewed against their base, pushes to main
+    # against the previous tip, so Release (and deployment) only follows reviewed commits.
+    # Excluded paths carry attack and secret samples on purpose (rule tests, fixtures, the
+    # documented review examples).
+    name: review (${{ matrix.lane }})
     runs-on: ubuntu-latest
     timeout-minutes: 40
-    permissions:
-      contents: read
-      pull-requests: write
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - {lane: code, skills: "code-quality.*,maintainability.*,testing.*,architecture.*,performance.*,lang.*"}
+          - {lane: security, skills: "security.*"}
+          - {lane: docs, skills: "documentation.*,refinement.*"}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with: {fetch-depth: 0}
       - uses: ./integrations/github
         with:
           profile: balanced
+          skills: ${{ matrix.skills }}
+          base-ref: ${{ github.event_name == 'push' && github.event.before || '' }}
+          # CI pulls into stock Ollama; on a user's machine the runtime image has the model baked in.
+          runtime-image: ollama/ollama:0.40.11@sha256:dea72d1e22270fe095b68fdf756d2b489d615643c5a2eaebbc5f569181e322d8
           pull-models: qwen2.5-coder:1.5b
+          paths: ':!benchmarks/fixtures :!skills/security/secrets :!tests/unit/test_rules.py :!tests/integration/test_review_pipeline.py :!docs/usage/examples.md'
+          output-dir: acr-review-${{ matrix.lane }}
+          artifact-name: review-${{ matrix.lane }}
+          comment: 'false'
+          enforce: 'false'     # the merged gate decides
+
+  review-gate:
+    # One result from the three lanes: findings de-duplicated, coverage judged across lanes,
+    # one PR comment, one gate. Blocks on major findings, uncovered files or a missing model.
+    needs: review
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      pull-requests: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with: {pattern: review-*, path: lanes}
+      - uses: ./integrations/github
+        with:
+          merge-results: lanes/review-code/review.json lanes/review-security/review.json lanes/review-docs/review.json
+          lane-names: code,security,docs
           require-model: 'true'
-          paths: ':!benchmarks/fixtures :!skills/security/secrets :!tests/unit/test_rules.py :!tests/integration/test_review_pipeline.py'
           enforce: 'true'
-          comment: ${{ github.event.pull_request.head.repo.full_name == github.repository }}
+          comment: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository }}

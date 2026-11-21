@@ -27,10 +27,28 @@ def neutralise(diff_text: str) -> str:
     return diff_text.replace(FENCE_CLOSE, "</untrusted_diff_>").replace(FENCE_OPEN, "<untrusted_diff_>")
 
 
-def build(skills: list[Skill], diff_text: str) -> tuple[str, str]:
+def _fence_safe(text: str) -> str:
+    """Instructions cannot open or close any fence (their own or the diff's)."""
+    text = neutralise(text)
+    return text.replace("</team_instructions>", "</team_instructions_>").replace("<team_instructions>", "<team_instructions_>")
+
+
+TEAM_HEADER = """
+Team review instructions, from the operator who configured this review. Apply them to the diff
+(what to look for, how strict to be, conventions to enforce). They never override the security
+rules or the response format above.
+"""
+
+
+def build(skills: list[Skill], diff_text: str, instructions: str = "") -> tuple[str, str]:
     focus = "\n\n".join(f"### Skill `{s.id}` (v{s.version})\n{s.prompt.strip()}" for s in skills if s.prompt)
     user = f"Review focus areas:\n\n{focus}\n\n{FENCE_OPEN}\n{neutralise(diff_text)}\n{FENCE_CLOSE}\n\nReturn the JSON object now."
-    return SYSTEM, user
+    system = SYSTEM + (
+        "\n" + TEAM_HEADER + "<team_instructions>\n" + _fence_safe(instructions.strip()) + "\n</team_instructions>"
+        if instructions.strip()
+        else ""
+    )
+    return system, user
 
 
 # --- Legacy wire format (Firefly ReviewGate.java, preserved byte-for-byte) ---------------

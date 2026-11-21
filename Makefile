@@ -21,8 +21,8 @@ PROFILE ?= balanced
 OUT ?= out
 
 .DEFAULT_GOAL := help
-.PHONY: help toolbox toolbox-ref shell lint fmt test test-fast test-security test-resilience schema-check validate docs docs-check bench bench-gate review review-offline \
-        build images up up-test down logs smoke e2e resilience security security-image sbom ci evolve deploy-test teardown rollback watchdog clean \
+.PHONY: help toolbox toolbox-ref shell lint fmt test test-fast test-security test-resilience schema-check validate docs docs-site docs-check bench bench-gate review review-offline \
+        build runtime images up up-test down logs smoke e2e resilience prove-offline security security-image sbom ci evolve deploy-test teardown rollback watchdog clean \
         release-plan release-apply release-check release-notes release-image-tags
 
 help: ## list targets
@@ -69,6 +69,9 @@ schema-check: $(NEED_TOOLBOX) ## validate review result JSON files: make schema-
 docs: $(NEED_TOOLBOX) ## regenerate docs/generated from source definitions
 	$(ACR) docs generate
 
+docs-site: $(NEED_TOOLBOX) ## build the documentation site (MkDocs, strict) into OUT/site
+	$(RUN) mkdocs build --strict --site-dir $(OUT)/site
+
 docs-check: $(NEED_TOOLBOX) ## fail if generated docs drifted or links are broken
 	$(ACR) docs check
 	$(RUN) $(PY) infrastructure/scripts/check_links.py
@@ -87,6 +90,9 @@ review-offline: $(NEED_TOOLBOX) ## review DIFF, rules only, all formats into OUT
 
 build: ## build the reviewer image
 	docker build -f infrastructure/docker/Dockerfile --target reviewer -t $(IMAGE) --build-arg REVISION=$$(git rev-parse HEAD 2>/dev/null || echo unknown) .
+
+runtime: ## build the model runtime with MODELS baked in (default qwen2.5-coder:1.5b); downloads once, at build time
+	docker build -f infrastructure/docker/Dockerfile --target runtime $(if $(MODELS),--build-arg MODELS="$(MODELS)") -t $(or $(RUNTIME_IMAGE),acr-runtime:local) .
 
 images: ## build every published image locally (base, reviewer, toolbox, fake-runtime) as acr-<target>:local
 	for t in base reviewer toolbox fake-runtime; do \
@@ -112,6 +118,9 @@ e2e: ## build, start with fake runtime, smoke, review fixtures in the container,
 
 resilience: ## watchdog bounded restart + circuit, deploy auto-rollback
 	tests/end-to-end/resilience.sh
+
+prove-offline: ## prove reviews cannot leave the machine: internal network, egress probes, model review (IMAGE, RUNTIME_IMAGE, DIFF)
+	infrastructure/scripts/prove-offline.sh $(IMAGE) $(or $(RUNTIME_IMAGE),acr-runtime:local) $(DIFF)
 
 security: ## secrets, dependencies, SAST, Dockerfile and image scans (pinned scanner images)
 	infrastructure/scripts/security-scan.sh $(IMAGE)

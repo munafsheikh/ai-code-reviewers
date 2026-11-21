@@ -1,5 +1,5 @@
 id = "documentation.content"
-version = "1.0.0"
+version = "1.1.0"
 interface = "acr.skill/v1"
 category = "documentation"
 description = "Defects inside documentation: placeholders, conflict markers, machine-local paths, insecure links; model check for docs that contradict the code."

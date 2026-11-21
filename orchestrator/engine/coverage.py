@@ -33,25 +33,40 @@ def covers(skill: Skill, f: FileDiff, model_backed: bool) -> bool:
     return (model_backed and bool(skill.prompt)) or bool(skill.expectations) or any(rule_applies(r, f) for r in skill.rules)
 
 
-def compute(skills: list[Skill], files: list[FileDiff], model_backed: set[str]) -> dict:
-    """``model_backed``: ids of skills whose prompt reached an available model in this run."""
-    rows, by_category = [], {}
-    for f in files:
-        cats = sorted({s.category for s in skills if covers(s, f, s.id in model_backed)})
-        stage = artifact.stage_for(f.path)
-        kind = "artifact" if artifact.is_artifact(f.path) else "docs" if is_doc(f.path) else "code"
-        if kind == "artifact":  # a work item needs its lifecycle stage's check, e.g. refinement for issues
-            ok = stage in cats
-        elif kind == "docs":
-            ok = DOC_CATEGORY in cats
-        else:
-            ok = any(c not in (DOC_CATEGORY, *STAGE_CATEGORIES) for c in cats)
-        rows.append({"path": f.path, "kind": kind, "categories": cats, "covered": ok})
-        for c in cats:
+KINDS = ("code", "docs", "artifact")
+
+
+def kind_of(path: str) -> str:
+    return "artifact" if artifact.is_artifact(path) else "docs" if is_doc(path) else "code"
+
+
+def is_covered(path: str, kind: str, categories: list[str] | set[str]) -> bool:
+    """The coverage rule, shared by a single review and by merged parallel lanes."""
+    if kind == "artifact":  # a work item needs its lifecycle stage's check, e.g. refinement for issues
+        return artifact.stage_for(path) in categories
+    if kind == "docs":
+        return DOC_CATEGORY in categories
+    return any(c not in (DOC_CATEGORY, *STAGE_CATEGORIES) for c in categories)
+
+
+def summarize(rows: list[dict]) -> dict:
+    by_category: dict[str, int] = {}
+    for r in rows:
+        for c in r["categories"]:
             by_category[c] = by_category.get(c, 0) + 1
     return {
         "files": rows,
         "by_category": dict(sorted(by_category.items())),
-        "by_kind": {k: sum(1 for r in rows if r["kind"] == k) for k in ("code", "docs", "artifact")},
+        "by_kind": {k: sum(1 for r in rows if r["kind"] == k) for k in KINDS},
         "uncovered": [r["path"] for r in rows if not r["covered"]],
     }
+
+
+def compute(skills: list[Skill], files: list[FileDiff], model_backed: set[str]) -> dict:
+    """``model_backed``: ids of skills whose prompt reached an available model in this run."""
+    rows = []
+    for f in files:
+        cats = sorted({s.category for s in skills if covers(s, f, s.id in model_backed)})
+        kind = kind_of(f.path)
+        rows.append({"path": f.path, "kind": kind, "categories": cats, "covered": is_covered(f.path, kind, cats)})
+    return summarize(rows)

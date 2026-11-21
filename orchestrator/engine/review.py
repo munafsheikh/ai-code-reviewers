@@ -12,7 +12,7 @@ from typing import Any
 from orchestrator import __version__
 from orchestrator import config as cfg
 from orchestrator.contracts import RESULT_SCHEMA, SEVERITIES, AdapterError, Finding, GenerationRequest, ModelAdapter
-from orchestrator.engine import artifact, coverage, gate, links, parse, prompt
+from orchestrator.engine import artifact, coverage, gate, instructions, links, parse, prompt
 from orchestrator.engine import diff as diffmod
 from orchestrator.engine.adapters import load_adapter
 from orchestrator.engine.rules import run_companions, run_expectations, run_rules
@@ -37,6 +37,7 @@ class ReviewContext:
         )
         c = profile.get("cache", {})
         self.cache = CompletionCache(c.get("dir", ".acr-cache"), audit, enabled=bool(c.get("enabled", True)))
+        self.instructions = instructions.Instructions()
 
 
 def _breaker(ctx: ReviewContext, adapter: ModelAdapter) -> CircuitBreaker:
@@ -152,7 +153,7 @@ def _model_findings(
     m = route.model
 
     def one(chunk: list[diffmod.FileDiff]) -> list[Finding]:
-        system, user = prompt.build(route.skills, diffmod.render(chunk))
+        system, user = prompt.build(route.skills, diffmod.render(chunk), ctx.instructions.text)
         req = GenerationRequest(
             model=m.ref_for(ctx.profile.get("runtime", {}).get("wrapper", "ollama")),
             prompt=user,
@@ -215,6 +216,7 @@ def run_review(
     repository: str | None = None,
     audit: Audit | None = None,
     root: Path | None = None,
+    team_instructions: instructions.Instructions | None = None,
 ) -> dict[str, Any]:
     root = root or cfg.home()
     audit = audit or Audit()
@@ -223,6 +225,7 @@ def run_review(
     profile = cfg.env_overrides(cfg.load_profile(profile_name, root))
     policy = cfg.load_policy(policy_name or profile.get("policy", "default"), root)
     ctx = ReviewContext(profile, policy, audit, root)
+    ctx.instructions = team_instructions if team_instructions is not None else instructions.load()
     all_skills = cfg.load_skills(root)
     skills = cfg.select_skills(profile.get("skills", ["*"]), all_skills)
     models = cfg.load_models(root)
@@ -303,6 +306,7 @@ def run_review(
             "parse": ctx.parse_stats,
             "degraded": bool(ctx.infra_errors),
             "infrastructure_errors": ctx.infra_errors,
+            "instructions": ctx.instructions.sources,
             "coverage": cov,
             "recovery_events": audit.events,
             "links": {

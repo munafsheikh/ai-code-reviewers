@@ -122,6 +122,12 @@ def to_markdown(result: dict[str, Any]) -> str:
             f"(not in the diff or invalid), {unv} cited lines outside the changed hunks"
             + (f"; unparseable reply: {errs[0]}" if errs else "")
         )
+    if run.get("lanes"):
+        lanes = ", ".join(f"{ln['name']} ({len(ln['skills'])} skills{', degraded' if ln['degraded'] else ''})" for ln in run["lanes"])
+        lines += ["", f"Parallel reviews: {lanes}"]
+    if run.get("instructions"):
+        srcs = ", ".join(f"`{i['source'].rsplit('/', 1)[-1]}` ({i['sha256'][:8]})" for i in run["instructions"])
+        lines += ["", f"Team instructions: {srcs}"]
     cov = run.get("coverage")
     if cov:
         cats = ", ".join(f"{c} ({n})" for c, n in cov["by_category"].items()) or "none"

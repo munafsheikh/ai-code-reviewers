@@ -1,0 +1,46 @@
+name: Docs site
+# Build the documentation with MkDocs in the toolbox (make docs-site) and publish it to
+# GitHub Pages. Called by Release after every green CI run on main (from the release commit
+# when a version was cut), and runnable by hand.
+# Setup once: Settings > Pages > Build and deployment > Source: GitHub Actions.
+on:
+  workflow_call:
+    inputs:
+      ref:
+        description: commit to build (default the triggering commit)
+        type: string
+        default: ""
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with: {ref: "${{ inputs.ref || github.event.workflow_run.head_sha || github.sha }}"}
+      - name: Build (strict) in the toolbox
+        run: make docs-site
+      - uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
+        with: {path: out/site}
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - id: deploy
+        uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1

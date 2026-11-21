@@ -95,16 +95,17 @@ flowchart TB
     end
     subgraph backend[network: backend, internal]
       reviewer[reviewer<br/>uid 10001 · read-only · cap_drop ALL<br/>127.0.0.1:8088]
-      runtime[llm-runtime<br/>Ollama · volume llm-models]
-      init[model-init<br/>one-shot pull, bounded retries]
+      runtime[llm-runtime<br/>Ollama · model baked into the image<br/>OLLAMA_NO_CLOUD · uid 10001 · read-only]
       fake[fake-runtime<br/>profile: test]
     end
   end
   reviewer --- runtime
-  init --> runtime
-  runtime -. model downloads only .- edge
   reviewer -. published port .- edge
 ```
+
+The runtime image (`runtime` target) contains the model weights; they are downloaded once,
+when the image is built, so the running runtime is attached to `backend` only and has no
+route to the internet.
 
 The `backend` network is `internal: true`. Wrapper egress is additionally restricted in
 code to loopback, compose service names and `ACR_ALLOWED_HOSTS`, with proxies bypassed.

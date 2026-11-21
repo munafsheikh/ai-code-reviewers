@@ -69,10 +69,31 @@ class ModelManifest:
         return self.ref
 
 
+DEFAULT_EXTRA_SKILLS = "/etc/acr/skills.d"
+
+
+def skill_dirs(root: Path | None = None) -> list[Path]:
+    """Built-in skills, then operator skills: $ACR_SKILLS_DIRS (os.pathsep list) and /etc/acr/skills.d."""
+    root = root or home()
+    extra = [Path(x) for x in os.environ.get("ACR_SKILLS_DIRS", "").split(os.pathsep) if x.strip()]
+    if Path(DEFAULT_EXTRA_SKILLS).is_dir():
+        extra.append(Path(DEFAULT_EXTRA_SKILLS))
+    seen, out = set(), []
+    for d in [root / "skills", *extra]:
+        if d.is_dir() and d.resolve() not in seen:
+            seen.add(d.resolve())
+            out.append(d)
+    return out
+
+
+def skill_manifests(root: Path | None = None) -> list[Path]:
+    return [mf for d in skill_dirs(root) for mf in sorted(d.rglob("skill.toml"))]
+
+
 def load_skills(root: Path | None = None) -> dict[str, Skill]:
     root = root or home()
     out: dict[str, Skill] = {}
-    for mf in sorted((root / "skills").rglob("skill.toml")):
+    for mf in skill_manifests(root):
         d = load_toml(mf)
         prompt_cfg = d.get("prompt") or {}
         prompt = None
@@ -203,4 +224,6 @@ def env_overrides(profile: dict[str, Any]) -> dict[str, Any]:
         p.setdefault("cache", {})["dir"] = os.environ["ACR_CACHE_DIR"]
     if os.environ.get("ACR_WRAPPER"):
         runtime["wrapper"] = os.environ["ACR_WRAPPER"]
+    if os.environ.get("ACR_SKILLS", "").strip():
+        p["skills"] = [x.strip() for x in os.environ["ACR_SKILLS"].replace(" ", ",").split(",") if x.strip()]
     return p

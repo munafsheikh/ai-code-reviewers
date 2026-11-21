@@ -1,5 +1,5 @@
 name: Model end-to-end
-# Real local model (no external inference API): Ollama + qwen2.5-coder:0.5b on a CPU runner.
+# Real local model (no external inference API): runtime image with qwen2.5-coder:0.5b baked in, CPU runner.
 # Runs on PRs that touch the engine/wrappers/skills/models, weekly, and on demand.
 on:
   pull_request:
@@ -27,9 +27,10 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Start stack with a real model
         run: |
-          export ACR_PULL_MODELS="$MODEL_REF" ACR_SMALL_MODEL="$MODEL_REF" LLM_MEMORY=6g
+          # The model is baked into the runtime image at build time; the running stack downloads nothing.
+          export ACR_RUNTIME_MODELS="$MODEL_REF" ACR_SMALL_MODEL="$MODEL_REF" LLM_MEMORY=6g
+          docker compose --profile model build llm-runtime
           docker compose --profile model up -d --build --wait --wait-timeout 900
-          docker compose --profile model logs model-init
       - name: Readiness requires the model
         run: |
           curl -sf http://127.0.0.1:8088/readyz | tee readyz.json

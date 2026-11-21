@@ -27,8 +27,23 @@ commits made earlier in the job (as Firefly's end-to-end test does).
 
 Outputs: `gate` (`pass|warn|block|error`), `exit-code`, `degraded`, `sarif`. With
 `enforce: true` (default) the job fails on `block` (exit 1) and on `error` (exit 2, strict
-policies only). The default `balanced` profile starts the pinned Ollama runtime, pulls
-`pull-models` (default `qwen2.5-coder:1.5b`, about 1 GB, CPU is enough) and reviews with rules
-plus the model. When the model is unavailable it degrades to rules only and says so in the
-report; set `require-model: true` to fail the job instead. This repository's own PRs run that
-way (see `self-review` in `.github/workflows/ci.yml`).
+policies only).
+
+The model runtime defaults to `munafsheikh/ai-code-reviewers-runtime` of the same release,
+which has `qwen2.5-coder:1.5b` baked in, so no model is downloaded during the job. A stock
+Ollama image also works (`runtime-image:`); the models in `pull-models` are then pulled.
+When the model is unavailable the review degrades to rules only and says so in the report;
+set `require-model: true` to fail the job instead.
+
+**Parallel lanes.** Run the action once per lane with `skills:` (e.g. `"security.*"`),
+`comment: 'false'`, `enforce: 'false'` and a distinct `artifact-name`, then once more with
+`merge-results:` listing the lanes' `review.json` files (and `lane-names:`): the merge
+de-duplicates findings, judges coverage across lanes, comments once and enforces one gate.
+This repository's own CI does exactly that (`review` and `review-gate` jobs in
+`.github/workflows/ci.yml`). On push events pass `base-ref: ${{ github.event.before }}` to
+review the pushed commits.
+
+**Team instructions.** `instructions: .github/review-instructions.md` gives the model your
+team's guidance (files are mounted read-only; several can be listed), and `ACR_INSTRUCTIONS`
+in the job's environment is forwarded too. To ship instructions and your own rules to every
+repository, pass `image:` a reviewer image with them baked in (see `examples/custom-image`).

@@ -6,7 +6,7 @@
 |---|---|---|---|---|---|
 | `architecture.design` | 1.0.0 | architecture | large | * | 0 |
 | `code-quality.error-handling` | 1.0.0 | code-quality | small | java, python, javascript, typescript, kotlin, csharp | 3 |
-| `documentation.content` | 1.0.0 | documentation | small | * | 4 |
+| `documentation.content` | 1.1.0 | documentation | small | * | 4 |
 | `documentation.sync` | 1.0.0 | documentation | none | * | 4 |
 | `lang.java.core` | 1.0.0 | code-quality | small | java | 3 |
 | `lang.java.first-pass-gate` | 1.0.0 | code-quality | small | java | 0 |
