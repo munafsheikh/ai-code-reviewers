@@ -8,3 +8,5 @@ COPY instructions.d/ /etc/acr/instructions.d/
 COPY skills.d/ /etc/acr/skills.d/
 # Fail the build if a rule's own examples do not behave as declared.
 RUN acr validate --skip structure,fixtures
+# Stay unprivileged (the reviewer image already runs as 10001; stated so scanners and readers see it).
+USER 10001:10001
