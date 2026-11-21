@@ -17,5 +17,5 @@ podman start "$c" >/dev/null
 
 printf 'FROM %s\nENTRYPOINT ["python","-c","import time; time.sleep(600)"]\n' "$IMAGE" | podman build -q -t acr-reviewer:resilience-broken - >/dev/null
 if DEPLOY_TIMEOUT=45 infrastructure/deployment/deploy.sh acr-reviewer:resilience-broken; then echo "broken deploy succeeded" >&2; exit 1; fi
-podman ps --filter label=com.docker.compose.project=acr-resilience --format '{{.Image}}' | grep -qx "$IMAGE"
+podman ps --filter label=com.docker.compose.project=acr-resilience --format '{{.Image}}' | grep -Eqx "(docker.io/library/|localhost/)?$IMAGE"
 echo "resilience passed"

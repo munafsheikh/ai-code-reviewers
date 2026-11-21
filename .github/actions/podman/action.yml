@@ -10,8 +10,12 @@ runs:
       shell: bash
       run: |
         sock="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}/podman/podman.sock"
-        mkdir -p "$(dirname "$sock")"
-        nohup podman system service --time=0 "unix://$sock" >/dev/null 2>&1 &
+        # Socket activation keeps the service and its rootless network processes in the user's
+        # systemd session, so later steps can stop them; a plain background service is the fallback.
+        if ! systemctl --user start podman.socket 2>/dev/null; then
+          mkdir -p "$(dirname "$sock")"
+          nohup podman system service --time=0 "unix://$sock" >/dev/null 2>&1 &
+        fi
         for _ in $(seq 1 40); do [ -S "$sock" ] && break; sleep 0.25; done
         [ -S "$sock" ] || { echo "Podman API socket did not start: $sock" >&2; exit 1; }
         podman --version
