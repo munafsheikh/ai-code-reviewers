@@ -9,6 +9,11 @@ runs:
     - name: Start the Podman API service
       shell: bash
       run: |
+        # The runner's AppArmor policy stops Podman from signalling pasta, so containers on
+        # compose networks cannot be removed; slirp4netns as the rootless network has no such limit.
+        command -v slirp4netns >/dev/null || sudo apt-get install -y -qq slirp4netns >/dev/null
+        mkdir -p ~/.config/containers
+        printf '[network]\ndefault_rootless_network_cmd = "slirp4netns"\n' > ~/.config/containers/containers.conf
         sock="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}/podman/podman.sock"
         # Socket activation keeps the service and its rootless network processes in the user's
         # systemd session, so later steps can stop them; a plain background service is the fallback.
