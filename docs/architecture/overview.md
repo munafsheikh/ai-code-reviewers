@@ -89,7 +89,7 @@ sequenceDiagram
 
 ```mermaid
 flowchart TB
-  subgraph host[Docker host]
+  subgraph host[Podman host]
     subgraph edge[network: edge]
       direction LR
     end

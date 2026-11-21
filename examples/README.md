@@ -4,16 +4,17 @@
 request (SQL concatenation, swallowed exception, `==` string comparison, console output).
 
 ```bash
-# Rules only, no containers, writes out/review.{json,sarif,md,txt}
-make review-offline DIFF=examples/sample-repo/change.patch
+# Rules only, in the toolbox container, writes out/review.{json,sarif,md,txt}
+./run.sh review-offline --diff examples/sample-repo/change.patch
 
 # Same diff through the containerised reviewer and a local model
-make up && make review DIFF=examples/sample-repo/change.patch
+podman compose --profile model up -d --build --wait
+podman compose run --rm -T reviewer review --profile balanced --format markdown < examples/sample-repo/change.patch
 
 # Validate the JSON result against the published schema
 python3 -m orchestrator.schema_check out/review.json
 ```
 
 The compose stack mounts this directory read-only at `/work`, so
-`docker compose run --rm reviewer review --repo /work/sample-repo --git-range HEAD~1...HEAD`
+`podman compose run --rm reviewer review --repo /work/sample-repo --git-range HEAD~1...HEAD`
 works once `sample-repo` is a git repository.

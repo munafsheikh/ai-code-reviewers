@@ -9,7 +9,8 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 USES = re.compile(r"^\s*-?\s*uses:\s*([^\s#]+)")
 IMAGE = re.compile(
-    r"(?:image:|FROM|=|docker run[^\n]*?)\s*((?:[\w.-]+/)+[\w.-]+:[\w.-]+(?:@sha256:[0-9a-f]{64})?|python:[\w.-]+(?:@sha256:[0-9a-f]{64})?)"
+    r"(?:image:|FROM|=|(?:docker|podman) run[^\n]*?)\s*"
+    r"((?:[\w.-]+/)+[\w.-]+:[\w.-]+(?:@sha256:[0-9a-f]{64})?|python:[\w.-]+(?:@sha256:[0-9a-f]{64})?)"
 )
 ALLOW_UNPINNED_IMAGES = {"alpine/git:latest"}  # consumer template placeholder, documented in the file
 

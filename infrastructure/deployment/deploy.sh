@@ -12,18 +12,18 @@ STATE_DIR="${ACR_STATE_DIR:-out/deploy}"
 STATE="$STATE_DIR/state.json"
 mkdir -p "$STATE_DIR"
 log() { echo "{\"ts\":\"$(date -u +%FT%TZ)\",\"component\":\"deploy\",\"project\":\"$PROJECT\",$1}"; }
-compose() { docker compose -p "$PROJECT" --profile test "$@"; }
+compose() { podman compose -p "$PROJECT" --profile test "$@"; }
 
 # The fake runtime is part of the test environment, not the candidate: build it when this
 # host does not have it yet (only that service; the reviewer stays the candidate image).
-docker image inspect "${ACR_FAKE_RUNTIME_IMAGE:-acr-fake-runtime:local}" >/dev/null 2>&1 \
-  || docker compose -p "$PROJECT" --profile test build -q fake-runtime
+podman image inspect "${ACR_FAKE_RUNTIME_IMAGE:-acr-fake-runtime:local}" >/dev/null 2>&1 \
+  || podman compose -p "$PROJECT" --profile test build -q fake-runtime
 
 last_verified=$(infrastructure/scripts/py.sh -c "import json;print(json.load(open('$STATE')).get('last_verified',''))" 2>/dev/null || true)
 log "\"action\":\"deploy_start\",\"image\":\"$IMAGE\",\"last_verified\":\"$last_verified\""
 
 if compose up -d --no-build --wait --wait-timeout "${DEPLOY_TIMEOUT:-180}" && BASE_URL="http://127.0.0.1:$ACR_HOST_PORT" infrastructure/scripts/smoke.sh; then
-  digest=$(docker image inspect --format '{{.Id}}' "$IMAGE")
+  digest=$(podman image inspect --format '{{.Id}}' "$IMAGE")
   infrastructure/scripts/py.sh - "$STATE" "$IMAGE" "$digest" <<'PY'
 import json, sys, datetime, os
 path, image, digest = sys.argv[1:]

@@ -1,7 +1,7 @@
 # ai-code-reviewers
 
 Free, open-source, offline code review with small and large **local** language models,
-deterministic rules, and policy-driven quality gates. Docker-native; no paid APIs, no
+deterministic rules, and policy-driven quality gates. Container-native (Podman); no paid APIs, no
 telemetry, no source code leaves your machine.
 
 - **Rules + models.** Deterministic rules (with self-testing examples) set a recall floor that
@@ -16,18 +16,19 @@ telemetry, no source code leaves your machine.
 
 ## Quick start
 
-Only Docker is required. Every tool (reviewer, tests, linters, scanners, docs) runs in a
-pinned container image and pulls its own dependencies.
+Only Podman is required (`podman compose` with docker-compose as its provider). Every tool
+(reviewer, tests, linters, scanners, docs) runs in a pinned container image and pulls its own
+dependencies.
 
 ```bash
-# 1. Rules only — no model download
-make review-offline DIFF=examples/sample-repo/change.patch
+# 1. Rules only — no model download (PowerShell: ./run.ps1)
+./run.sh review-offline --diff examples/sample-repo/change.patch
 
 # 2. Full stack: reviewer + Ollama + qwen2.5-coder:1.5b, health-checked
-make up
-git diff main... | docker compose run --rm -T reviewer review          # single command review
+podman compose --profile model up -d --build --wait
+git diff main... | podman compose run --rm -T reviewer review          # single command review
 curl -s --data-binary @examples/sample-repo/change.patch 127.0.0.1:8088/v1/review
-make down
+podman compose --profile model down
 ```
 
 Exit codes: `0` pass/warn, `1` blocked, `2` could not review (strict policy, bad input).
@@ -80,7 +81,8 @@ SBOM + provenance) by the [`Images`](.github/workflows/images.yml) workflow: `ed
 | `munafsheikh/ai-code-reviewers-toolbox` | `toolbox` | git + pinned dev tooling |
 | `munafsheikh/ai-code-reviewers-fake-runtime` | `fake-runtime` | deterministic model runtime for e2e |
 
-`make images` builds all four locally. Publishing needs `DOCKERHUB_USERNAME` / `DOCKERHUB_TOKEN`
+`podman compose --profile build --profile tools --profile test build` builds all four locally
+(`acr-base:local`, `acr-reviewer:local`, `acr-toolbox:local`, `acr-fake-runtime:local`). Publishing needs `DOCKERHUB_USERNAME` / `DOCKERHUB_TOKEN`
 secrets (optional `DOCKERHUB_NAMESPACE` variable).
 
 ## CI/CD integrations
@@ -92,21 +94,23 @@ secrets (optional `DOCKERHUB_NAMESPACE` variable).
 | GitLab | [`integrations/gitlab/acr.gitlab-ci.yml`](integrations/gitlab/acr.gitlab-ci.yml) |
 | Firefly | [`integrations/firefly`](integrations/firefly/README.md) — replaces `ReviewGate.java`, legacy-compatible |
 
-All adapters run the same image and the same commands as `make`, so behaviour is identical
+All adapters run the same image and the same review command, so behaviour is identical
 across CI systems.
 
 ## Development
 
 ```bash
-make ci                  # validate · lint · tests (coverage gate) · docs check · benchmark gate, in the toolbox image
-make shell               # interactive toolbox shell
-make e2e                 # Compose end-to-end with a deterministic fake runtime
-make security            # gitleaks · semgrep · hadolint · trivy (fs, image) · SBOM
+./run.sh ci                              # validate · lint · tests (coverage gate) · docs check · benchmark gate, in the toolbox image
+./run.sh -h                              # every repository task
+podman compose run --rm toolbox bash     # interactive toolbox shell
+tests/end-to-end/compose_e2e.sh          # Compose end-to-end with a deterministic fake runtime
+infrastructure/scripts/security-scan.sh  # gitleaks · semgrep · hadolint · trivy (fs, image) · SBOM
 ```
 
-Docker and make are the only host requirements: every target runs a native command (Python
-CLIs, pytest, ruff) inside the `toolbox` image or orchestrates the published images, and CI
-calls nothing but these targets. Merging to `main` releases automatically: see
+Podman is the only host requirement. `compose.yaml` builds every image; `./run.sh` and
+`./run.ps1` start the `toolbox` service, where every repository task runs
+([`tasks.py`](infrastructure/scripts/tasks.py)); the stack, end-to-end, security and deployment
+scripts call `podman` and `podman compose` directly. CI runs the same commands. Merging to `main` releases automatically: see
 [releases](docs/operations/runbook.md#releases).
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) and [SECURITY.md](SECURITY.md). Licensed under MIT;

@@ -1,6 +1,6 @@
 ## Summary
 
 ## Verification
-- [ ] `make ci` passes locally
-- [ ] Docs updated (generated docs via `make docs`)
-- [ ] Benchmarks unchanged or improved (`make bench-gate`)
+- [ ] `./run.sh ci` passes locally
+- [ ] Docs updated (generated docs via `./run.sh docs`)
+- [ ] Benchmarks unchanged or improved (`./run.sh bench-gate`)
