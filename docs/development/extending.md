@@ -99,3 +99,5 @@ make shell          # shell inside the toolbox
 make e2e            # docker: compose stack with fake runtime
 make docs           # regenerate docs/generated after changing skills/models/profiles/CLI
 ```
+
+<sub>For AI coding agents: [agent guide](../../AGENTS.md).</sub>

@@ -15,3 +15,5 @@ The latest minor release receives fixes.
 - Releases: SBOM attached, image signed with cosign keyless (GitHub OIDC). Verify with
   `cosign verify ghcr.io/munafsheikh/ai-code-reviewers@<digest> --certificate-identity-regexp '^https://github.com/munafsheikh/ai-code-reviewers/' --certificate-oidc-issuer https://token.actions.githubusercontent.com`.
 - Scanning levels and the current baseline: [vulnerability baseline](docs/security/vulnerability-baseline.md).
+
+<sub>For AI coding agents: [agent guide](AGENTS.md).</sub>

@@ -14,6 +14,7 @@ from orchestrator import schema
 
 REQUIRED_FILES = [
     "README.md",
+    "AGENTS.md",
     "LICENSE",
     "CONTRIBUTING.md",
     "SECURITY.md",

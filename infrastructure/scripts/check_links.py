@@ -22,7 +22,9 @@ def anchors(md: Path) -> set[str]:
 
 def main() -> int:
     errors = []
-    files = [p for p in ROOT.rglob("*.md") if not any(x in p.parts for x in (".git", ".venv", "node_modules", "out"))]
+    files = [
+        p for p in ROOT.rglob("*.md") if not p.is_symlink() and not any(x in p.parts for x in (".git", ".venv", "node_modules", "out"))
+    ]
     for md in files:
         text = md.read_text(encoding="utf-8")
         text = re.sub(r"```.*?```", "", text, flags=re.S)

@@ -108,3 +108,5 @@ flowchart TB
 
 The `backend` network is `internal: true`. Wrapper egress is additionally restricted in
 code to loopback, compose service names and `ACR_ALLOWED_HOSTS`, with proxies bypassed.
+
+<sub>For AI coding agents: [agent guide](../../AGENTS.md).</sub>

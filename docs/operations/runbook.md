@@ -74,3 +74,5 @@ Review gates run before any of this: a commit that fails CI, including the enfor
 self-review, is never released.
 
 See also [troubleshooting](troubleshooting.md).
+
+<sub>For AI coding agents: [agent guide](../../AGENTS.md).</sub>

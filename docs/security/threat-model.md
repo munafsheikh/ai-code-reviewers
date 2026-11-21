@@ -42,3 +42,5 @@ flowchart LR
   and read-only rootfs.
 
 Reassess quarterly or on any new wrapper, network path or privilege change (Level 4).
+
+<sub>For AI coding agents: [agent guide](../../AGENTS.md).</sub>
