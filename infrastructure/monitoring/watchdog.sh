@@ -15,10 +15,10 @@ now=$(date +%s)
 rc=0
 audit() { echo "{\"ts\":\"$(date -u +%FT%TZ)\",\"component\":\"watchdog\",\"project\":\"$PROJECT\",$1}" | tee -a "$STATE_DIR/audit.log"; }
 
-for cid in $(docker ps -aq --filter "label=com.docker.compose.project=$PROJECT"); do
-  svc=$(docker inspect --format '{{index .Config.Labels "com.docker.compose.service"}}' "$cid")
-  state=$(docker inspect --format '{{.State.Status}}' "$cid")
-  health=$(docker inspect --format '{{if .State.Health}}{{.State.Health.Status}}{{else}}none{{end}}' "$cid")
+for cid in $(podman ps -aq --filter "label=com.docker.compose.project=$PROJECT"); do
+  svc=$(podman inspect --format '{{index .Config.Labels "com.docker.compose.service"}}' "$cid")
+  state=$(podman inspect --format '{{.State.Status}}' "$cid")
+  health=$(podman inspect --format '{{if .State.Health}}{{.State.Health.Status}}{{else}}none{{end}}' "$cid")
   [ "$svc" = "model-init" ] && continue               # one-shot job, exits by design
   if [ "$health" != "unhealthy" ] && [ "$state" = "running" ]; then continue; fi
   hist="$STATE_DIR/$svc.restarts"
@@ -28,14 +28,14 @@ for cid in $(docker ps -aq --filter "label=com.docker.compose.project=$PROJECT")
     diag="$STATE_DIR/diagnostics-$svc-$now"
     mkdir -p "$diag"
     # State only: full inspect output would include environment variables.
-    docker inspect --format "{{json .State}}" "$cid" > "$diag/state.json" 2>&1 || true
-    docker logs --tail 500 "$cid" > "$diag/logs.txt" 2>&1 || true
+    podman inspect --format "{{json .State}}" "$cid" > "$diag/state.json" 2>&1 || true
+    podman logs --tail 500 "$cid" > "$diag/logs.txt" 2>&1 || true
     audit "\"action\":\"circuit_open\",\"service\":\"$svc\",\"state\":\"$state\",\"health\":\"$health\",\"restarts_in_window\":$recent,\"diagnostics\":\"$diag\""
     rc=1
     continue
   fi
   audit "\"action\":\"restart\",\"service\":\"$svc\",\"state\":\"$state\",\"health\":\"$health\",\"attempt\":$((recent + 1))"
   echo "$now" >> "$hist"
-  timeout 60 docker restart "$cid" >/dev/null || { audit "\"action\":\"restart_failed\",\"service\":\"$svc\""; rc=1; }
+  timeout 60 podman restart "$cid" >/dev/null || { audit "\"action\":\"restart_failed\",\"service\":\"$svc\""; rc=1; }
 done
 exit $rc

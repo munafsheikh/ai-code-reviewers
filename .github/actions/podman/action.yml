@@ -1,0 +1,18 @@
+name: Podman
+description: >-
+  Rootless Podman API service for `podman compose` (the runner image ships Podman and
+  docker-compose, which podman compose uses as its provider). Every job that builds or
+  runs containers uses this step first.
+runs:
+  using: composite
+  steps:
+    - name: Start the Podman API service
+      shell: bash
+      run: |
+        sock="${XDG_RUNTIME_DIR:-/run/user/$(id -u)}/podman/podman.sock"
+        mkdir -p "$(dirname "$sock")"
+        nohup podman system service --time=0 "unix://$sock" >/dev/null 2>&1 &
+        for _ in $(seq 1 40); do [ -S "$sock" ] && break; sleep 0.25; done
+        [ -S "$sock" ] || { echo "Podman API socket did not start: $sock" >&2; exit 1; }
+        podman --version
+        podman compose version

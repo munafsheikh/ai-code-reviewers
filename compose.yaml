@@ -1,7 +1,9 @@
-# ai-code-reviewers — local stack.
-#   make up        reviewer + Ollama runtime + one-shot model pull   (profile: model)
-#   make up-test   reviewer + deterministic fake runtime, no weights (profile: test)
-#   make down      stop and remove containers (volumes are kept)
+# ai-code-reviewers — every image build, the local stack and the repository toolbox.
+#   podman compose --profile model up -d --build --wait    reviewer + Ollama + one-shot model pull
+#   podman compose --profile test up -d --build --wait     reviewer + deterministic fake runtime, no weights
+#   podman compose --profile model --profile test down --remove-orphans   stop (volumes are kept)
+#   podman compose --profile build --profile tools --profile test build  build every image locally
+#   ./run.sh TASK                                           repository task in the toolbox (./run.sh -h)
 name: ai-code-reviewers
 
 x-hardening: &hardening
@@ -10,7 +12,7 @@ x-hardening: &hardening
   cap_drop: ["ALL"]
   tmpfs: ["/tmp:size=64m,mode=1777"]
 
-x-runtime-image: &runtime-image ${LLM_RUNTIME_IMAGE:-ollama/ollama:0.40.11@sha256:dea72d1e22270fe095b68fdf756d2b489d615643c5a2eaebbc5f569181e322d8}
+x-runtime-image: &runtime-image ${LLM_RUNTIME_IMAGE:-docker.io/ollama/ollama:0.40.11@sha256:dea72d1e22270fe095b68fdf756d2b489d615643c5a2eaebbc5f569181e322d8}
 
 services:
   reviewer:
@@ -21,6 +23,7 @@ services:
       target: reviewer
       args:
         VERSION: ${ACR_VERSION:-0.0.0-dev}
+        REVISION: ${ACR_REVISION:-unknown}
     image: ${ACR_IMAGE:-acr-reviewer:local}
     command: ["serve", "--profile", "${ACR_PROFILE:-balanced}"]
     environment:
@@ -105,6 +108,36 @@ services:
       interval: 5s
       timeout: 3s
       retries: 10
+
+  toolbox:
+    # Repository tooling (validate, lint, tests, docs, benchmarks, release): ./run.sh TASK.
+    <<: *hardening
+    profiles: ["tools"]
+    build:
+      context: .
+      dockerfile: infrastructure/docker/Dockerfile
+      target: toolbox
+      args: [PYTHON_IMAGE]          # unset = the Dockerfile default; CI sets it for the minimum Python
+    image: ${ACR_TOOLBOX_IMAGE:-acr-toolbox:local}
+    # Rootless Podman maps container root to the invoking user: files written to /src stay yours.
+    user: "0:0"
+    network_mode: none
+    working_dir: /src
+    tmpfs: ["/tmp:size=1g,mode=1777"]
+    environment:
+      ACR_CACHE_DIR: /tmp/acr-cache
+      PYTHONDONTWRITEBYTECODE: "1"
+    volumes:
+      - .:/src:Z
+
+  base:
+    # Build-only: the common parent image (published as ai-code-reviewers-base).
+    profiles: ["build"]
+    build:
+      context: .
+      dockerfile: infrastructure/docker/Dockerfile
+      target: base
+    image: acr-base:local
 
 networks:
   backend:

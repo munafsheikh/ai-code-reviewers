@@ -9,7 +9,7 @@
 # BASE selects the parent of the derived stages. Locally it is the `base` stage below; the
 # publish workflow sets it to the pushed base digest so every published image is layered
 # on exactly the base it was released with.
-ARG PYTHON_IMAGE=python:3.13-slim@sha256:e48f59cdba69a3cbd9ed2cf0f348d90d45a8d350d98134cf1070bc106ee9ed90
+ARG PYTHON_IMAGE=docker.io/library/python:3.13-slim@sha256:e48f59cdba69a3cbd9ed2cf0f348d90d45a8d350d98134cf1070bc106ee9ed90
 ARG BASE=base
 
 # ---------------------------------------------------------------------------------------
@@ -40,7 +40,7 @@ HEALTHCHECK --interval=5s --timeout=3s --retries=10 \
 ENTRYPOINT ["python", "/opt/fake/fake_runtime.py"]
 
 # ---------------------------------------------------------------------------------------
-# Developer/CI toolbox: every repository tool runs here, so the only host requirement is Docker.
+# Developer/CI toolbox: every repository tool runs here, so the only host requirement is Podman.
 FROM ${BASE} AS toolbox
 LABEL org.opencontainers.image.title="ai-code-reviewers-toolbox" \
       org.opencontainers.image.description="Pinned developer and CI tooling for ai-code-reviewers"
@@ -59,7 +59,7 @@ RUN --mount=type=secret,id=ca,required=false \
  && rm -rf /var/lib/apt/lists/* \
  && pip install -q -r /tmp/requirements-dev.txt \
  && git config --system --add safe.directory /src
-# Non-root by default; `make` additionally runs it as the invoking host uid:gid.
+# Non-root by default; compose.yaml runs it as container root, which rootless Podman maps to the invoking user.
 USER 10001:10001
 WORKDIR /src
 

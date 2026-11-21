@@ -7,6 +7,12 @@ All notable changes are documented here. Format: [Keep a Changelog](https://keep
 ### Added
 - `AGENTS.md`: entry point for AI coding agents, linking to the documents that own each fact, with agent-only rules. `CLAUDE.md`, `GEMINI.md` and `.github/copilot-instructions.md` are symlinks to it; the README, CONTRIBUTING, SECURITY and the architecture, development, operations and security docs link back. `validate` requires it.
 
+### Changed
+- Podman replaces make and Docker as the only host requirement. The Makefile is removed: `compose.yaml` builds every image (new `toolbox` and build-only `base` services; `--profile build --profile tools --profile test build` builds all four), and `./run.sh TASK` / `./run.ps1 TASK` run every repository task in the toolbox container (`infrastructure/scripts/tasks.py`; `./run.sh -h` lists them). Former targets map as `make X` -> `./run.sh X` for toolbox tasks and `make release-plan|apply|check|notes|image-tags` -> `./run.sh release plan|apply|check|notes|image-tags`; stack, end-to-end, security, deployment and watchdog commands are `podman compose ...` or the scripts under `infrastructure/` and `tests/end-to-end/`. CI workflows start a rootless Podman API service (`.github/actions/podman`) and call the same commands. Publishing to Docker Hub and GHCR still uses Buildx (multi-arch, attestations).
+- Image scans read a `podman save` archive instead of mounting a container-engine socket into the scanner. `SCAN_DOCKER_ARGS` is now `SCAN_PODMAN_ARGS`.
+- Container images are referenced by fully qualified name (`docker.io/...`), as Podman does not resolve short names unattended; the pin check also covers `podman run`.
+- `validate` requires `run.sh` and `run.ps1` instead of the Makefile.
+
 ### Fixed
 - The link checker skips symlinked Markdown files, whose relative links resolve from their target.
 

@@ -23,9 +23,10 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with: {fetch-depth: 0}
+      - uses: ./.github/actions/podman
       - name: Secrets (gitleaks, full history)
         run: |
-          docker run --rm -v "$PWD:/src:ro" zricethezav/gitleaks:v8.30.1@sha256:c00b6bd0aeb3071cbcb79009cb16a60dd9e0a7c60e2be9ab65d25e6bc8abbb7f \
+          podman run --rm -v "$PWD:/src:ro" docker.io/zricethezav/gitleaks:v8.30.1@sha256:c00b6bd0aeb3071cbcb79009cb16a60dd9e0a7c60e2be9ab65d25e6bc8abbb7f \
             git /src --config /src/.gitleaks.toml --redact --no-banner
       - name: SAST (semgrep, project rules)
         run: infrastructure/scripts/security-scan.sh - sast
@@ -34,7 +35,7 @@ jobs:
       - name: Dependencies + IaC misconfiguration (trivy fs)
         run: infrastructure/scripts/security-scan.sh - deps
       - name: Manifests, wrapper permissions, supply-chain pins, tracked exceptions
-        run: make validate
+        run: ./run.sh validate
       - uses: github/codeql-action/upload-sarif@33d7b85da1a04171e211befe2c739303b9a4c066 # v4.39.3
         if: always() && github.event_name != 'pull_request'
         with: {sarif_file: out/security, category: level1}
@@ -55,19 +56,20 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with: {fetch-depth: 0}
+      - uses: ./.github/actions/podman
       - name: Build PR and base images
         run: |
-          make build IMAGE=acr-reviewer:pr
+          ACR_IMAGE=acr-reviewer:pr ACR_REVISION="$(git rev-parse HEAD)" podman compose build reviewer
           git worktree add ../base "origin/${{ github.base_ref }}"
-          if [ -f ../base/infrastructure/docker/Dockerfile ]; then
-            docker build -q -f ../base/infrastructure/docker/Dockerfile -t acr-reviewer:base ../base
+          if [ -f ../base/compose.yaml ]; then
+            (cd ../base && ACR_IMAGE=acr-reviewer:base podman compose build reviewer)
           fi
       - name: Image vulnerability scan (gate)
         run: infrastructure/scripts/security-scan.sh acr-reviewer:pr image
       - name: SBOM and diff against base
         run: |
           infrastructure/scripts/security-scan.sh acr-reviewer:pr sbom && mv out/security/sbom.cdx.json out/security/sbom-pr.cdx.json
-          if docker image inspect acr-reviewer:base >/dev/null 2>&1; then
+          if podman image inspect acr-reviewer:base >/dev/null 2>&1; then
             infrastructure/scripts/security-scan.sh acr-reviewer:base sbom && mv out/security/sbom.cdx.json out/security/sbom-base.cdx.json
             infrastructure/scripts/py.sh infrastructure/scripts/sbom_diff.py out/security/sbom-base.cdx.json out/security/sbom-pr.cdx.json | tee -a "$GITHUB_STEP_SUMMARY"
           fi
@@ -85,20 +87,23 @@ jobs:
       issues: write
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: ./.github/actions/podman
       - uses: github/codeql-action/init@33d7b85da1a04171e211befe2c739303b9a4c066 # v4.39.3
         with: {languages: python, queries: security-extended}
       - uses: github/codeql-action/analyze@33d7b85da1a04171e211befe2c739303b9a4c066 # v4.39.3
       - name: Broad image scan (all severities, unfixed included; report-only)
         run: |
-          make build IMAGE=acr-reviewer:nightly
+          ACR_IMAGE=acr-reviewer:nightly ACR_REVISION="$(git rev-parse HEAD)" podman compose build reviewer
           mkdir -p out/security
-          docker run --rm -v /var/run/docker.sock:/var/run/docker.sock:ro -v "$PWD/out/security:/out" \
-            aquasec/trivy:0.76.2@sha256:8f6bb947dbc528902e11f2f5be52f7b519f6a39d5d148f41166f2040499768fb \
-            image --scanners vuln,secret,misconfig --format json --output /out/trivy-full.json acr-reviewer:nightly
+          podman save -q -o out/security/nightly.tar acr-reviewer:nightly
+          podman run --rm -v "$PWD/out/security:/out" \
+            docker.io/aquasec/trivy:0.76.2@sha256:8f6bb947dbc528902e11f2f5be52f7b519f6a39d5d148f41166f2040499768fb \
+            image --input /out/nightly.tar --scanners vuln,secret,misconfig --format json --output /out/trivy-full.json
+          rm -f out/security/nightly.tar
       - name: Attack surface report
         run: infrastructure/scripts/py.sh infrastructure/scripts/attack_surface.py | tee -a "$GITHUB_STEP_SUMMARY"
       - name: Adversarial prompt-injection suite
-        run: make test-security
+        run: ./run.sh test-security
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         if: always()
         with: {name: security-nightly, path: out/security, retention-days: 90}
@@ -110,4 +115,4 @@ jobs:
             const title = `Nightly security scan failed (${new Date().toISOString().slice(0, 10)})`;
             const url = `${context.serverUrl}/${context.repo.owner}/${context.repo.repo}/actions/runs/${context.runId}`;
             await github.rest.issues.create({ ...context.repo, title, labels: ['security', 'automated'],
-              body: `Run: ${url}\n\nReproduce: \`make build && make security\`. Artifacts: security-nightly.` });
+              body: `Run: ${url}\n\nReproduce: \`podman compose build reviewer && infrastructure/scripts/security-scan.sh\`. Artifacts: security-nightly.` });
