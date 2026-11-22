@@ -15,6 +15,9 @@ concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
 
+env:
+  COMPOSE_PROGRESS: quiet   # build progress would otherwise land on stdout (captured outputs); errors still show
+
 jobs:
   test:
     # Docker-first: the toolbox image carries every tool; the runner only needs Docker.

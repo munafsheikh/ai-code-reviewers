@@ -18,6 +18,9 @@ on:
 permissions:
   contents: read
 
+env:
+  COMPOSE_PROGRESS: quiet   # build progress would otherwise land on stdout (captured outputs); errors still show
+
 jobs:
   plan:
     runs-on: ubuntu-latest

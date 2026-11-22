@@ -45,6 +45,7 @@ concurrency:
 env:
   DOCKERFILE: infrastructure/docker/Dockerfile
   PLATFORMS: linux/amd64,linux/arm64
+  COMPOSE_PROGRESS: quiet   # build progress would otherwise land on stdout (captured outputs); errors still show
 
 jobs:
   meta:

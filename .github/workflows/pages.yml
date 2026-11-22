@@ -19,6 +19,9 @@ concurrency:
   group: pages
   cancel-in-progress: false
 
+env:
+  COMPOSE_PROGRESS: quiet   # build progress would otherwise land on stdout (captured outputs); errors still show
+
 jobs:
   build:
     runs-on: ubuntu-latest

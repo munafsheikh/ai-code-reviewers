@@ -10,7 +10,7 @@
    owner and expiry instead.
 5. Third-party wrappers, skills and models are never auto-installed: include provenance,
    license and a security review in the PR.
-6. Keep the runtime dependency-free (stdlib only). Dev tooling is pinned in `requirements-dev.txt` and baked into the `toolbox` stage of `infrastructure/docker/Dockerfile`; behind a TLS-intercepting proxy build it once with `docker build -f infrastructure/docker/Dockerfile --target toolbox -t acr-toolbox:local --build-arg HTTPS_PROXY=... --secret id=ca,src=/path/ca.crt .` (later `dev` runs reuse its cached layers). Tasks live in `infrastructure/tasks.py`: add new ones there, stdlib only.
+6. Keep the runtime dependency-free (stdlib only). Dev tooling is pinned in `requirements-dev.txt` and baked into the `toolbox` stage of `infrastructure/docker/Dockerfile`; behind a TLS-intercepting proxy build it once with `docker build -f infrastructure/docker/Dockerfile --target toolbox -t acr-toolbox:local --build-arg HTTPS_PROXY=... --secret id=ca,src=/path/ca.crt .` (later `dev` runs reuse its cached layers). Tasks live in `infrastructure/tasks.py`: add new ones there, stdlib only. To capture a task's output (`$(docker compose run --rm -T dev release plan)`), set `COMPOSE_PROGRESS=quiet`: otherwise Compose writes the image build's progress to stdout when it is not a terminal.
 
 Commit messages: imperative, scoped (`engine: ...`, `skills: ...`). One logical change per PR.
 

@@ -2,6 +2,7 @@
 
     docker compose run --rm dev <task> [options]      (from the repository root)
     docker compose run --rm dev help                  lists the tasks
+    COMPOSE_PROGRESS=quiet ...                        when capturing stdout (keeps build progress out of it)
 
 The `dev` Compose service is the toolbox image (pinned Python tooling, git, Docker CLI) with the
 repository mounted at the host's own path and the host's Docker socket, so tasks that build,

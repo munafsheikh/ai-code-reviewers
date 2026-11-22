@@ -42,6 +42,9 @@ concurrency:
   group: release
   cancel-in-progress: false
 
+env:
+  COMPOSE_PROGRESS: quiet   # build progress would otherwise land on stdout (captured outputs); errors still show
+
 jobs:
   plan:
     if: github.event_name != 'workflow_run' || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push')
