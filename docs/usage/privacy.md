@@ -12,8 +12,8 @@ docker compose run --rm dev build             # reviewer image
 docker compose run --rm dev runtime           # runtime with the model baked in (downloads once, here)
 docker compose run --rm dev prove-offline
 # or the published images:
-docker compose run --rm dev prove-offline --image munafsheikh/ai-code-reviewers:0.8.0 \
-  --runtime-image munafsheikh/ai-code-reviewers-runtime:0.8.0
+docker compose run --rm dev prove-offline --image munafsheikh/ai-code-reviewers:0.9.0 \
+  --runtime-image munafsheikh/ai-code-reviewers-runtime:0.9.0
 ```
 
 [`prove-offline.sh`](https://github.com/munafsheikh/ai-code-reviewers/blob/main/infrastructure/scripts/prove-offline.sh)
@@ -62,7 +62,7 @@ layer guarantees it could not have used one.
 only a loopback device.
 
 ```bash
-git diff main... | docker run --rm -i --read-only --network none munafsheikh/ai-code-reviewers:0.8.0 review --profile offline
+git diff main... | docker run --rm -i --read-only --network none munafsheikh/ai-code-reviewers:0.9.0 review --profile offline
 ```
 
 **With the model, on an internal network.** Step 3 of [Getting started](getting-started.md#step-3-add-the-local-model)

@@ -8,7 +8,7 @@ marked as *hypotheses*.
 Set this once for the commands below:
 
 ```bash
-acr() { docker run --rm -i --read-only --network none munafsheikh/ai-code-reviewers:0.8.0 "$@"; }
+acr() { docker run --rm -i --read-only --network none munafsheikh/ai-code-reviewers:0.9.0 "$@"; }
 ```
 
 ## Review your branch before you push
@@ -25,7 +25,7 @@ Keep every format for tooling:
 ```bash
 mkdir -p out && chmod 0777 out
 git diff main... | docker run --rm -i --read-only --network none -v "$PWD/out:/out" \
-  munafsheikh/ai-code-reviewers:0.8.0 review --profile offline --format json,sarif,markdown --out-dir /out
+  munafsheikh/ai-code-reviewers:0.9.0 review --profile offline --format json,sarif,markdown --out-dir /out
 jq -r '.findings[] | "\(.severity)\t\(.rule_id)\t\(.location.path):\(.location.start_line)\t\(.title)"' out/review.json
 jq -r '.gate.status' out/review.json      # pass | warn | block | error
 ```
@@ -166,10 +166,10 @@ judges coverage across all lanes and applies one gate:
 mkdir -p out && chmod 0777 out
 for lane in "code=code-quality.*,maintainability.*,testing.*,lang.*" "security=security.*" "docs=documentation.*"; do
   git diff main... | docker run --rm -i --read-only --network none -v "$PWD/out:/out" \
-    munafsheikh/ai-code-reviewers:0.8.0 review --profile offline --skills "${lane#*=}" \
+    munafsheikh/ai-code-reviewers:0.9.0 review --profile offline --skills "${lane#*=}" \
     --format json --out-dir "/out/${lane%%=*}"
 done
-docker run --rm --read-only --network none -v "$PWD/out:/out" munafsheikh/ai-code-reviewers:0.8.0 \
+docker run --rm --read-only --network none -v "$PWD/out:/out" munafsheikh/ai-code-reviewers:0.9.0 \
   merge /out/code/review.json /out/security/review.json /out/docs/review.json --names code,security,docs
 ```
 
@@ -182,7 +182,7 @@ no lane covered blocks it.
 # .git/hooks/pre-push (chmod +x)
 #!/bin/sh
 git diff origin/main...HEAD | docker run --rm -i --read-only --network none \
-  munafsheikh/ai-code-reviewers:0.8.0 review --profile offline
+  munafsheikh/ai-code-reviewers:0.9.0 review --profile offline
 ```
 
 A non-zero exit stops the push; `git push --no-verify` skips it when you must.
