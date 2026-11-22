@@ -4,6 +4,8 @@ All notable changes are documented here. Format: [Keep a Changelog](https://keep
 
 ## [Unreleased]
 
+## [0.7.0] - 2026-11-22
+
 ### Added
 - Model runtime image `munafsheikh/ai-code-reviewers-runtime` (Dockerfile `runtime` target): Ollama's CPU build with `qwen2.5-coder:1.5b` baked in at build time, so running it downloads nothing. 221 MB plus the model instead of the 8.4 GB Ollama image (GPU libraries dropped); non-root, read-only, `OLLAMA_NO_CLOUD=1`. `runtime-gpu` target for CUDA/ROCm hosts; `make runtime MODELS="..."` for other models.
 - Team review instructions at run time: `*.md` in `/etc/acr/instructions.d` (`ACR_INSTRUCTIONS_DIR`), `acr review --instructions FILE`, `ACR_INSTRUCTIONS`. Given to the model as trusted guidance outside the untrusted-diff fence, bounded, and recorded by name and SHA-256 in `run.instructions`. GitHub action input `instructions`.
