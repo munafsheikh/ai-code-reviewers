@@ -3,29 +3,28 @@
 # CLI reference
 
 ```text
-usage: acr [-h] [--version]
-           {review,merge,validate,bench,models,skills,health,serve,docs,evolve} ...
+usage: acr [-h] [--version] COMMAND ...
 
 Offline, model-agnostic AI code review.
 
 positional arguments:
-  {review,merge,validate,bench,models,skills,health,serve,docs,evolve}
-    review              review a unified diff or a GitHub issue
-    merge               combine reviews of one change from parallel lanes into
-                        one result and gate
-    validate            validate manifests, schemas, rule examples,
-                        permissions, fixtures
-    bench               run the benchmark suite
-    models              list registry models or verify runtime digests
-    skills              list skills
-    health              check the model runtime for a profile
-    serve               run the HTTP review service
-    docs                generate or check reference docs in docs/generated
-    evolve              produce an evidence-based improvement proposal
+  COMMAND
+    review    review a unified diff or a GitHub issue
+    merge     combine reviews of one change from parallel lanes into one
+              result and gate
+    validate  validate manifests, schemas, rule examples, permissions,
+              fixtures
+    bench     run the benchmark suite
+    models    list registry models or verify runtime digests
+    skills    list skills
+    health    check the model runtime for a profile
+    serve     run the HTTP review service
+    docs      generate or check reference docs in docs/generated
+    evolve    produce an evidence-based improvement proposal
 
 options:
-  -h, --help            show this help message and exit
-  --version             show program's version number and exit
+  -h, --help  show this help message and exit
+  --version   show program's version number and exit
 ```
 
 ## `acr review`

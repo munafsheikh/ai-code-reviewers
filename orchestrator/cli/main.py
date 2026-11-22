@@ -310,7 +310,7 @@ def cmd_evolve(args) -> int:
 def build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(prog="acr", description="Offline, model-agnostic AI code review.")
     p.add_argument("--version", action="version", version=f"acr {__version__}")
-    sub = p.add_subparsers(dest="command", required=True)
+    sub = p.add_subparsers(dest="command", required=True, metavar="COMMAND")
 
     r = sub.add_parser("review", help="review a unified diff or a GitHub issue")
     r.add_argument("--diff", help="diff file, or - for stdin (default)")
