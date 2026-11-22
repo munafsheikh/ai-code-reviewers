@@ -265,19 +265,17 @@ def _hand_back(root: Path) -> None:
     st = root.stat()
     if st.st_uid == 0:
         return
+    failed: list[str] = []
     for d, dirs, files in os.walk(root):
         for n in [*dirs, *files]:
             p = os.path.join(d, n)
             try:
-                s = os.lstat(p)
-                if s.st_uid != st.st_uid:
+                if os.lstat(p).st_uid != st.st_uid:
                     os.lchown(p, st.st_uid, st.st_gid)
-            except OSError:
-                pass
-    try:
-        os.lchown(root, st.st_uid, st.st_gid)
-    except OSError:
-        pass
+            except OSError as e:  # vanished or not ours to change (e.g. a read-only mount): report, keep going
+                failed.append(f"{p}: {e.strerror}")
+    if failed:
+        print(f"warning: could not hand {len(failed)} path(s) back to uid {st.st_uid}, first: {failed[0]}", file=sys.stderr)
 
 
 def main(argv: list[str] | None = None) -> int:
