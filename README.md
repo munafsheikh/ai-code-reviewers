@@ -38,8 +38,8 @@ git diff main... | docker run --rm -i --read-only --network acr -e ACR_MODEL_HOS
 ```
 
 Exit codes: `0` pass/warn, `1` blocked, `2` could not review (strict policy, bad input). From a
-checkout, `make up` / `make down` run the same stack with Compose and `make review-offline
-DIFF=...` reviews a patch file. Step-by-step, the HTTP service and CI setup:
+checkout, `docker compose --profile model up -d --build` / `docker compose down` run the same
+stack, and `docker compose run --rm dev review-offline --diff change.patch` reviews a patch file. Step-by-step, the HTTP service and CI setup:
 [getting started](docs/usage/getting-started.md).
 
 ### Review a GitHub issue (refinement stage)
@@ -80,7 +80,7 @@ Architecture: [overview](docs/architecture/overview.md) · Operations: [runbook]
 
 The reviewer is stdlib-only Python with an egress allowlist; the model runtime has its
 weights baked in and Ollama's cloud features off; both run on a Docker `--internal` network.
-`make prove-offline` demonstrates it on your machine: it probes from inside both containers
+`docker compose run --rm dev prove-offline` demonstrates it on your machine: it probes from inside both containers
 that nothing can connect out or resolve names, then completes a model review anyway.
 Details and manual checks: [prove your code stays local](docs/usage/privacy.md).
 
@@ -154,8 +154,8 @@ SBOM + provenance) by the [`Images`](.github/workflows/images.yml) workflow: `ed
 | `munafsheikh/ai-code-reviewers-fake-runtime` | `fake-runtime` | deterministic model runtime for e2e |
 | `munafsheikh/ai-code-reviewers-runtime` | `runtime` | Ollama (CPU) with `qwen2.5-coder:1.5b` baked in; not layered on base. `runtime-gpu`: full Ollama image (build it yourself) |
 
-`make images` builds the four Python images locally; `make runtime MODELS="..."` builds a
-runtime with the models you choose (the one build step that downloads weights). Publishing needs `DOCKERHUB_USERNAME` / `DOCKERHUB_TOKEN`
+`docker compose run --rm dev images` builds the four Python images locally;
+`docker compose run --rm dev runtime --models "..."` builds a runtime with the models you choose (the one build step that downloads weights). Publishing needs `DOCKERHUB_USERNAME` / `DOCKERHUB_TOKEN`
 secrets (optional `DOCKERHUB_NAMESPACE` variable).
 
 ## CI/CD integrations
@@ -167,23 +167,25 @@ secrets (optional `DOCKERHUB_NAMESPACE` variable).
 | GitLab | [`integrations/gitlab/acr.gitlab-ci.yml`](integrations/gitlab/acr.gitlab-ci.yml) |
 | Firefly | [`integrations/firefly`](integrations/firefly/README.md) — replaces `ReviewGate.java`, legacy-compatible |
 
-All adapters run the same image and the same commands as `make`, so behaviour is identical
-across CI systems.
+All adapters run the same image and the same commands, so behaviour is identical across CI
+systems.
 
 ## Development
 
 ```bash
-make ci                  # validate · lint · tests (coverage gate) · docs check · benchmark gate, in the toolbox image
-make shell               # interactive toolbox shell
-make e2e                 # Compose end-to-end with a deterministic fake runtime
-make prove-offline       # isolation proof: no route out, model review still works
-make docs-site           # documentation site (MkDocs) into out/site
-make security            # gitleaks · semgrep · hadolint · trivy (fs, image) · SBOM
+docker compose run --rm dev ci              # validate · lint · tests (coverage gate) · docs check · benchmark gate
+docker compose run --rm dev help            # every task
+docker compose run --rm dev shell           # interactive toolbox shell
+docker compose run --rm dev e2e             # Compose end-to-end with a deterministic fake runtime
+docker compose run --rm dev prove-offline   # isolation proof: no route out, model review still works
+docker compose run --rm dev docs-site       # documentation site (MkDocs) into out/site
+docker compose run --rm dev security        # gitleaks · semgrep · hadolint · trivy (fs, image) · SBOM
 ```
 
-Docker and make are the only host requirements: every target runs a native command (Python
-CLIs, pytest, ruff) inside the `toolbox` image or orchestrates the published images, and CI
-calls nothing but these targets. Merging to `main` releases automatically: see
+Docker is the only host requirement. The `dev` service is the `toolbox` image running
+[`infrastructure/tasks.py`](infrastructure/tasks.py): each task is a native command (Python
+CLIs, pytest, ruff, mkdocs) in the container, or drives the host's Docker through its socket
+to build and run the product images. CI runs exactly these commands. Merging to `main` releases automatically: see
 [releases](docs/operations/runbook.md#releases).
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) and [SECURITY.md](SECURITY.md). Licensed under MIT;

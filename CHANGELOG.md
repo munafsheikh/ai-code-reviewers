@@ -4,6 +4,12 @@ All notable changes are documented here. Format: [Keep a Changelog](https://keep
 
 ## [Unreleased]
 
+### Changed
+- Development and CI tasks run in the toolbox through the `dev` Compose service: `docker compose run --rm dev <task>` (`help` lists them; tasks in `infrastructure/tasks.py`). Docker is the only host requirement. The toolbox image now carries the Docker CLI, Compose and Buildx, and tasks drive the host's Docker through its socket.
+
+### Removed
+- `Makefile` and `infrastructure/scripts/py.sh`: use the `dev` service tasks (e.g. `make ci` is `docker compose run --rm dev ci`, `make build IMAGE=x` is `... dev build --image x`).
+
 ## [0.8.0] - 2026-11-22
 
 ### Added

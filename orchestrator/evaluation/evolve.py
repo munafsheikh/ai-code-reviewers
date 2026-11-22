@@ -56,5 +56,5 @@ def report() -> str:
         "|---|---|---|",
     ]
     lines += [f"| {p} | {a} | {t} |" for p, a, t in items] or ["| - | - | No proposals. |"]
-    lines += ["", "Each change must pass `make ci` and the benchmark quality gate before merge."]
+    lines += ["", "Each change must pass `docker compose run --rm dev ci` and the benchmark quality gate before merge."]
     return "\n".join(lines) + "\n"

@@ -1,6 +1,6 @@
 ## Summary
 
 ## Verification
-- [ ] `make ci` passes locally
-- [ ] Docs updated (generated docs via `make docs`)
-- [ ] Benchmarks unchanged or improved (`make bench-gate`)
+- [ ] `docker compose run --rm dev ci` passes locally
+- [ ] Docs updated (generated docs via `docker compose run --rm dev docs`)
+- [ ] Benchmarks unchanged or improved (`docker compose run --rm dev bench-gate`)

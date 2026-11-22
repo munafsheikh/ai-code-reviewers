@@ -1,7 +1,8 @@
 # ai-code-reviewers — local stack.
-#   make up        reviewer + model runtime with the model baked in   (profile: model)
-#   make up-test   reviewer + deterministic fake runtime, no weights (profile: test)
-#   make down      stop and remove containers (volumes are kept)
+#   docker compose --profile model up -d --build   reviewer + model runtime with the model baked in
+#   docker compose --profile test up -d --build    reviewer + deterministic fake runtime, no weights
+#   docker compose down                            stop and remove containers (volumes are kept)
+#   docker compose run --rm dev <task>             development and CI tasks (`help` lists them)
 name: ai-code-reviewers
 
 x-hardening: &hardening
@@ -94,6 +95,40 @@ services:
       interval: 5s
       timeout: 3s
       retries: 10
+
+  dev:
+    # Toolbox (pinned Python tooling, git, Docker CLI) running infrastructure/tasks.py. The
+    # repository is mounted at the host's own path and the host's Docker socket is shared, so
+    # tasks that build or run containers pass paths the host daemon understands. Runs as root
+    # for the socket; files it creates are handed back to the repository's owner on exit.
+    profiles: ["dev"]
+    build:
+      context: .
+      dockerfile: infrastructure/docker/Dockerfile
+      target: toolbox
+      args: [PYTHON_IMAGE]                          # unset: the Dockerfile's pinned default
+    image: ${ACR_TOOLBOX_IMAGE:-acr-toolbox:local}
+    pull_policy: build                              # rebuilt (from cache) before every run, never stale
+    user: "0:0"
+    working_dir: ${PWD}
+    entrypoint: ["python", "infrastructure/tasks.py"]
+    network_mode: host
+    volumes:
+      - ${PWD}:${PWD}
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      - ACR_CACHE_DIR=/tmp/acr-cache
+      - COMPOSE_PROJECT_NAME=acr-dev                # stacks the tasks start never touch this one
+      - PYTHONDONTWRITEBYTECODE=1
+      - BASE_URL
+      - DEPLOY_TIMEOUT
+      - SCAN_DOCKER_ARGS
+      - ACR_TEST_PROJECT
+      - ACR_TEST_PORT
+      - ACR_STATE_DIR
+      - ACR_IMAGE
+      - ACR_MODEL_HOST
+      - ACR_MIN_CONFIDENCE
 
 networks:
   backend:

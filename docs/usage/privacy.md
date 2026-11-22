@@ -8,8 +8,12 @@ what enforces that, and how to check each part yourself instead of trusting it.
 From a checkout of this repository:
 
 ```bash
-make build runtime            # reviewer image + runtime with the model baked in (downloads once, here)
-make prove-offline            # or: make prove-offline IMAGE=munafsheikh/ai-code-reviewers:0.8.0 RUNTIME_IMAGE=munafsheikh/ai-code-reviewers-runtime:0.8.0
+docker compose run --rm dev build             # reviewer image
+docker compose run --rm dev runtime           # runtime with the model baked in (downloads once, here)
+docker compose run --rm dev prove-offline
+# or the published images:
+docker compose run --rm dev prove-offline --image munafsheikh/ai-code-reviewers:0.8.0 \
+  --runtime-image munafsheikh/ai-code-reviewers-runtime:0.8.0
 ```
 
 [`prove-offline.sh`](https://github.com/munafsheikh/ai-code-reviewers/blob/main/infrastructure/scripts/prove-offline.sh)

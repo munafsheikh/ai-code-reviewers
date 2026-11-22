@@ -94,10 +94,10 @@ not update `MANIFEST.sha256`, and CODEOWNERS requires owner review for the direc
 ## Local workflow
 
 ```bash
-make ci             # validate, lint, tests + coverage gate, docs check, benchmark gate (toolbox container)
-make shell          # shell inside the toolbox
-make e2e            # docker: compose stack with fake runtime
-make docs           # regenerate docs/generated after changing skills/models/profiles/CLI
+docker compose run --rm dev ci      # validate, lint, tests + coverage gate, docs check, benchmark gate
+docker compose run --rm dev shell   # shell inside the toolbox
+docker compose run --rm dev e2e     # compose stack with fake runtime
+docker compose run --rm dev docs    # regenerate docs/generated after changing skills/models/profiles/CLI
 ```
 
 <sub>For AI coding agents: [agent guide](../../AGENTS.md).</sub>

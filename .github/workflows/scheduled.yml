@@ -18,6 +18,9 @@ on:
 permissions:
   contents: read
 
+env:
+  COMPOSE_PROGRESS: quiet   # build progress would otherwise land on stdout (captured outputs); errors still show
+
 jobs:
   plan:
     runs-on: ubuntu-latest
@@ -37,10 +40,10 @@ jobs:
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - run: make validate
+      - run: docker compose run --rm -T dev validate
       - name: Quick regression
-        run: make test-fast
-      - run: make docs-check
+        run: docker compose run --rm -T dev test-fast
+      - run: docker compose run --rm -T dev docs-check
       - name: Dependency and secret checks
         run: |
           infrastructure/scripts/security-scan.sh - deps
@@ -54,11 +57,11 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Benchmark stability (repeat 3) and comparison artifact
-        run: make bench-gate BENCH_ARGS="--repeat 3"
+        run: docker compose run --rm -T dev bench-gate --repeat 3
       - name: Resilience tests (retry, circuit breaker, cache corruption, runtime loss, deadline)
-        run: make test-resilience
+        run: docker compose run --rm -T dev test-resilience
       - name: Compose resilience (watchdog restart + circuit open, deploy rollback)
-        run: tests/end-to-end/resilience.sh
+        run: docker compose run --rm -T dev resilience
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         if: always()
         with: {name: weekly, path: out/, retention-days: 90}
@@ -79,7 +82,7 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Improvement proposal
-        run: make evolve && cp out/proposal.md proposal.md
+        run: docker compose run --rm -T dev evolve && cp out/proposal.md proposal.md
       - name: Open or update the proposal issue
         uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3 # v9.0.0
         with:
@@ -106,4 +109,4 @@ jobs:
             const dup = (await github.rest.issues.listForRepo({ ...context.repo, labels: 'automated', state: 'open' })).data
               .find(i => i.title === title);
             if (!dup) await github.rest.issues.create({ ...context.repo, title, labels: ['automated', 'bug'],
-              body: `Run: ${url}\n\nReproduce locally: \`make ci\` (daily), \`make e2e && tests/end-to-end/resilience.sh\` (weekly).\nArtifacts attached to the run contain diagnostics.` });
+              body: `Run: ${url}\n\nReproduce locally: \`docker compose run --rm dev ci\` (daily), \`docker compose run --rm dev e2e\` and \`... dev resilience\` (weekly).\nArtifacts attached to the run contain diagnostics.` });

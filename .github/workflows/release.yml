@@ -1,9 +1,9 @@
 name: Release
 # Automatic: every green CI run on main is a release candidate.
 #   plan     next version from CHANGELOG [Unreleased] or a release:* label on the merged PR
-#            (make release-plan; nothing to release -> stop)
-#   bump     write the version everywhere (make release-apply), re-test the bumped tree in the
-#            toolbox (make ci), commit "Release X.Y.Z" + tag vX.Y.Z, push both atomically to main
+#            (release plan task; nothing to release -> stop)
+#   bump     write the version everywhere (release apply), re-test the bumped tree in the
+#            toolbox (ci task), commit "Release X.Y.Z" + tag vX.Y.Z, push both atomically to main
 #   publish  reviewer image: scan gate, SBOM, push to GHCR, sign + attest, GitHub release
 #   images   every layered image to Docker Hub (X.Y.Z, X.Y, latest)
 #   deploy   disposable test environment with auto-rollback
@@ -42,6 +42,9 @@ concurrency:
   group: release
   cancel-in-progress: false
 
+env:
+  COMPOSE_PROGRESS: quiet   # build progress would otherwise land on stdout (captured outputs); errors still show
+
 jobs:
   plan:
     if: github.event_name != 'workflow_run' || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event == 'push')
@@ -72,7 +75,7 @@ jobs:
           sha=$(git rev-parse HEAD); out sha "$sha"
           if [ "$EVENT" = push ] || [ -n "$VERSION" ]; then
             v="${VERSION:-${GITHUB_REF_NAME#v}}"; v="${v#v}"
-            make -s release-check VERSION="$v"
+            docker compose run --rm -T dev release check "$v"
             if ! git rev-parse -q --verify "refs/tags/v$v" >/dev/null; then
               git merge-base --is-ancestor "$sha" origin/main || { echo "::error::$sha is not on main"; exit 1; }
               git -c user.name="github-actions[bot]" -c user.email="41898282+github-actions[bot]@users.noreply.github.com" tag -a "v$v" -m "v$v" "$sha"
@@ -90,7 +93,8 @@ jobs:
           elif [ "${BUMP:-auto}" != auto ]; then
             labels="release:$BUMP"
           fi
-          plan=$(make -s release-plan LABELS="$labels"); echo "$plan"
+          args=(); for l in $labels; do args+=(--label "$l"); done
+          plan=$(docker compose run --rm -T dev release plan "${args[@]}"); echo "$plan"
           v=$(jq -r '.next // empty' <<<"$plan")
           echo "- plan: \`$plan\`" >> "$GITHUB_STEP_SUMMARY"
           if [ -z "$v" ]; then out mode none; exit 0; fi
@@ -114,9 +118,9 @@ jobs:
           ref: ${{ needs.plan.outputs.sha }}
           fetch-depth: 0
       - name: Write version ${{ env.VERSION }}
-        run: make release-apply VERSION="$VERSION"
+        run: docker compose run --rm -T dev release apply "$VERSION"
       - name: Re-test the bumped tree (validate, lint, tests, docs, benchmark gate)
-        run: make ci
+        run: docker compose run --rm -T dev ci
       - name: Commit, tag, push atomically
         id: push
         run: |
@@ -150,19 +154,19 @@ jobs:
       - name: Every version reference must equal the tag
         id: v
         run: |
-          make release-check VERSION="$VERSION"
+          docker compose run --rm -T dev release check "$VERSION"
           echo "sha=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
       - name: Test a hand-made tag (the automatic path tested it in `bump`)
         if: needs.plan.outputs.mode == 'publish'
-        run: make ci
+        run: docker compose run --rm -T dev ci
       - uses: docker/setup-qemu-action@99012661954931238ded8c8b007157a8430204e1 # v4.4.0
       - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
       - name: Build for scanning (local, amd64)
-        run: make build IMAGE=acr-reviewer:release
+        run: docker compose run --rm -T dev build --image acr-reviewer:release
       - name: Vulnerability gate (new critical/high block the release)
-        run: make security-image IMAGE=acr-reviewer:release
+        run: infrastructure/scripts/security-scan.sh acr-reviewer:release image
       - name: SBOM
-        run: make sbom IMAGE=acr-reviewer:release
+        run: infrastructure/scripts/security-scan.sh acr-reviewer:release sbom
       - uses: docker/login-action@8aa5831fb8d48d8f76594c7ddde61ae58019f550 # v4.8.0
         with:
           registry: ghcr.io
@@ -199,7 +203,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           DIGEST: ${{ steps.push.outputs.digest }}
         run: |
-          make -s release-notes VERSION="$VERSION" > notes.md
+          docker compose run --rm -T dev release notes "$VERSION" > notes.md
           printf '\n**Image:** `%s@%s`\n\nVerify: `cosign verify %s@%s --certificate-identity-regexp "^https://github.com/%s/" --certificate-oidc-issuer https://token.actions.githubusercontent.com`\n' \
             "$IMAGE" "$DIGEST" "$IMAGE" "$DIGEST" "${{ github.repository }}" >> notes.md
           gh release create "v$VERSION" --verify-tag --title "v$VERSION" --notes-file notes.md out/security/sbom.cdx.json

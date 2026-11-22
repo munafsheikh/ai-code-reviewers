@@ -1,4 +1,4 @@
-"""Plan and report the model-matrix evaluation (stdlib only; runs via py.sh or the toolbox).
+"""Plan and report the model-matrix evaluation (stdlib only; runs in the toolbox: docker compose run --rm dev py ...).
 
 model_matrix.py plan  --select <all|small|changed|ids...> [--max-disk-mb N] [--changed-files FILE]
     prints a JSON list of {id, ref, disk_mb} for the GitHub Actions matrix

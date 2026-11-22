@@ -4,7 +4,7 @@ set -euo pipefail
 cd "$(dirname "$0")/../.."
 PROJECT="${ACR_TEST_PROJECT:-acr-test}"
 STATE="${ACR_STATE_DIR:-out/deploy}/state.json"
-target=$(infrastructure/scripts/py.sh -c "import json;print(json.load(open('$STATE'))['last_verified'])") || { echo "no verified release recorded" >&2; exit 1; }
+target=$(python -c "import json;print(json.load(open('$STATE'))['last_verified'])") || { echo "no verified release recorded" >&2; exit 1; }
 export ACR_HOST_PORT="${ACR_TEST_PORT:-18088}" ACR_IMAGE="$target" ACR_PROFILE=balanced
 # The fake runtime is part of the test environment, not the candidate: build it when this
 # host does not have it yet (only that service; the reviewer stays the candidate image).

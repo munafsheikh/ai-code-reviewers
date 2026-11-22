@@ -5,7 +5,7 @@ Entry point for AI coding agents. Every fact lives in the linked document that o
 ## Before any change
 
 - What the platform is, quick start, how it works: [README](README.md)
-- How to verify and land a change (`make ci`, generated docs, gates, commit style): [CONTRIBUTING](CONTRIBUTING.md)
+- How to verify and land a change (`docker compose run --rm dev ci`, generated docs, gates, commit style): [CONTRIBUTING](CONTRIBUTING.md)
 - Adding rules, companions, expectations, skills or models: [extending](docs/development/extending.md)
 
 ## When relevant

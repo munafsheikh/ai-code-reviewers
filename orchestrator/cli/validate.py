@@ -19,7 +19,7 @@ REQUIRED_FILES = [
     "CONTRIBUTING.md",
     "SECURITY.md",
     "CHANGELOG.md",
-    "Makefile",
+    "infrastructure/tasks.py",
     ".env.example",
     "compose.yaml",
     "pyproject.toml",

@@ -213,7 +213,7 @@ def main(check: bool = False) -> int:
         else:
             path.write_text(text, encoding="utf-8")
     if drift:
-        print(f"generated docs out of date: {', '.join(drift)} — run `make docs`", file=sys.stderr)
+        print(f"generated docs out of date: {', '.join(drift)} — run `docker compose run --rm dev docs`", file=sys.stderr)
         return 1
     print("docs: up to date" if check else f"docs: wrote {len(GENERATORS)} files to docs/generated")
     return 0
