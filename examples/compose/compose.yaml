@@ -1,0 +1,39 @@
+# Stand-alone stack from the published images: no repository checkout, no model download.
+#   docker compose -f examples/compose/compose.yaml up -d --wait
+#   git diff main... | docker compose -f examples/compose/compose.yaml run --rm -T reviewer review
+# The runtime has the model inside the image and both services sit on an internal network,
+# so neither container has a route to the internet. Team instructions are mapped in from
+# ./instructions.d (read-only); edit them and the next review uses them.
+name: acr
+
+x-hardening: &hardening
+  read_only: true
+  security_opt: ["no-new-privileges:true"]
+  cap_drop: ["ALL"]
+  tmpfs: ["/tmp:size=64m,mode=1777"]
+
+services:
+  reviewer:
+    <<: *hardening
+    image: munafsheikh/ai-code-reviewers:0.6.0
+    command: ["--help"]
+    environment:
+      ACR_MODEL_HOST: http://llm-runtime:11434
+      ACR_PROFILE: balanced
+    volumes:
+      - ./instructions.d:/etc/acr/instructions.d:ro
+    networks: [private]
+    depends_on:
+      llm-runtime: {condition: service_healthy}
+
+  llm-runtime:
+    <<: *hardening
+    image: munafsheikh/ai-code-reviewers-runtime:0.6.0
+    networks: [private]
+    deploy:
+      resources:
+        limits: {cpus: "4.0", memory: 6g}
+
+networks:
+  private:
+    internal: true   # no route out: the review cannot leave the machine

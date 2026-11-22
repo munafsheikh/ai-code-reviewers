@@ -4,6 +4,7 @@ name: Images
 #   2. layered on the base *digest*  -> <ns>/ai-code-reviewers (reviewer, scan-gated)
 #                                       <ns>/ai-code-reviewers-toolbox
 #                                       <ns>/ai-code-reviewers-fake-runtime
+#      plus the model runtime             -> <ns>/ai-code-reviewers-runtime (model weights baked in)
 # Tags (infrastructure/scripts/release.py image-tags): green CI on main -> edge, sha-<12>;
 # a release (called by Release) -> X.Y.Z, X.Y, latest.
 # Multi-arch (amd64, arm64), BuildKit SBOM + provenance, keyless cosign signatures.
@@ -125,6 +126,8 @@ jobs:
           - {target: reviewer, repo: ai-code-reviewers, scan: true}
           - {target: toolbox, repo: ai-code-reviewers-toolbox, scan: false}
           - {target: fake-runtime, repo: ai-code-reviewers-fake-runtime, scan: false}
+          # Ollama + qwen2.5-coder:1.5b baked in; not layered on base (different runtime).
+          - {target: runtime, repo: ai-code-reviewers-runtime, scan: false}
     env:
       REPO: docker.io/${{ needs.meta.outputs.namespace }}/${{ matrix.repo }}
       BASE_REF: docker.io/${{ needs.meta.outputs.namespace }}/ai-code-reviewers-base@${{ needs.base.outputs.digest }}
@@ -135,6 +138,11 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with: {ref: "${{ needs.meta.outputs.revision }}"}
+      - name: Free runner disk (the runtime build reads the full Ollama image for each platform)
+        if: matrix.target == 'runtime'
+        run: |
+          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc /opt/hostedtoolcache/CodeQL
+          df -h /
       - uses: docker/setup-qemu-action@99012661954931238ded8c8b007157a8430204e1 # v4.4.0
       - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
       - uses: docker/login-action@8aa5831fb8d48d8f76594c7ddde61ae58019f550 # v4.8.0

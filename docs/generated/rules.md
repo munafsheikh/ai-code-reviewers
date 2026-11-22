@@ -52,7 +52,7 @@ Stack traces on stderr bypass the logging pipeline and are lost in most deployme
 
 <a id="skill-documentation-content"></a>
 
-## Skill `documentation.content` (v1.0.0)
+## Skill `documentation.content` (v1.1.0)
 
 Defects inside documentation: placeholders, conflict markers, machine-local paths, insecure links; model check for docs that contradict the code. Category: documentation. Model tier: small.
 

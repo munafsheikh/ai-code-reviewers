@@ -1,0 +1,72 @@
+site_name: ai-code-reviewers
+site_description: Offline, model-agnostic AI code review with local models, deterministic rules and policy gates.
+site_url: https://munafsheikh.github.io/ai-code-reviewers/
+repo_url: https://github.com/munafsheikh/ai-code-reviewers
+repo_name: munafsheikh/ai-code-reviewers
+edit_uri: edit/main/docs/
+# Lives here (not at the repository root); paths are relative to this file.
+docs_dir: ../../docs
+site_dir: ../../out/site
+strict: true
+
+theme:
+  name: material
+  features: [navigation.sections, navigation.top, content.code.copy, search.suggest]
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      toggle: {icon: material/brightness-7, name: Dark mode}
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      toggle: {icon: material/brightness-4, name: Light mode}
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - tables
+  - toc: {permalink: true}
+  - pymdownx.details
+  - pymdownx.highlight
+  - pymdownx.inlinehilite
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+
+# Links into the repository (outside docs/) are checked by infrastructure/scripts/check_links.py.
+validation:
+  omitted_files: warn
+  absolute_links: info
+  unrecognized_links: info
+  anchors: warn
+  links: {not_found: info}
+
+nav:
+  - Home: index.md
+  - Using it:
+      - Getting started: usage/getting-started.md
+      - Code review examples: usage/examples.md
+      - Customize reviews: usage/customize.md
+      - Prove your code stays local: usage/privacy.md
+  - How it works:
+      - Architecture: architecture/overview.md
+      - CI/CD pipeline: architecture/pipeline.md
+  - Operations:
+      - Runbook: operations/runbook.md
+      - Troubleshooting: operations/troubleshooting.md
+      - Model selection: operations/model-selection.md
+  - Reference:
+      - CLI: generated/cli.md
+      - Configuration: generated/configuration.md
+      - Skills: generated/skills.md
+      - Rules: generated/rules.md
+      - Models: generated/models.md
+      - Profiles & policies: generated/profiles.md
+      - Schemas: generated/schemas.md
+  - Security:
+      - Threat model: security/threat-model.md
+      - Vulnerability baseline: security/vulnerability-baseline.md
+  - Development:
+      - Extending: development/extending.md
+      - Implementation log: development/phase-log.md

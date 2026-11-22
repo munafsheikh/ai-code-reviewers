@@ -1,0 +1,2 @@
+- This service handles customer PII: flag any log line, metric label or error message that includes an email, name or address.
+- New SQL must use bound parameters; string-built queries are always major.

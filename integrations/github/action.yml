@@ -11,7 +11,21 @@ inputs:
     description: Review policy id (default from profile)
     default: ''
   base-ref:
-    description: Base ref to diff against (default the PR base)
+    description: Base branch or commit SHA to diff against (default the PR base; on push use github.event.before)
+    default: ''
+  skills:
+    description: Comma list of skill ids or globs to run instead of the profile's (one lane of a parallel review), e.g. "security.*"
+    default: ''
+  instructions:
+    description: Space-separated files in the repository with team review instructions for the model (e.g. .github/review-instructions.md); $ACR_INSTRUCTIONS in the job environment is forwarded too
+    default: ''
+  merge-results:
+    description: >-
+      Space-separated review.json paths (globs allowed) from parallel lanes. When set, nothing is reviewed:
+      the lanes are merged into one result (acr merge), then commented, uploaded and gated as usual.
+    default: ''
+  lane-names:
+    description: Comma list of lane names for merge-results, in the same order
     default: ''
   head-ref:
     description: Commit to review (default the PR head commit, else the pushed commit). Set to HEAD to include local commits.
@@ -23,11 +37,13 @@ inputs:
     description: Small-tier model (registry id or runtime ref). Empty = profile default.
     default: ''
   pull-models:
-    description: Space-separated runtime refs to pull into the model runtime
+    description: Runtime refs the review needs; pulled only if the runtime image does not already contain them
     default: qwen2.5-coder:1.5b
   runtime-image:
-    description: Model runtime image. Empty = no runtime (review degrades to rules-only unless profile is offline).
-    default: ollama/ollama:0.40.11@sha256:dea72d1e22270fe095b68fdf756d2b489d615643c5a2eaebbc5f569181e322d8
+    description: >-
+      Model runtime image. Default: this release's runtime with qwen2.5-coder:1.5b baked in (no model download).
+      A stock Ollama image works too (models are then pulled). Empty = no runtime (rules only).
+    default: munafsheikh/ai-code-reviewers-runtime:0.6.0
   image:
     description: Reviewer image. Empty = build from this action's source (pinned by the ref you use).
     default: ''
@@ -68,6 +84,7 @@ runs:
   using: composite
   steps:
     - name: Compute diff
+      if: inputs.merge-results == ''
       shell: bash
       env:
         BASE: ${{ inputs.base-ref || github.event.pull_request.base.ref || github.event.repository.default_branch }}
@@ -76,11 +93,19 @@ runs:
         HEAD_REF: ${{ inputs.head-ref || github.event.pull_request.head.sha || github.sha }}
       run: |
         set -euo pipefail
-        git fetch --no-tags --depth=200 origin "$BASE"
+        # A new branch's push has an all-zero "before": review against the default branch instead.
+        if [[ "$BASE" =~ ^0+$ ]]; then BASE="${{ github.event.repository.default_branch }}"; fi
+        if [[ "$BASE" =~ ^[0-9a-f]{40}$ ]]; then
+          git cat-file -e "$BASE^{commit}" 2>/dev/null || git fetch --no-tags --depth=200 origin "$BASE"
+          base_rev="$BASE"
+        else
+          git fetch --no-tags --depth=200 origin "$BASE"
+          base_rev="origin/$BASE"
+        fi
         git cat-file -e "$HEAD_REF^{commit}" 2>/dev/null || git fetch --no-tags --depth=200 origin "$HEAD_REF"
         HEAD_REF_RESOLVED=$(git rev-parse "$HEAD_REF")
         read -r -a specs <<< "$PATHS"
-        git -c core.fsmonitor=false diff --no-color --no-ext-diff --no-textconv "origin/$BASE...$HEAD_REF_RESOLVED" -- "${specs[@]}" > "$RUNNER_TEMP/acr.diff"
+        git -c core.fsmonitor=false diff --no-color --no-ext-diff --no-textconv "$base_rev...$HEAD_REF_RESOLVED" -- "${specs[@]}" > "$RUNNER_TEMP/acr.diff"
         echo "diff lines: $(wc -l < "$RUNNER_TEMP/acr.diff")"
 
     - name: Prepare reviewer image
@@ -99,7 +124,7 @@ runs:
         echo "image=$IMAGE" >> "$GITHUB_OUTPUT"
 
     - name: Start model runtime
-      if: inputs.runtime-image != '' && inputs.profile != 'offline'
+      if: inputs.merge-results == '' && inputs.runtime-image != '' && inputs.profile != 'offline'
       shell: bash
       env:
         RUNTIME_IMAGE: ${{ inputs.runtime-image }}
@@ -109,7 +134,10 @@ runs:
         docker network create acr-net >/dev/null 2>&1 || true
         docker run -d --name llm-runtime --network acr-net -v acr-models:/root/.ollama "$RUNTIME_IMAGE" >/dev/null
         for i in $(seq 1 30); do docker exec llm-runtime ollama list >/dev/null 2>&1 && break; sleep 2; done
+        # A runtime image with the models baked in (munafsheikh/ai-code-reviewers-runtime) needs no pull.
+        have=$(docker exec llm-runtime ollama list | awk 'NR>1 {print $1}')
         for m in $MODELS; do
+          case " $(echo $have) " in *" $m "*|*" $m:latest "*) echo "$m: already in the image"; continue;; esac
           for attempt in 1 2 3; do docker exec llm-runtime ollama pull "$m" && break || sleep $((attempt * 5)); done
         done
         docker exec llm-runtime ollama list
@@ -123,21 +151,46 @@ runs:
         HEAD_REF: ${{ inputs.head-ref || github.event.pull_request.head.sha || github.sha }}
         POLICY: ${{ inputs.policy }}
         MODEL: ${{ inputs.model }}
+        SKILLS: ${{ inputs.skills }}
+        INSTRUCTIONS: ${{ inputs.instructions }}
+        MERGE: ${{ inputs.merge-results }}
+        LANES: ${{ inputs.lane-names }}
         OUT: ${{ inputs.output-dir }}
       run: |
         set +e -uo pipefail   # composite steps run with bash -e; the exit code is handled below
-        HEAD_REF_RESOLVED=$(git rev-parse "$HEAD_REF")
         mkdir -p "$OUT" && chmod 0777 "$OUT"
-        net=(); docker network inspect acr-net >/dev/null 2>&1 && net=(--network acr-net)
-        args=(review --profile "$PROFILE" --format json,sarif,markdown,legacy --out-dir /out --stdout markdown -v
-              --revision "$HEAD_REF_RESOLVED" --repository "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY")
-        [ -n "$POLICY" ] && args+=(--policy "$POLICY")
-        [ -n "$MODEL" ] && args+=(--model "$MODEL")
-        docker run --rm -i "${net[@]}" --read-only --cap-drop ALL --security-opt no-new-privileges:true \
-          --tmpfs /tmp -v "$PWD/$OUT:/out" -e ACR_MODEL_HOST=http://llm-runtime:11434 \
-          -e ACR_RUN_URL="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" \
-          ${LLM_MODEL:+-e LLM_MODEL="$LLM_MODEL"} "$IMAGE" "${args[@]}" < "$RUNNER_TEMP/acr.diff" 2> "$OUT/review.log"
-        code=$?
+        if [ -n "$MERGE" ]; then
+          mounts=(); files=(); i=0
+          for f in $MERGE; do mounts+=(-v "$PWD/$f:/in/$i.json:ro"); files+=("/in/$i.json"); i=$((i + 1)); done
+          [ "$i" -gt 0 ] || { echo "::error::merge-results matched no files"; exit 2; }
+          args=(merge "${files[@]}" --format json,sarif,markdown,legacy --out-dir /out --stdout markdown)
+          [ -n "$LANES" ] && args+=(--names "$LANES")
+          [ -n "$POLICY" ] && args+=(--policy "$POLICY")
+          docker run --rm --read-only --cap-drop ALL --security-opt no-new-privileges:true --network none \
+            --tmpfs /tmp -v "$PWD/$OUT:/out" "${mounts[@]}" "$IMAGE" "${args[@]}" 2> "$OUT/review.log"
+          code=$?
+        else
+          HEAD_REF_RESOLVED=$(git rev-parse "$HEAD_REF")
+          net=(); docker network inspect acr-net >/dev/null 2>&1 && net=(--network acr-net)
+          args=(review --profile "$PROFILE" --format json,sarif,markdown,legacy --out-dir /out --stdout markdown -v
+                --revision "$HEAD_REF_RESOLVED" --repository "$GITHUB_SERVER_URL/$GITHUB_REPOSITORY")
+          [ -n "$POLICY" ] && args+=(--policy "$POLICY")
+          [ -n "$MODEL" ] && args+=(--model "$MODEL")
+          [ -n "$SKILLS" ] && args+=(--skills "$SKILLS")
+          # Added to any instructions baked into the image (/etc/acr/instructions.d), not instead of them.
+          imounts=(); n=0
+          for f in $INSTRUCTIONS; do
+            [ -f "$f" ] || { echo "::error::instructions file not found: $f"; exit 2; }
+            target="/opt/acr-action/instructions/$n-$(basename "$f")"
+            imounts+=(-v "$PWD/$f:$target:ro"); args+=(--instructions "$target"); n=$((n + 1))
+          done
+          docker run --rm -i "${net[@]}" --read-only --cap-drop ALL --security-opt no-new-privileges:true \
+            --tmpfs /tmp -v "$PWD/$OUT:/out" -e ACR_MODEL_HOST=http://llm-runtime:11434 \
+            -e ACR_RUN_URL="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" \
+            ${LLM_MODEL:+-e LLM_MODEL="$LLM_MODEL"} ${ACR_INSTRUCTIONS:+-e ACR_INSTRUCTIONS} "${imounts[@]}" \
+            "$IMAGE" "${args[@]}" < "$RUNNER_TEMP/acr.diff" 2> "$OUT/review.log"
+          code=$?
+        fi
         cat "$OUT/review.log" >&2
         read -r gate degraded < <(docker run --rm -i --entrypoint python "$IMAGE" -c \
           'import json,sys; r=json.load(sys.stdin); print(r["gate"]["status"], str(r["run"]["degraded"]).lower())' \

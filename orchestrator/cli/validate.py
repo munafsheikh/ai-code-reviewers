@@ -51,8 +51,8 @@ def check_structure(root: Path, r: Report) -> None:
 
 def check_skills(root: Path, r: Report) -> None:
     seen_ids, seen_rules = {}, {}
-    for mf in sorted((root / "skills").rglob("skill.toml")):
-        rel = mf.relative_to(root)
+    for mf in cfg.skill_manifests(root):
+        rel = mf.relative_to(root) if mf.is_relative_to(root) else mf
         d = cfg.load_toml(mf)
         r.checked += 1
         for e in schema.validate(d, schema.load("skill")):

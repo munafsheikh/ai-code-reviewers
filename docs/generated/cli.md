@@ -3,27 +3,28 @@
 # CLI reference
 
 ```text
-usage: acr [-h] [--version]
-           {review,validate,bench,models,skills,health,serve,docs,evolve} ...
+usage: acr [-h] [--version] COMMAND ...
 
 Offline, model-agnostic AI code review.
 
 positional arguments:
-  {review,validate,bench,models,skills,health,serve,docs,evolve}
-    review              review a unified diff or a GitHub issue
-    validate            validate manifests, schemas, rule examples,
-                        permissions, fixtures
-    bench               run the benchmark suite
-    models              list registry models or verify runtime digests
-    skills              list skills
-    health              check the model runtime for a profile
-    serve               run the HTTP review service
-    docs                generate or check reference docs in docs/generated
-    evolve              produce an evidence-based improvement proposal
+  COMMAND
+    review    review a unified diff or a GitHub issue
+    merge     combine reviews of one change from parallel lanes into one
+              result and gate
+    validate  validate manifests, schemas, rule examples, permissions,
+              fixtures
+    bench     run the benchmark suite
+    models    list registry models or verify runtime digests
+    skills    list skills
+    health    check the model runtime for a profile
+    serve     run the HTTP review service
+    docs      generate or check reference docs in docs/generated
+    evolve    produce an evidence-based improvement proposal
 
 options:
-  -h, --help            show this help message and exit
-  --version             show program's version number and exit
+  -h, --help  show this help message and exit
+  --version   show program's version number and exit
 ```
 
 ## `acr review`
@@ -32,7 +33,8 @@ options:
 usage: acr review [-h] [--diff DIFF] [--git-range GIT_RANGE] [--issue ISSUE]
                   [--repo REPO] [--paths [PATHS ...]] [--profile PROFILE]
                   [--policy POLICY] [--format FORMAT] [--out-dir OUT_DIR]
-                  [--stdout {json,sarif,markdown,legacy}] [--model MODEL]
+                  [--stdout {json,sarif,markdown,legacy}]
+                  [--instructions FILE] [--skills SKILLS] [--model MODEL]
                   [--model-host MODEL_HOST] [--revision REVISION]
                   [--repository REPOSITORY] [-v]
 
@@ -52,6 +54,11 @@ options:
   --out-dir OUT_DIR     write every format to this directory
   --stdout {json,sarif,markdown,legacy}
                         format to print when --out-dir is used
+  --instructions FILE   team review instructions for the model (repeatable);
+                        also read from $ACR_INSTRUCTIONS_DIR (default
+                        /etc/acr/instructions.d) and $ACR_INSTRUCTIONS
+  --skills SKILLS       comma list of skill ids or globs to run instead of the
+                        profile's (default $ACR_SKILLS), e.g. 'security.*'
   --model MODEL         override the small-tier model (registry id or runtime
                         ref)
   --model-host MODEL_HOST
@@ -61,6 +68,28 @@ options:
   --repository REPOSITORY
                         repository URI for traceability
   -v, --verbose         structured recovery logs on stderr
+```
+
+## `acr merge`
+
+```text
+usage: acr merge [-h] [--names NAMES] [--policy POLICY] [--format FORMAT]
+                 [--out-dir OUT_DIR] [--stdout {json,sarif,markdown,legacy}]
+                 results [results ...]
+
+positional arguments:
+  results               review.json files (one per lane)
+
+options:
+  -h, --help            show this help message and exit
+  --names NAMES         comma list of lane names, in the same order (default
+                        lane1,lane2,...)
+  --policy POLICY       policy for the combined gate (default: the first
+                        result's)
+  --format FORMAT       comma list of json,sarif,markdown,legacy
+  --out-dir OUT_DIR     write every format to this directory
+  --stdout {json,sarif,markdown,legacy}
+                        format to print when --out-dir is used
 ```
 
 ## `acr validate`

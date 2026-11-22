@@ -7,6 +7,7 @@ name: Release
 #   publish  reviewer image: scan gate, SBOM, push to GHCR, sign + attest, GitHub release
 #   images   every layered image to Docker Hub (X.Y.Z, X.Y, latest)
 #   deploy   disposable test environment with auto-rollback
+#   docs     documentation site to GitHub Pages (every green main, from the release commit if one was cut)
 # Pushes use GITHUB_TOKEN, so the release commit does not trigger CI again. Requires that
 # github-actions may push to main (no branch protection blocking it, or a bypass for it).
 # Manual: run with `version` (+ `commit`) to tag and publish an existing version, or with
@@ -223,3 +224,14 @@ jobs:
     uses: ./.github/workflows/deploy.yml
     with:
       image: ghcr.io/${{ github.repository }}:${{ needs.plan.outputs.version }}
+
+  docs:
+    needs: [plan, bump]
+    if: always() && needs.plan.result == 'success' && needs.bump.result != 'failure' && needs.bump.result != 'cancelled'
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    uses: ./.github/workflows/pages.yml
+    with:
+      ref: ${{ needs.bump.outputs.sha || needs.plan.outputs.sha }}

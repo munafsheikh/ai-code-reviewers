@@ -41,7 +41,11 @@ def main() -> int:
             for img in IMAGE.findall(line):
                 if img.rsplit(":", 1)[-1] in ("ro", "rw") or img.startswith((".", "var/")):
                     continue  # volume mount, not an image
-                if "@sha256:" not in img and img not in ALLOW_UNPINNED_IMAGES and not img.startswith(("acr-", "ghcr.io/munafsheikh/")):
+                if (
+                    "@sha256:" not in img
+                    and img not in ALLOW_UNPINNED_IMAGES
+                    and not img.startswith(("acr-", "ghcr.io/munafsheikh/", "munafsheikh/ai-code-reviewers"))
+                ):
                     errors.append(f"{f.relative_to(ROOT)}:{n}: image not pinned by digest: {img}")
     for e in errors:
         print(e)

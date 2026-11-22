@@ -10,7 +10,7 @@
 | Metrics (Prometheus text) | `curl -s 127.0.0.1:8088/metrics` |
 | Review a diff | `make review DIFF=change.patch` or `git diff main... \| docker compose run --rm -T reviewer review` |
 | Stop | `make down` (volumes kept) |
-| Logs | `make logs` — JSON lines; `component` is `http`, `recovery`, `model-init`, `watchdog`, `deploy` |
+| Logs | `make logs` — JSON lines; `component` is `http`, `recovery`, `watchdog`, `deploy` |
 
 `/readyz` returns `ready`, or `degraded` when the runtime is down or a configured model is
 missing (`missing_models`). Degraded reviews still run rules and say so in every output.
@@ -27,7 +27,6 @@ missing (`missing_models`). Degraded reviews still run rules and say so in every
 | Corrupt cache entry | sha256 check | evict + recompute | per entry | `cache_entry_evicted` |
 | Model digest mismatch | `/api/tags` digest vs manifest | disable model for the run | — | `model_integrity_mismatch` |
 | Stalled review | `review_timeout_s` deadline | skip remaining calls | per review | `review_deadline_exceeded` |
-| Failed model download | `model-init` | retry 3× with backoff, then continue rules-only | 3 attempts | `model_pull_failed` |
 | Failed deployment | `up --wait` / smoke | roll back to last verified image, keep diagnostics | 1 rollback | `out/deploy/` |
 
 Nothing in this table changes policy, credentials or images, and nothing deletes data.

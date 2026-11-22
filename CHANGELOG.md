@@ -4,6 +4,26 @@ All notable changes are documented here. Format: [Keep a Changelog](https://keep
 
 ## [Unreleased]
 
+### Added
+- Model runtime image `munafsheikh/ai-code-reviewers-runtime` (Dockerfile `runtime` target): Ollama's CPU build with `qwen2.5-coder:1.5b` baked in at build time, so running it downloads nothing. 221 MB plus the model instead of the 8.4 GB Ollama image (GPU libraries dropped); non-root, read-only, `OLLAMA_NO_CLOUD=1`. `runtime-gpu` target for CUDA/ROCm hosts; `make runtime MODELS="..."` for other models.
+- Team review instructions at run time: `*.md` in `/etc/acr/instructions.d` (`ACR_INSTRUCTIONS_DIR`), `acr review --instructions FILE`, `ACR_INSTRUCTIONS`. Given to the model as trusted guidance outside the untrusted-diff fence, bounded, and recorded by name and SHA-256 in `run.instructions`. GitHub action input `instructions`.
+- Operator skills: extra skill directories in `/etc/acr/skills.d` and `ACR_SKILLS_DIRS`; `--skills` / `ACR_SKILLS` selects skills per run.
+- `acr merge`: combines reviews of one change from parallel lanes into one result (findings de-duplicated, coverage judged across lanes, one gate, `run.lanes`). GitHub action inputs `skills`, `merge-results`, `lane-names`; `base-ref` accepts a commit SHA for push events.
+- `make prove-offline`: shows on your machine that the reviewer and runtime cannot reach the internet or resolve names, and that a model review still completes.
+- Documentation site (MkDocs, `infrastructure/docs/mkdocs.yml`, built in the toolbox with `make docs-site`) published to GitHub Pages by the `Docs site` workflow as a Release stage; new guides: getting started, code review examples, customizing reviews, proving code stays local, CI/CD pipeline (with diagram, also in the README).
+- Examples: `examples/custom-image` (reviewer image with team instructions and a team rule) and `examples/compose` (stand-alone stack from the published images on an internal network).
+
+### Changed
+- CI reviews this project's own changes in three parallel lanes (code, security, docs) with the local model, merged into one gate, on pull requests and on pushes to `main`; Release (and deployment) follows only green, reviewed commits.
+- Compose builds the model runtime with the model baked in and attaches it to the internal network only; `compose.yaml` maps `config/instructions.d` and `config/skills.d` into the reviewer.
+- The GitHub action defaults to the release's runtime image (no model download) and skips pulls for models already in the image.
+
+### Removed
+- `model-init` Compose service, `infrastructure/scripts/pull-model.sh` and the `llm-models` volume: models are baked into the runtime image.
+
+### Fixed
+- Ollama no longer tries to contact `ollama.com` from the runtime (cloud model metadata and recommendations).
+
 ## [0.6.0] - 2026-11-21
 
 ### Added

@@ -32,12 +32,25 @@ PINNED = {
     "orchestrator/__init__.py": [r'(__version__ = ")(?P<v>\d+\.\d+\.\d+)(")'],
 }
 # Consumer templates reference the published tag and image.
-TEMPLATE_GLOBS = ["integrations/**/*.yml", "integrations/**/*.yaml", "integrations/**/*.sh", "integrations/**/*.md"]
+TEMPLATE_GLOBS = [
+    "integrations/**/*.yml",
+    "integrations/**/*.yaml",
+    "integrations/**/*.sh",
+    "integrations/**/*.md",
+    "README.md",
+    "docs/*.md",
+    "docs/usage/**/*.md",
+    "examples/**/*.md",
+    "examples/**/Dockerfile",
+    "examples/**/*.yaml",
+    ".env.example",
+]
 TEMPLATE_PATTERNS = [
     r"(ai-code-reviewers/integrations/github@v)(?P<v>\d+\.\d+\.\d+)()",
     r"(ref: refs/tags/v)(?P<v>\d+\.\d+\.\d+)()",
     r"(raw\.githubusercontent\.com/munafsheikh/ai-code-reviewers/v)(?P<v>\d+\.\d+\.\d+)()",
     r"(ghcr\.io/munafsheikh/ai-code-reviewers:)(?P<v>\d+\.\d+\.\d+)()",
+    r"((?<![\w./-])munafsheikh/ai-code-reviewers(?:-[a-z-]+)?:)(?P<v>\d+\.\d+\.\d+)()",
     r"(`@v)(?P<v>\d+\.\d+\.\d+)(`)",
 ]
 

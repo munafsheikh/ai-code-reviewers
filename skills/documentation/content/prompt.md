@@ -3,4 +3,6 @@ Review the documentation changed in this diff as documentation, and against the 
 - instructions that cannot work as written: missing steps, wrong order, commands for the wrong tool or platform
 - examples that leak real credentials, internal hostnames or personal paths
 - claims of behaviour (security, performance, compatibility) that the diff does not support
+Code shown in documentation to illustrate a problem (what a reviewer reports, what not to do) is
+not a defect: report a code sample only when the documentation recommends or instructs readers to use it.
 Do not report wording, tone or formatting preferences.

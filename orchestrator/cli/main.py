@@ -61,10 +61,19 @@ def cmd_review(args) -> int:
         os.environ["ACR_MODEL_HOST"] = args.model_host
     if args.model:
         os.environ["ACR_SMALL_MODEL"] = args.model
+    if args.skills:
+        os.environ["ACR_SKILLS"] = args.skills
+    from orchestrator.engine import instructions
+
     try:
         diff_text = _read_diff(args)
     except (OSError, subprocess.CalledProcessError, ValueError) as e:  # JSONDecodeError is a ValueError
         print(f"[acr] cannot read {'issue' if args.issue else 'diff'}: {e}", file=sys.stderr)
+        return 2
+    try:
+        team = instructions.load(args.instructions)
+    except OSError as e:
+        print(f"[acr] cannot read instructions: {e}", file=sys.stderr)
         return 2
     result = run_review(
         diff_text,
@@ -73,6 +82,7 @@ def cmd_review(args) -> int:
         revision=args.revision,
         repository=args.repository,
         audit=Audit(log_stream=sys.stderr if args.verbose else open(os.devnull, "w")),
+        team_instructions=team,
     )
     errors = schema.validate(result, schema.load("review-result"))
     if errors:  # never emit an unvalidated document
@@ -99,6 +109,41 @@ def cmd_review(args) -> int:
     if g["status"] in msg:
         print(f"\n[acr] {msg[g['status']]}", file=sys.stderr)
     return g["exit_code"]
+
+
+def cmd_merge(args) -> int:
+    from orchestrator.engine.merge import merge_results
+
+    try:
+        results = [json.loads(Path(f).read_text(encoding="utf-8")) for f in args.results]
+    except (OSError, ValueError) as e:
+        print(f"[acr] cannot read results: {e}", file=sys.stderr)
+        return 2
+    for f, r in zip(args.results, results, strict=True):
+        errors = schema.validate(r, schema.load("review-result"))
+        if errors:
+            print(f"[acr] {f} is not a review result: {errors[0]}", file=sys.stderr)
+            return 2
+    policy = cfg.load_policy(args.policy or results[0]["run"]["policy"]["id"], cfg.home())
+    names = [n.strip() for n in args.names.split(",")] if args.names else None
+    if names and len(names) != len(results):
+        print("[acr] --names needs one name per result", file=sys.stderr)
+        return 2
+    result = merge_results(results, policy, names)
+    errors = schema.validate(result, schema.load("review-result"))
+    if errors:
+        print("[acr] internal error: merged result failed schema validation:\n  " + "\n  ".join(errors[:10]), file=sys.stderr)
+        return 2
+    formats = [f.strip() for f in args.format.split(",") if f.strip()]
+    if args.out_dir:
+        out = Path(args.out_dir)
+        out.mkdir(parents=True, exist_ok=True)
+        for f in formats:
+            (out / report.EXTENSIONS[f]).write_text(report.RENDERERS[f](result), encoding="utf-8")
+    stdout_fmt = args.stdout or (formats[0] if not args.out_dir else None)
+    if stdout_fmt:
+        sys.stdout.write(report.RENDERERS[stdout_fmt](result))
+    return result["gate"]["exit_code"]
 
 
 def cmd_validate(args) -> int:
@@ -265,7 +310,7 @@ def cmd_evolve(args) -> int:
 def build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(prog="acr", description="Offline, model-agnostic AI code review.")
     p.add_argument("--version", action="version", version=f"acr {__version__}")
-    sub = p.add_subparsers(dest="command", required=True)
+    sub = p.add_subparsers(dest="command", required=True, metavar="COMMAND")
 
     r = sub.add_parser("review", help="review a unified diff or a GitHub issue")
     r.add_argument("--diff", help="diff file, or - for stdin (default)")
@@ -284,12 +329,33 @@ def build_parser() -> argparse.ArgumentParser:
     r.add_argument("--format", default="markdown", help="comma list of json,sarif,markdown,legacy")
     r.add_argument("--out-dir", help="write every format to this directory")
     r.add_argument("--stdout", choices=list(report.RENDERERS), help="format to print when --out-dir is used")
+    r.add_argument(
+        "--instructions",
+        action="append",
+        metavar="FILE",
+        help="team review instructions for the model (repeatable); also read from $ACR_INSTRUCTIONS_DIR "
+        "(default /etc/acr/instructions.d) and $ACR_INSTRUCTIONS",
+    )
+    r.add_argument(
+        "--skills",
+        default=os.environ.get("ACR_SKILLS"),
+        help="comma list of skill ids or globs to run instead of the profile's (default $ACR_SKILLS), e.g. 'security.*'",
+    )
     r.add_argument("--model", help="override the small-tier model (registry id or runtime ref)")
     r.add_argument("--model-host", help="model runtime base URL (default from profile / $ACR_MODEL_HOST)")
     r.add_argument("--revision", default=os.environ.get("ACR_REVISION"), help="source revision for traceability")
     r.add_argument("--repository", default=os.environ.get("ACR_REPOSITORY"), help="repository URI for traceability")
     r.add_argument("-v", "--verbose", action="store_true", help="structured recovery logs on stderr")
     r.set_defaults(func=cmd_review)
+
+    mg = sub.add_parser("merge", help="combine reviews of one change from parallel lanes into one result and gate")
+    mg.add_argument("results", nargs="+", help="review.json files (one per lane)")
+    mg.add_argument("--names", help="comma list of lane names, in the same order (default lane1,lane2,...)")
+    mg.add_argument("--policy", default=os.environ.get("ACR_POLICY"), help="policy for the combined gate (default: the first result's)")
+    mg.add_argument("--format", default="markdown", help="comma list of json,sarif,markdown,legacy")
+    mg.add_argument("--out-dir", help="write every format to this directory")
+    mg.add_argument("--stdout", choices=list(report.RENDERERS), help="format to print when --out-dir is used")
+    mg.set_defaults(func=cmd_merge)
 
     v = sub.add_parser("validate", help="validate manifests, schemas, rule examples, permissions, fixtures")
     v.add_argument("--strict", action="store_true", help="treat warnings as errors")

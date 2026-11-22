@@ -1,0 +1,19 @@
+id = "team.money"
+version = "1.0.0"
+interface = "acr.skill/v1"
+category = "code-quality"
+description = "Team rule: money must never be a float."
+languages = ["python", "java", "javascript", "typescript"]
+file_globs = ["*"]
+tier = "none"
+
+[[rules]]
+id = "MON-001"
+title = "Float used for a money amount"
+severity = "major"
+confidence = "medium"
+pattern = '''(?i)\b(?:float|parseFloat|Number)\s*\(\s*\w*(?:amount|price|total|balance)\w*'''
+explanation = "Binary floating point cannot represent most decimal amounts exactly; totals drift and comparisons fail."
+remediation = "Use Decimal (Python), BigDecimal (Java) or integer cents."
+examples.match = ["total = float(amount)", "const p = parseFloat(priceText)", "x = Number(order_total)"]
+examples.no_match = ["total = Decimal(amount)", "ratio = float(count)"]

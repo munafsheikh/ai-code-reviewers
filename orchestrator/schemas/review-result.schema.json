@@ -222,6 +222,71 @@
               }
             }
           }
+        },
+        "instructions": {
+          "type": "array",
+          "description": "Team review instructions given to the model (content is not stored; name, size and SHA-256 identify it).",
+          "items": {
+            "type": "object",
+            "required": [
+              "source",
+              "chars",
+              "sha256"
+            ],
+            "properties": {
+              "source": {
+                "type": "string"
+              },
+              "chars": {
+                "type": "integer",
+                "minimum": 0
+              },
+              "sha256": {
+                "type": "string",
+                "pattern": "^[0-9a-f]{64}$"
+              },
+              "truncated": {
+                "type": "boolean"
+              }
+            }
+          }
+        },
+        "lanes": {
+          "type": "array",
+          "description": "Present on a merged result: the parallel reviews it combines (acr merge).",
+          "items": {
+            "type": "object",
+            "required": [
+              "name",
+              "run_id",
+              "profile",
+              "skills",
+              "degraded"
+            ],
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "run_id": {
+                "type": "string"
+              },
+              "profile": {
+                "type": "string"
+              },
+              "skills": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "degraded": {
+                "type": "boolean"
+              }
+            }
+          }
+        },
+        "merged_at": {
+          "type": "string"
         }
       }
     },

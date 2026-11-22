@@ -11,6 +11,8 @@ Entry point for AI coding agents. Every fact lives in the linked document that o
 ## When relevant
 
 - Components, review flow, design decisions: [architecture overview](docs/architecture/overview.md)
+- Using it (images, examples, customization, privacy proof): [getting started](docs/usage/getting-started.md), [customize](docs/usage/customize.md), [prove code stays local](docs/usage/privacy.md)
+- CI/CD and releases: [pipeline](docs/architecture/pipeline.md)
 - Running, deploying, releasing: [runbook](docs/operations/runbook.md), [troubleshooting](docs/operations/troubleshooting.md)
 - Choosing a model: [model selection](docs/operations/model-selection.md)
 - Untrusted input, secrets, reporting issues: [threat model](docs/security/threat-model.md), [SECURITY](SECURITY.md)

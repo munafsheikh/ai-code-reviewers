@@ -14,23 +14,30 @@ telemetry, no source code leaves your machine.
 - **Traceable.** Results record profile, policy version, skill versions, model id/ref/digest,
   routing decisions, source revision and every recovery action.
 
+Documentation: **https://munafsheikh.github.io/ai-code-reviewers/**
+([getting started](docs/usage/getting-started.md) · [examples](docs/usage/examples.md) ·
+[customize](docs/usage/customize.md) · [prove your code stays local](docs/usage/privacy.md)).
+
 ## Quick start
 
-Only Docker is required. Every tool (reviewer, tests, linters, scanners, docs) runs in a
-pinned container image and pulls its own dependencies.
+Only Docker is required, and only the pulls use the network.
 
 ```bash
-# 1. Rules only — no model download
-make review-offline DIFF=examples/sample-repo/change.patch
+# Rules only: seconds, and the container has no network interface at all
+git diff main... | docker run --rm -i --read-only --network none \
+  munafsheikh/ai-code-reviewers:0.6.0 review --profile offline
 
-# 2. Full stack: reviewer + Ollama + qwen2.5-coder:1.5b, health-checked
-make up
-git diff main... | docker compose run --rm -T reviewer review          # single command review
-curl -s --data-binary @examples/sample-repo/change.patch 127.0.0.1:8088/v1/review
-make down
+# With the local model: the runtime image has the weights baked in and sits on a network with no route out
+docker network create --internal acr
+docker run -d --name llm-runtime --network acr --read-only --tmpfs /tmp munafsheikh/ai-code-reviewers-runtime:0.6.0
+git diff main... | docker run --rm -i --read-only --network acr -e ACR_MODEL_HOST=http://llm-runtime:11434 \
+  munafsheikh/ai-code-reviewers:0.6.0 review --profile balanced
 ```
 
-Exit codes: `0` pass/warn, `1` blocked, `2` could not review (strict policy, bad input).
+Exit codes: `0` pass/warn, `1` blocked, `2` could not review (strict policy, bad input). From a
+checkout, `make up` / `make down` run the same stack with Compose and `make review-offline
+DIFF=...` reviews a patch file. Step-by-step, the HTTP service and CI setup:
+[getting started](docs/usage/getting-started.md).
 
 ### Review a GitHub issue (refinement stage)
 
@@ -66,6 +73,69 @@ Architecture: [overview](docs/architecture/overview.md) · Operations: [runbook]
 [vulnerability baseline](docs/security/vulnerability-baseline.md) · Development: [extending](docs/development/extending.md),
 [implementation log](docs/development/phase-log.md)
 
+## Your code stays local
+
+The reviewer is stdlib-only Python with an egress allowlist; the model runtime has its
+weights baked in and Ollama's cloud features off; both run on a Docker `--internal` network.
+`make prove-offline` demonstrates it on your machine: it probes from inside both containers
+that nothing can connect out or resolve names, then completes a model review anyway.
+Details and manual checks: [prove your code stays local](docs/usage/privacy.md).
+
+## Customize
+
+Team instructions for the model (`/etc/acr/instructions.d/*.md`, `--instructions FILE`,
+`$ACR_INSTRUCTIONS`), your own deterministic rules (`/etc/acr/skills.d`), baked into an image
+`FROM munafsheikh/ai-code-reviewers` or mapped in with Compose:
+[customize reviews](docs/usage/customize.md), with ready examples in
+[`examples/custom-image`](examples/custom-image) and [`examples/compose`](examples/compose/compose.yaml).
+
+## Pipeline
+
+Every pull request and push to `main` runs the checks and this project's own review in three
+parallel lanes (code, security, docs) merged into one gate; a green `main` then releases,
+publishes the images, deploys a test environment and the documentation site automatically.
+[Details](docs/architecture/pipeline.md).
+
+```mermaid
+flowchart LR
+  pr([pull request or push to main]) --> build
+  subgraph CI["CI: every pull request and every push to main"]
+    direction TB
+    build["checks in the toolbox<br/>validate · lint · tests 3.13 + 3.11<br/>docs · benchmark gate"]
+    cont["containers<br/>build · compose e2e<br/>deploy + rollback rehearsal"]
+    scan["security<br/>secrets · SAST · deps · image scan"]
+    subgraph lanes["review lanes, in parallel: rules + local model"]
+      direction LR
+      code["code"]
+      sec["security"]
+      docs["docs"]
+    end
+    gate{"review gate<br/>acr merge: findings · coverage · policy"}
+    code --> gate
+    sec --> gate
+    docs --> gate
+  end
+  pr --> cont
+  pr --> scan
+  pr --> lanes
+  gate -->|"PR: one comment, pass or block"| merged([merge to main])
+  subgraph REL["Release: after CI is green on main"]
+    direction TB
+    plan["plan<br/>next version from CHANGELOG / label"]
+    bump["bump · re-test · tag vX.Y.Z"]
+    pub["GHCR: scan gate · SBOM · sign · GitHub release"]
+    img["Docker Hub: base, then reviewer · toolbox ·<br/>fake-runtime · runtime with model baked in"]
+    dep["test deployment<br/>smoke · auto-rollback"]
+    site["docs site to GitHub Pages"]
+    plan --> bump --> pub --> img --> dep
+    plan --> site
+  end
+  gate -->|"main: all green"| plan
+  build --> plan
+  cont --> plan
+  scan --> plan
+```
+
 ## Images
 
 One multi-stage [`Dockerfile`](infrastructure/docker/Dockerfile); derived images are layered on the
@@ -79,8 +149,10 @@ SBOM + provenance) by the [`Images`](.github/workflows/images.yml) workflow: `ed
 | `munafsheikh/ai-code-reviewers` | `reviewer` | application; pip removed |
 | `munafsheikh/ai-code-reviewers-toolbox` | `toolbox` | git + pinned dev tooling |
 | `munafsheikh/ai-code-reviewers-fake-runtime` | `fake-runtime` | deterministic model runtime for e2e |
+| `munafsheikh/ai-code-reviewers-runtime` | `runtime` | Ollama (CPU) with `qwen2.5-coder:1.5b` baked in; not layered on base. `runtime-gpu`: full Ollama image (build it yourself) |
 
-`make images` builds all four locally. Publishing needs `DOCKERHUB_USERNAME` / `DOCKERHUB_TOKEN`
+`make images` builds the four Python images locally; `make runtime MODELS="..."` builds a
+runtime with the models you choose (the one build step that downloads weights). Publishing needs `DOCKERHUB_USERNAME` / `DOCKERHUB_TOKEN`
 secrets (optional `DOCKERHUB_NAMESPACE` variable).
 
 ## CI/CD integrations
@@ -101,6 +173,8 @@ across CI systems.
 make ci                  # validate · lint · tests (coverage gate) · docs check · benchmark gate, in the toolbox image
 make shell               # interactive toolbox shell
 make e2e                 # Compose end-to-end with a deterministic fake runtime
+make prove-offline       # isolation proof: no route out, model review still works
+make docs-site           # documentation site (MkDocs) into out/site
 make security            # gitleaks · semgrep · hadolint · trivy (fs, image) · SBOM
 ```
 
@@ -110,6 +184,6 @@ calls nothing but these targets. Merging to `main` releases automatically: see
 [releases](docs/operations/runbook.md#releases).
 
 See [CONTRIBUTING.md](CONTRIBUTING.md) and [SECURITY.md](SECURITY.md). Licensed under MIT;
-model weights are downloaded by the runtime under their own licenses (recorded per manifest).
+model weights are baked into the runtime image under their own licenses (recorded per manifest).
 
 <sub>For AI coding agents: [agent guide](AGENTS.md).</sub>

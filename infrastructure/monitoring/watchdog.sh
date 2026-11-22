@@ -19,7 +19,6 @@ for cid in $(docker ps -aq --filter "label=com.docker.compose.project=$PROJECT")
   svc=$(docker inspect --format '{{index .Config.Labels "com.docker.compose.service"}}' "$cid")
   state=$(docker inspect --format '{{.State.Status}}' "$cid")
   health=$(docker inspect --format '{{if .State.Health}}{{.State.Health.Status}}{{else}}none{{end}}' "$cid")
-  [ "$svc" = "model-init" ] && continue               # one-shot job, exits by design
   if [ "$health" != "unhealthy" ] && [ "$state" = "running" ]; then continue; fi
   hist="$STATE_DIR/$svc.restarts"
   touch "$hist"

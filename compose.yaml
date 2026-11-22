@@ -1,5 +1,5 @@
 # ai-code-reviewers — local stack.
-#   make up        reviewer + Ollama runtime + one-shot model pull   (profile: model)
+#   make up        reviewer + model runtime with the model baked in   (profile: model)
 #   make up-test   reviewer + deterministic fake runtime, no weights (profile: test)
 #   make down      stop and remove containers (volumes are kept)
 name: ai-code-reviewers
@@ -9,8 +9,6 @@ x-hardening: &hardening
   security_opt: ["no-new-privileges:true"]
   cap_drop: ["ALL"]
   tmpfs: ["/tmp:size=64m,mode=1777"]
-
-x-runtime-image: &runtime-image ${LLM_RUNTIME_IMAGE:-ollama/ollama:0.40.11@sha256:dea72d1e22270fe095b68fdf756d2b489d615643c5a2eaebbc5f569181e322d8}
 
 services:
   reviewer:
@@ -34,10 +32,11 @@ services:
     volumes:
       - acr-cache:/var/cache/acr
       - ${ACR_WORKDIR:-./examples}:/work:ro        # code under review is mounted read-only
+      - ${ACR_INSTRUCTIONS_PATH:-./config/instructions.d}:/etc/acr/instructions.d:ro   # team review instructions (*.md)
+      - ${ACR_SKILLS_PATH:-./config/skills.d}:/etc/acr/skills.d:ro                       # extra skills (rules / prompts)
     networks: [backend, edge]
     depends_on:
       llm-runtime: {condition: service_healthy, required: false}
-      model-init: {condition: service_completed_successfully, required: false}
       fake-runtime: {condition: service_healthy, required: false}
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request as u; u.build_opener(u.ProxyHandler({})).open('http://127.0.0.1:8088/healthz', timeout=3)"]
@@ -52,16 +51,22 @@ services:
         limits: {cpus: "${ACR_CPUS:-1.0}", memory: "${ACR_MEMORY:-512m}"}
 
   llm-runtime:
+    # Ollama with the model weights baked into the image at build time (Dockerfile `runtime`
+    # target): it never downloads anything, so it sits only on the internal network.
+    # Use a published one with LLM_RUNTIME_IMAGE=munafsheikh/ai-code-reviewers-runtime:<version>.
     <<: *hardening
     profiles: ["model"]
-    image: *runtime-image
+    build:
+      context: .
+      dockerfile: infrastructure/docker/Dockerfile
+      target: runtime
+      args:
+        MODELS: ${ACR_RUNTIME_MODELS:-qwen2.5-coder:1.5b}
+    image: ${LLM_RUNTIME_IMAGE:-acr-runtime:local}
     environment:
       OLLAMA_KEEP_ALIVE: ${OLLAMA_KEEP_ALIVE:-10m}
       OLLAMA_NUM_PARALLEL: ${OLLAMA_NUM_PARALLEL:-1}
-      HOME: /root
-    volumes:
-      - llm-models:/root/.ollama
-    networks: [backend, edge]                       # edge only for model downloads
+    networks: [backend]                             # internal only: no route to the internet
     healthcheck:
       test: ["CMD", "ollama", "list"]
       interval: 15s
@@ -72,22 +77,6 @@ services:
     deploy:
       resources:
         limits: {cpus: "${LLM_CPUS:-4.0}", memory: "${LLM_MEMORY:-6g}"}
-
-  model-init:
-    <<: *hardening
-    profiles: ["model"]
-    image: *runtime-image
-    entrypoint: ["/bin/sh", "/scripts/pull-model.sh"]
-    environment:
-      OLLAMA_HOST: http://llm-runtime:11434
-      MODELS: ${ACR_PULL_MODELS:-qwen2.5-coder:1.5b}
-      PULL_ATTEMPTS: "3"
-    volumes:
-      - ./infrastructure/scripts/pull-model.sh:/scripts/pull-model.sh:ro
-    networks: [backend]
-    depends_on:
-      llm-runtime: {condition: service_healthy}
-    restart: "no"
 
   fake-runtime:
     <<: *hardening
@@ -112,5 +101,4 @@ networks:
   edge: {}
 
 volumes:
-  llm-models: {}
   acr-cache: {}

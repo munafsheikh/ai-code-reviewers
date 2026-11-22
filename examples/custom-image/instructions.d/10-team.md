@@ -1,0 +1,4 @@
+- Money is always `Decimal` or integer cents; flag any float arithmetic on amounts.
+- Every new HTTP handler must check authorization before reading the request body.
+- Log with the structured logger (`log.info("event", key=value)`), never with print or f-strings.
+- Be strict about missing tests for new branches in `billing/`; be lenient about style.
