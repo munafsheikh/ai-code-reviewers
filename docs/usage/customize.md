@@ -186,7 +186,7 @@ can block. Raise it per run when you want less noise:
 ```bash
 git diff main... | docker run --rm -i --read-only --network none \
   munafsheikh/ai-code-reviewers:0.7.0 review --profile offline --min-confidence high
-# Minimum confidence: high (from --min-confidence); hidden below it: 1 critical
+# Minimum confidence: high (from --min-confidence); hidden below it: 1 critical, 1 major
 ```
 
 Nothing is hidden silently: the report prints that line, and `run.confidence` in the JSON

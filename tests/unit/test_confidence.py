@@ -11,13 +11,9 @@ from orchestrator.engine import confidence
 from orchestrator.engine.merge import merge_results
 from orchestrator.engine.review import run_review
 
-# INJ-003 (critical, medium confidence: hypothesis), ERR-001 (major, high: verified), PY-001 (minor, high)
-DIFF = (
-    "--- a/svc/jobs.py\n+++ b/svc/jobs.py\n@@ -0,0 +1,7 @@\n"
-    "+def run(cmd, env={}):\n+    return subprocess.run(cmd, shell=True, env=env)\n+\n+\n"
-    "+def go():\n+    try:\n+        x()\n"
-    "--- a/svc/more.py\n+++ b/svc/more.py\n@@ -0,0 +1,4 @@\n+try:\n+    go()\n+except Exception:\n+    pass\n"
-)
+# The protected benchmark fixture (excluded from self-review): INJ-003 critical and INJ-005 major
+# at medium confidence (hypotheses), INJ-004 and ERR-001 major and PY-001 minor at high (verified).
+DIFF = (cfg.home() / "benchmarks/fixtures/python-unsafe/diff.patch").read_text()
 
 
 @pytest.fixture(autouse=True)
@@ -112,7 +108,7 @@ def test_cli_flag_report_and_bad_env(tmp_path, monkeypatch, capsys):
         == 1
     )
     assert json.loads((out / "review.json").read_text())["run"]["confidence"]["min"] == "high"
-    assert "Minimum confidence: high (from --min-confidence); hidden below it: 1 critical" in (out / "review.md").read_text()
+    assert "Minimum confidence: high (from --min-confidence); hidden below it: 1 critical, 1 major" in (out / "review.md").read_text()
     monkeypatch.setenv("ACR_MIN_CONFIDENCE", "certain")
     assert cli.main(["review", "--profile", "offline", "--diff", str(d)]) == 2
     assert "confidence must be one of low, medium, high" in capsys.readouterr().err
