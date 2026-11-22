@@ -6,7 +6,7 @@ no paid APIs, no telemetry, and the code under review never leaves the machine.
 
 ```bash
 git diff main... | docker run --rm -i --read-only --network none \
-  munafsheikh/ai-code-reviewers:0.7.0 review --profile offline
+  munafsheikh/ai-code-reviewers:0.8.0 review --profile offline
 ```
 
 | Start here | |
