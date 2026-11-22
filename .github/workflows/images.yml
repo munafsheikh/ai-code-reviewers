@@ -64,7 +64,7 @@ jobs:
           NS: ${{ vars.DOCKERHUB_NAMESPACE || github.repository_owner }}
           VERSION: ${{ inputs.version }}
         run: |
-          make -s release-image-tags VERSION="$VERSION" REVISION="$(git rev-parse HEAD)" NAMESPACE="$NS" > out-meta.env
+          docker compose run --rm -T dev release image-tags --version "$VERSION" --revision "$(git rev-parse HEAD)" --namespace "$NS" > out-meta.env
           cat out-meta.env >> "$GITHUB_OUTPUT"
           { echo '```'; cat out-meta.env; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
 

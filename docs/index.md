@@ -14,7 +14,7 @@ git diff main... | docker run --rm -i --read-only --network none \
 | [Getting started](usage/getting-started.md) | Step by step: pull the images, first review, add the local model, Compose, HTTP service, CI |
 | [Code review examples](usage/examples.md) | Real changes and exactly what the reviewer reports |
 | [Customize reviews](usage/customize.md) | Team instructions at run time, your own rules, your own image, other models |
-| [Prove your code stays local](usage/privacy.md) | What enforces it and `make prove-offline` to check it yourself |
+| [Prove your code stays local](usage/privacy.md) | What enforces it and `docker compose run --rm dev prove-offline` to check it yourself |
 | [CI/CD pipeline](architecture/pipeline.md) | Parallel review lanes, one gate, automatic release and deployment |
 
 ## How a review works

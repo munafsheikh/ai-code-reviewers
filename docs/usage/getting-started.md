@@ -11,7 +11,7 @@ needed once the images are on the machine.
 | `munafsheikh/ai-code-reviewers:0.8.0` | The reviewer: CLI, HTTP service, rules, skills, policies | Review a diff, run the service, gate CI |
 | `munafsheikh/ai-code-reviewers-runtime:0.8.0` | Ollama (CPU build) with `qwen2.5-coder:1.5b` baked in | Give the reviewer a local model; never downloads at run time |
 | `munafsheikh/ai-code-reviewers-base:0.8.0` | Python slim + non-root user, shared by the others | Build your own images on the same layers |
-| `munafsheikh/ai-code-reviewers-toolbox:0.8.0` | Pinned development tooling | Contribute to this project (`make` uses it) |
+| `munafsheikh/ai-code-reviewers-toolbox:0.8.0` | Pinned development tooling | Contribute to this project (the `dev` Compose service) |
 | `munafsheikh/ai-code-reviewers-fake-runtime:0.8.0` | Deterministic model stand-in | End-to-end tests without model weights |
 
 All images are multi-arch (amd64, arm64) and signed. The reviewer is also published, signed
@@ -94,7 +94,7 @@ git diff main... | docker compose run --rm -T reviewer review
 docker compose down
 ```
 
-With a checkout of this repository, `make up` builds and starts the same stack from source
+With a checkout of this repository, `docker compose --profile model up -d --build` builds and starts the same stack from source
 (including the runtime, so the model is downloaded once, at build time).
 
 ## Step 5 (optional): the HTTP service

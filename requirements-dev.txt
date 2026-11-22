@@ -1,6 +1,6 @@
 # Development / CI tooling only. Runtime has no third-party dependencies.
 # Pinned exact versions; Dependabot proposes upgrades.
-# Docs site: mkdocs + mkdocs-material (built in the toolbox by `make docs-site`).
+# Docs site: mkdocs + mkdocs-material (built in the toolbox by the docs-site task).
 attrs==26.1.0
 babel==2.18.0
 backrefs==8.3.1

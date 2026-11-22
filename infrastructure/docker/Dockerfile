@@ -3,7 +3,7 @@
 #
 #   base          python slim + non-root `acr` user + common env/labels
 #   ├─ fake-runtime  deterministic Ollama stand-in for end-to-end tests
-#   ├─ toolbox       + git + pinned dev tooling (validate, lint, tests, docs, benchmarks)
+#   ├─ toolbox       + git, Docker CLI + pinned dev tooling: runs every task (docker compose run --rm dev <task>)
 #   └─ reviewer      + application, pip stripped (default target; stdlib-only, read-only friendly)
 #
 #   runtime       CPU model runtime: Ollama binary + CPU backends + the review model(s), baked in
@@ -18,6 +18,15 @@ ARG BASE=base
 ARG OLLAMA_IMAGE=ollama/ollama:0.40.11@sha256:dea72d1e22270fe095b68fdf756d2b489d615643c5a2eaebbc5f569181e322d8
 # The OS Ollama's image is built on; the CPU runtime needs nothing from it but libc/libstdc++.
 ARG RUNTIME_OS_IMAGE=ubuntu:24.04@sha256:9c7f200c07e3d4a03e7249d2c16bf66a51120fb876aa2242cf31451412543289
+# Docker CLI, Compose and Buildx for the toolbox: tasks that build, scan and run containers
+# drive the host's Docker through its socket (docker compose run --rm dev <task>).
+ARG DOCKER_CLI_IMAGE=docker:29.1.1-cli@sha256:b6b6bfc4ba4c55a1e921d6d37e4d6e11dd3d6c73e9e7e4a712371ace91e6c106
+ARG COMPOSE_IMAGE=docker/compose-bin:v2.40.3@sha256:e39da8206cc48c6e2c99ce371935eef9d7eff7db600a993fd357de8b75621edf
+ARG BUILDX_IMAGE=docker/buildx-bin:0.30.1@sha256:cc16bd35c1bbdde2c9d4ee08cf33be55b17e6ed2188816292dbde51064105e25
+
+FROM ${DOCKER_CLI_IMAGE} AS docker-cli
+FROM ${COMPOSE_IMAGE} AS docker-compose
+FROM ${BUILDX_IMAGE} AS docker-buildx
 
 # ---------------------------------------------------------------------------------------
 FROM ${PYTHON_IMAGE} AS base
@@ -55,18 +64,23 @@ USER root
 ENV PIP_DISABLE_PIP_VERSION_CHECK=1 PIP_NO_CACHE_DIR=1 \
     HOME=/tmp RUFF_CACHE_DIR=/tmp/.ruff_cache
 COPY requirements-dev.txt /tmp/requirements-dev.txt
-# git is needed by tests; the distro snapshot is fixed by the digest-pinned base image.
+# git (tests) and curl (smoke checks); the distro snapshot is fixed by the digest-pinned base image.
+# safe.directory '*': the repository is mounted at the host's own path, which varies.
 # Optional corporate CA for TLS-intercepting proxies: `--secret id=ca,src=/path/ca.crt`
 # (used only during the build, never stored in a layer). Proxies: `--build-arg HTTPS_PROXY=...`.
 # hadolint ignore=DL3008
 RUN --mount=type=secret,id=ca,required=false \
     if [ -f /run/secrets/ca ]; then export PIP_CERT=/run/secrets/ca; fi \
  && apt-get update -q \
- && apt-get install -y -q --no-install-recommends git \
+ && apt-get install -y -q --no-install-recommends git curl \
  && rm -rf /var/lib/apt/lists/* \
  && pip install -q -r /tmp/requirements-dev.txt \
- && git config --system --add safe.directory /src
-# Non-root by default; `make` additionally runs it as the invoking host uid:gid.
+ && git config --system --add safe.directory '*'
+COPY --from=docker-cli /usr/local/bin/docker /usr/local/bin/docker
+COPY --from=docker-compose /docker-compose /usr/local/lib/docker/cli-plugins/docker-compose
+COPY --from=docker-buildx /buildx /usr/local/lib/docker/cli-plugins/docker-buildx
+# Non-root by default. The `dev` Compose service runs it as root for the Docker socket and
+# hands every file it creates back to the repository's owner (infrastructure/tasks.py).
 USER 10001:10001
 WORKDIR /src
 
