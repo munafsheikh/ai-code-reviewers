@@ -10,7 +10,7 @@ All notable changes are documented here. Format: [Keep a Changelog](https://keep
 - Operator skills: extra skill directories in `/etc/acr/skills.d` and `ACR_SKILLS_DIRS`; `--skills` / `ACR_SKILLS` selects skills per run.
 - `acr merge`: combines reviews of one change from parallel lanes into one result (findings de-duplicated, coverage judged across lanes, one gate, `run.lanes`). GitHub action inputs `skills`, `merge-results`, `lane-names`; `base-ref` accepts a commit SHA for push events.
 - `make prove-offline`: shows on your machine that the reviewer and runtime cannot reach the internet or resolve names, and that a model review still completes.
-- Documentation site (MkDocs, built in the toolbox with `make docs-site`) published to GitHub Pages by the `Docs site` workflow as a Release stage; new guides: getting started, code review examples, customizing reviews, proving code stays local, CI/CD pipeline (with diagram, also in the README).
+- Documentation site (MkDocs, `infrastructure/docs/mkdocs.yml`, built in the toolbox with `make docs-site`) published to GitHub Pages by the `Docs site` workflow as a Release stage; new guides: getting started, code review examples, customizing reviews, proving code stays local, CI/CD pipeline (with diagram, also in the README).
 - Examples: `examples/custom-image` (reviewer image with team instructions and a team rule) and `examples/compose` (stand-alone stack from the published images on an internal network).
 
 ### Changed
@@ -23,6 +23,14 @@ All notable changes are documented here. Format: [Keep a Changelog](https://keep
 
 ### Fixed
 - Ollama no longer tries to contact `ollama.com` from the runtime (cloud model metadata and recommendations).
+
+## [0.6.0] - 2026-11-21
+
+### Added
+- `AGENTS.md`: entry point for AI coding agents, linking to the documents that own each fact, with agent-only rules. `CLAUDE.md`, `GEMINI.md` and `.github/copilot-instructions.md` are symlinks to it; the README, CONTRIBUTING, SECURITY and the architecture, development, operations and security docs link back. `validate` requires it.
+
+### Fixed
+- The link checker skips symlinked Markdown files, whose relative links resolve from their target.
 
 ## [0.5.0] - 2026-11-19
 

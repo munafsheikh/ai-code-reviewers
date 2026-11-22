@@ -10,3 +10,5 @@ out/
 *.egg-info/
 build/
 dist/
+.scratch/
+.claude/settings.local.json

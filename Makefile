@@ -70,7 +70,7 @@ docs: $(NEED_TOOLBOX) ## regenerate docs/generated from source definitions
 	$(ACR) docs generate
 
 docs-site: $(NEED_TOOLBOX) ## build the documentation site (MkDocs, strict) into OUT/site
-	$(RUN) mkdocs build --strict --site-dir $(OUT)/site
+	$(RUN) mkdocs build --strict --config-file infrastructure/docs/mkdocs.yml --site-dir /src/$(OUT)/site
 
 docs-check: $(NEED_TOOLBOX) ## fail if generated docs drifted or links are broken
 	$(ACR) docs check

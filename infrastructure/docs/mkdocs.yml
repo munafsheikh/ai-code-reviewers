@@ -4,8 +4,9 @@ site_url: https://munafsheikh.github.io/ai-code-reviewers/
 repo_url: https://github.com/munafsheikh/ai-code-reviewers
 repo_name: munafsheikh/ai-code-reviewers
 edit_uri: edit/main/docs/
-docs_dir: docs
-site_dir: out/site
+# Lives here (not at the repository root); paths are relative to this file.
+docs_dir: ../../docs
+site_dir: ../../out/site
 strict: true
 
 theme:

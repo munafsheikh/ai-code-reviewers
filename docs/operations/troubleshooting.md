@@ -15,3 +15,5 @@
 
 Diagnostics: `acr review -v` (recovery events on stderr), `out/deploy/diagnostics-*`,
 `out/watchdog/diagnostics-*`, and the `run.recovery_events` array in every JSON result.
+
+<sub>For AI coding agents: [agent guide](../../AGENTS.md).</sub>

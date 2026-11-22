@@ -43,7 +43,7 @@ inputs:
     description: >-
       Model runtime image. Default: this release's runtime with qwen2.5-coder:1.5b baked in (no model download).
       A stock Ollama image works too (models are then pulled). Empty = no runtime (rules only).
-    default: munafsheikh/ai-code-reviewers-runtime:0.5.0
+    default: munafsheikh/ai-code-reviewers-runtime:0.6.0
   image:
     description: Reviewer image. Empty = build from this action's source (pinned by the ref you use).
     default: ''
