@@ -16,7 +16,7 @@ import uuid
 from typing import Any
 
 from orchestrator.contracts import SEVERITIES, Finding, Location, severity_rank
-from orchestrator.engine import coverage, gate
+from orchestrator.engine import confidence, coverage, gate
 
 
 def _finding(d: dict) -> Finding:
@@ -53,7 +53,9 @@ def _coverage(results: list[dict]) -> dict | None:
     return coverage.summarize(out)
 
 
-def merge_results(results: list[dict], policy: dict, lane_names: list[str] | None = None) -> dict[str, Any]:
+def merge_results(
+    results: list[dict], policy: dict, lane_names: list[str] | None = None, min_confidence: str | None = None
+) -> dict[str, Any]:
     if not results:
         raise ValueError("nothing to merge")
     names = lane_names or [f"lane{i + 1}" for i in range(len(results))]
@@ -64,6 +66,18 @@ def merge_results(results: list[dict], policy: dict, lane_names: list[str] | Non
             if cur is None or severity_rank(f["severity"]) > severity_rank(cur["severity"]):
                 best[f["fingerprint"]] = f
     fdicts = sorted(best.values(), key=lambda f: (-severity_rank(f["severity"]), f["location"]["path"], f["location"]["start_line"]))
+    # Lanes already applied their minimum; the merge applies the one in force now (never lower).
+    lane_conf = [r["run"].get("confidence") or {} for r in results]
+    if min_confidence or not any(lane_conf):
+        min_conf, source = confidence.resolve(policy, min_confidence)
+    else:
+        top = max((c for c in lane_conf if c), key=lambda c: confidence.CONFIDENCES.index(c["min"]))
+        min_conf, source = top["min"], top["source"]
+    fdicts, newly_hidden = confidence.split(fdicts, min_conf, conf=lambda f: f["confidence"])
+    earlier: dict[str, int] = {}
+    for c in lane_conf:
+        for sev, n in (c.get("hidden_by_severity") or {}).items():
+            earlier[sev] = earlier.get(sev, 0) + n  # lanes run disjoint skills, so their hidden findings add up
     runs = [r["run"] for r in results]
     run = copy.deepcopy(runs[0])
     infra = list(dict.fromkeys(e for x in runs for e in x["infrastructure_errors"]))
@@ -88,6 +102,7 @@ def merge_results(results: list[dict], policy: dict, lane_names: list[str] | Non
         infrastructure_errors=infra,
         instructions=_union([i for x in runs for i in x.get("instructions") or []], "sha256"),
         coverage=cov,
+        confidence=confidence.record(min_conf, source, [f["severity"] for f in newly_hidden], earlier),
         recovery_events=[e for x in runs for e in x["recovery_events"]],
         lanes=[
             {"name": n, "run_id": x["id"], "profile": x["profile"], "skills": [s["id"] for s in x["skills"]], "degraded": x["degraded"]}

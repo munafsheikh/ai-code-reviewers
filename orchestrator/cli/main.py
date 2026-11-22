@@ -75,15 +75,22 @@ def cmd_review(args) -> int:
     except OSError as e:
         print(f"[acr] cannot read instructions: {e}", file=sys.stderr)
         return 2
-    result = run_review(
-        diff_text,
-        args.profile,
-        args.policy,
-        revision=args.revision,
-        repository=args.repository,
-        audit=Audit(log_stream=sys.stderr if args.verbose else open(os.devnull, "w")),
-        team_instructions=team,
-    )
+    from orchestrator.engine.confidence import ConfidenceError
+
+    try:
+        result = run_review(
+            diff_text,
+            args.profile,
+            args.policy,
+            revision=args.revision,
+            repository=args.repository,
+            audit=Audit(log_stream=sys.stderr if args.verbose else open(os.devnull, "w")),
+            team_instructions=team,
+            min_confidence=args.min_confidence,
+        )
+    except ConfidenceError as e:
+        print(f"[acr] {e}", file=sys.stderr)
+        return 2
     errors = schema.validate(result, schema.load("review-result"))
     if errors:  # never emit an unvalidated document
         print("[acr] internal error: result failed schema validation:\n  " + "\n  ".join(errors[:10]), file=sys.stderr)
@@ -129,7 +136,13 @@ def cmd_merge(args) -> int:
     if names and len(names) != len(results):
         print("[acr] --names needs one name per result", file=sys.stderr)
         return 2
-    result = merge_results(results, policy, names)
+    from orchestrator.engine.confidence import ConfidenceError
+
+    try:
+        result = merge_results(results, policy, names, args.min_confidence)
+    except ConfidenceError as e:
+        print(f"[acr] {e}", file=sys.stderr)
+        return 2
     errors = schema.validate(result, schema.load("review-result"))
     if errors:
         print("[acr] internal error: merged result failed schema validation:\n  " + "\n  ".join(errors[:10]), file=sys.stderr)
@@ -341,6 +354,12 @@ def build_parser() -> argparse.ArgumentParser:
         default=os.environ.get("ACR_SKILLS"),
         help="comma list of skill ids or globs to run instead of the profile's (default $ACR_SKILLS), e.g. 'security.*'",
     )
+    r.add_argument(
+        "--min-confidence",
+        choices=["low", "medium", "high"],
+        help="report and gate only findings at or above this confidence; overrides $ACR_MIN_CONFIDENCE and the policy's "
+        "[gate] min_confidence (default low: everything)",
+    )
     r.add_argument("--model", help="override the small-tier model (registry id or runtime ref)")
     r.add_argument("--model-host", help="model runtime base URL (default from profile / $ACR_MODEL_HOST)")
     r.add_argument("--revision", default=os.environ.get("ACR_REVISION"), help="source revision for traceability")
@@ -352,6 +371,12 @@ def build_parser() -> argparse.ArgumentParser:
     mg.add_argument("results", nargs="+", help="review.json files (one per lane)")
     mg.add_argument("--names", help="comma list of lane names, in the same order (default lane1,lane2,...)")
     mg.add_argument("--policy", default=os.environ.get("ACR_POLICY"), help="policy for the combined gate (default: the first result's)")
+    mg.add_argument(
+        "--min-confidence",
+        choices=["low", "medium", "high"],
+        help="report and gate only findings at or above this confidence; overrides $ACR_MIN_CONFIDENCE and the policy's "
+        "[gate] min_confidence (default low: everything)",
+    )
     mg.add_argument("--format", default="markdown", help="comma list of json,sarif,markdown,legacy")
     mg.add_argument("--out-dir", help="write every format to this directory")
     mg.add_argument("--stdout", choices=list(report.RENDERERS), help="format to print when --out-dir is used")

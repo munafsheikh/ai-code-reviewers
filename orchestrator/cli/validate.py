@@ -275,6 +275,10 @@ def check_policies(root: Path, r: Report) -> None:
         for key in ("id", "version", "gate"):
             if key not in d:
                 r.err(f"{mf.relative_to(root)}: missing '{key}'")
+        g = d.get("gate", {})
+        for key in ("min_confidence", "model_min_confidence_to_block"):
+            if key in g and g[key] not in ("low", "medium", "high"):
+                r.err(f"{mf.relative_to(root)}: gate.{key} must be low, medium or high, not {g[key]!r}")
     bl = root / "policies" / "security" / "baseline.json"
     if bl.exists():
         data = json.loads(bl.read_text())

@@ -8,6 +8,7 @@ Four levers, from lightest to heaviest. None needs a fork of this project.
 | Enforce a rule deterministically | [Your own skills](#your-own-rules-and-skills) | rules (and optionally the model) |
 | Ship both to every developer and CI job | [Your own image](#your-own-image) or [Compose mounts](#compose-map-them-in) | everything |
 | Use a bigger or different model | [A runtime with that model baked in](#use-a-different-model) | model review |
+| See only findings you trust enough | [A minimum confidence](#confidence-levels) | what is reported and gated |
 
 ## Team instructions at run time
 
@@ -153,6 +154,49 @@ then review with the matching profile or model:
 `acr models recommend --ram-mb 16000` suggests models for a memory budget;
 [Model selection](../operations/model-selection.md) compares them. Several models can share
 one runtime: `--build-arg MODELS="qwen2.5-coder:1.5b qwen2.5-coder:7b"`.
+
+## Confidence levels
+
+Every finding has a confidence, `low` < `medium` < `high`, saying how likely it is to be a
+real defect:
+
+| Source | Confidence | Reported as |
+|---|---|---|
+| Rule declared `confidence = "high"` (a precise pattern; its examples run on every build) | `high` | *verified* |
+| Rule declared `medium` or `low` (a pattern that also matches harmless code) | as declared | *hypothesis* |
+| Model, confidence given | as given by the model | *hypothesis* |
+| Model, no confidence given | `medium` | *hypothesis* |
+| Model, cited line is not one the diff changed | forced to `low` | *hypothesis* |
+
+Model findings are always hypotheses: the pipeline checks they point at real changed code, but
+not that the model's reasoning is right.
+
+**Minimum confidence.** Findings below the minimum are left out of the report and cannot
+block. The minimum in force is the first of:
+
+1. `--min-confidence low|medium|high` on `acr review` / `acr merge` (GitHub action:
+   `min-confidence:`);
+2. `$ACR_MIN_CONFIDENCE`;
+3. the policy's `[gate] min_confidence`;
+4. the built-in default, `low`.
+
+Every shipped policy sets `min_confidence = "low"`, so by default every finding is reported and
+can block. Raise it per run when you want less noise:
+
+```bash
+git diff main... | docker run --rm -i --read-only --network none \
+  munafsheikh/ai-code-reviewers:0.7.0 review --profile offline --min-confidence high
+# Minimum confidence: high (from --min-confidence); hidden below it: 1 critical, 1 major
+```
+
+Nothing is hidden silently: the report prints that line, and `run.confidence` in the JSON
+records the minimum, where it came from and how many findings of each severity it hid. Be
+deliberate with `high`: several security rules are `medium` (they match some safe code too),
+so a high minimum hides them.
+
+A separate setting, `[gate] model_min_confidence_to_block` (`medium` in `default`, `low` in
+`strict`), decides which *model* findings may block among those reported; rule findings at or
+above the minimum always can.
 
 ## Policies
 

@@ -34,7 +34,8 @@ usage: acr review [-h] [--diff DIFF] [--git-range GIT_RANGE] [--issue ISSUE]
                   [--repo REPO] [--paths [PATHS ...]] [--profile PROFILE]
                   [--policy POLICY] [--format FORMAT] [--out-dir OUT_DIR]
                   [--stdout {json,sarif,markdown,legacy}]
-                  [--instructions FILE] [--skills SKILLS] [--model MODEL]
+                  [--instructions FILE] [--skills SKILLS]
+                  [--min-confidence {low,medium,high}] [--model MODEL]
                   [--model-host MODEL_HOST] [--revision REVISION]
                   [--repository REPOSITORY] [-v]
 
@@ -59,6 +60,11 @@ options:
                         /etc/acr/instructions.d) and $ACR_INSTRUCTIONS
   --skills SKILLS       comma list of skill ids or globs to run instead of the
                         profile's (default $ACR_SKILLS), e.g. 'security.*'
+  --min-confidence {low,medium,high}
+                        report and gate only findings at or above this
+                        confidence; overrides $ACR_MIN_CONFIDENCE and the
+                        policy's [gate] min_confidence (default low:
+                        everything)
   --model MODEL         override the small-tier model (registry id or runtime
                         ref)
   --model-host MODEL_HOST
@@ -73,7 +79,8 @@ options:
 ## `acr merge`
 
 ```text
-usage: acr merge [-h] [--names NAMES] [--policy POLICY] [--format FORMAT]
+usage: acr merge [-h] [--names NAMES] [--policy POLICY]
+                 [--min-confidence {low,medium,high}] [--format FORMAT]
                  [--out-dir OUT_DIR] [--stdout {json,sarif,markdown,legacy}]
                  results [results ...]
 
@@ -86,6 +93,11 @@ options:
                         lane1,lane2,...)
   --policy POLICY       policy for the combined gate (default: the first
                         result's)
+  --min-confidence {low,medium,high}
+                        report and gate only findings at or above this
+                        confidence; overrides $ACR_MIN_CONFIDENCE and the
+                        policy's [gate] min_confidence (default low:
+                        everything)
   --format FORMAT       comma list of json,sarif,markdown,legacy
   --out-dir OUT_DIR     write every format to this directory
   --stdout {json,sarif,markdown,legacy}

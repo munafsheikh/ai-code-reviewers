@@ -12,7 +12,7 @@ from typing import Any
 from orchestrator import __version__
 from orchestrator import config as cfg
 from orchestrator.contracts import RESULT_SCHEMA, SEVERITIES, AdapterError, Finding, GenerationRequest, ModelAdapter
-from orchestrator.engine import artifact, coverage, gate, instructions, links, parse, prompt
+from orchestrator.engine import artifact, confidence, coverage, gate, instructions, links, parse, prompt
 from orchestrator.engine import diff as diffmod
 from orchestrator.engine.adapters import load_adapter
 from orchestrator.engine.rules import run_companions, run_expectations, run_rules
@@ -217,6 +217,7 @@ def run_review(
     audit: Audit | None = None,
     root: Path | None = None,
     team_instructions: instructions.Instructions | None = None,
+    min_confidence: str | None = None,
 ) -> dict[str, Any]:
     root = root or cfg.home()
     audit = audit or Audit()
@@ -234,6 +235,8 @@ def run_review(
     skipped = [f.path for f in files[max_files:]]
     files = files[:max_files]
 
+    min_conf, min_conf_source = confidence.resolve(policy, min_confidence)
+    hidden: list[Finding] = []
     legacy_raw = None
     findings: list[Finding] = []
     routes: list[router.Route] = []
@@ -259,6 +262,7 @@ def run_review(
                     if len(ctx.infra_errors) == errors_before:  # a failed tier does not count as coverage
                         model_backed.update(s.id for s in r.skills)
         findings = merge(findings)
+        findings, hidden = confidence.split(findings, min_conf)
         by_path = {f.path: f for f in files}
         for f in findings:  # place findings inside lifecycle artifacts by section
             if artifact.is_artifact(f.location.path) and f.location.path in by_path:
@@ -308,6 +312,7 @@ def run_review(
             "infrastructure_errors": ctx.infra_errors,
             "instructions": ctx.instructions.sources,
             "coverage": cov,
+            "confidence": confidence.record(min_conf, min_conf_source, [f.severity for f in hidden]),
             "recovery_events": audit.events,
             "links": {
                 "commit": links.commit_url(repository, revision),
