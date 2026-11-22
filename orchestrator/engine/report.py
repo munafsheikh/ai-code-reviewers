@@ -122,6 +122,10 @@ def to_markdown(result: dict[str, Any]) -> str:
             f"(not in the diff or invalid), {unv} cited lines outside the changed hunks"
             + (f"; unparseable reply: {errs[0]}" if errs else "")
         )
+    conf = run.get("confidence")
+    if conf and conf["min"] != "low":
+        hidden = ", ".join(f"{n} {sev}" for sev, n in conf["hidden_by_severity"].items() if n) or "none"
+        lines += ["", f"Minimum confidence: {conf['min']} (from {conf['source']}); hidden below it: {hidden}"]
     if run.get("lanes"):
         lanes = ", ".join(f"{ln['name']} ({len(ln['skills'])} skills{', degraded' if ln['degraded'] else ''})" for ln in run["lanes"])
         lines += ["", f"Parallel reviews: {lanes}"]

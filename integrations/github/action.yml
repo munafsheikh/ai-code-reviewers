@@ -13,6 +13,9 @@ inputs:
   base-ref:
     description: Base branch or commit SHA to diff against (default the PR base; on push use github.event.before)
     default: ''
+  min-confidence:
+    description: Report and gate only findings at or above this confidence (low | medium | high). Empty = the policy's min_confidence (default low)
+    default: ''
   skills:
     description: Comma list of skill ids or globs to run instead of the profile's (one lane of a parallel review), e.g. "security.*"
     default: ''
@@ -152,6 +155,7 @@ runs:
         POLICY: ${{ inputs.policy }}
         MODEL: ${{ inputs.model }}
         SKILLS: ${{ inputs.skills }}
+        MIN_CONFIDENCE: ${{ inputs.min-confidence }}
         INSTRUCTIONS: ${{ inputs.instructions }}
         MERGE: ${{ inputs.merge-results }}
         LANES: ${{ inputs.lane-names }}
@@ -165,6 +169,7 @@ runs:
           [ "$i" -gt 0 ] || { echo "::error::merge-results matched no files"; exit 2; }
           args=(merge "${files[@]}" --format json,sarif,markdown,legacy --out-dir /out --stdout markdown)
           [ -n "$LANES" ] && args+=(--names "$LANES")
+          [ -n "$MIN_CONFIDENCE" ] && args+=(--min-confidence "$MIN_CONFIDENCE")
           [ -n "$POLICY" ] && args+=(--policy "$POLICY")
           docker run --rm --read-only --cap-drop ALL --security-opt no-new-privileges:true --network none \
             --tmpfs /tmp -v "$PWD/$OUT:/out" "${mounts[@]}" "$IMAGE" "${args[@]}" 2> "$OUT/review.log"
@@ -177,6 +182,7 @@ runs:
           [ -n "$POLICY" ] && args+=(--policy "$POLICY")
           [ -n "$MODEL" ] && args+=(--model "$MODEL")
           [ -n "$SKILLS" ] && args+=(--skills "$SKILLS")
+          [ -n "$MIN_CONFIDENCE" ] && args+=(--min-confidence "$MIN_CONFIDENCE")
           # Added to any instructions baked into the image (/etc/acr/instructions.d), not instead of them.
           imounts=(); n=0
           for f in $INSTRUCTIONS; do

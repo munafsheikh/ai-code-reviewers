@@ -7,7 +7,10 @@ telemetry, no source code leaves your machine.
 - **Rules + models.** Deterministic rules (with self-testing examples) set a recall floor that
   prompt injection cannot talk away; local models (Ollama, llama.cpp, any CLI) add hypotheses.
 - **Honest output.** Every finding has location, severity, explanation, evidence (secrets
-  redacted), remediation, confidence, and `verified` vs `hypothesis`. JSON, SARIF 2.1.0,
+  redacted), remediation, confidence (`low`/`medium`/`high`), and `verified` vs `hypothesis`.
+  A minimum confidence (policy default `low`; `--min-confidence` or `ACR_MIN_CONFIDENCE`
+  overrides it) filters what is reported and gated, and says what it hid
+  ([confidence levels](docs/usage/customize.md#confidence-levels)). JSON, SARIF 2.1.0,
   Markdown, and a legacy text protocol.
 - **Degrades, never lies.** If the model runtime is down, reviews fall back to rules and say
   `degraded` everywhere; strict policies fail instead.

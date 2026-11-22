@@ -12,6 +12,7 @@
 | `ACR_LARGE_MODEL` | `(from profile)` | Large-tier model. |
 | `ACR_MEMORY_BUDGET_MB` | `(from profile)` | Override the profile's model memory budget (router refuses models that need more). |
 | `ACR_WRAPPER` | `(from profile)` | Wrapper id: ollama, llama-cpp, cli, example-echo. |
+| `ACR_MIN_CONFIDENCE` | `(from policy; low)` | Report and gate only findings at or above this confidence (low, medium, high). `--min-confidence` overrides it; it overrides the policy's `[gate] min_confidence`. |
 | `ACR_SKILLS` | `(from profile)` | Comma list of skill ids or globs to run instead of the profile's, e.g. `security.*`. |
 | `ACR_SKILLS_DIRS` | `` | Extra skill directories (os.pathsep list), loaded after the built-in skills; `/etc/acr/skills.d` is always included if present. |
 | `ACR_INSTRUCTIONS_DIR` | `/etc/acr/instructions.d` | Team review instructions: every `*.md` / `*.txt` file here is added to the model prompt (README files ignored). |

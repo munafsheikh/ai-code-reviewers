@@ -4,6 +4,9 @@ All notable changes are documented here. Format: [Keep a Changelog](https://keep
 
 ## [Unreleased]
 
+### Added
+- Minimum confidence: findings below it are left out of the report and cannot block. Resolved from `--min-confidence` (`acr review`, `acr merge`, action input `min-confidence`), then `ACR_MIN_CONFIDENCE`, then the policy's `[gate] min_confidence` (every shipped policy: `low`), then the built-in default `low`. Results record the minimum, its source and the hidden findings by severity in `run.confidence`; the report prints them when the minimum is above `low`. `acr validate` checks policy confidence values.
+
 ## [0.7.0] - 2026-11-22
 
 ### Added

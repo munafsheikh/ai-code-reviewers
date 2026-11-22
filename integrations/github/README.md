@@ -43,6 +43,10 @@ This repository's own CI does exactly that (`review` and `review-gate` jobs in
 `.github/workflows/ci.yml`). On push events pass `base-ref: ${{ github.event.before }}` to
 review the pushed commits.
 
+**Confidence.** `min-confidence: medium` (or `high`) reports and gates only findings at or
+above that confidence; empty uses the policy's `min_confidence` (`low` in every shipped policy).
+The report states the minimum and how many findings it hid.
+
 **Team instructions.** `instructions: .github/review-instructions.md` gives the model your
 team's guidance (files are mounted read-only; several can be listed), and `ACR_INSTRUCTIONS`
 in the job's environment is forwarded too. To ship instructions and your own rules to every
