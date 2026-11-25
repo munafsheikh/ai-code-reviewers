@@ -75,4 +75,4 @@ def test_markdown_reports_what_the_model_contributed(runtime, monkeypatch):
     }
     monkeypatch.setenv("FAKE_RESPONSE_TEXT", json.dumps(fake))
     md = report.to_markdown(run_review(fixture_diff("python-unsafe"), "balanced"))
-    assert "Model output: 2 findings returned, 1 accepted, 1 discarded" in md
+    assert "Model output: 2 findings returned, 1 accepted, 1 discarded (path not in diff: 1)" in md

@@ -74,3 +74,24 @@ def test_unparseable_output_yields_no_findings_and_records_error():
 )
 def test_legacy_severity_matches_reviewgate(text, sev):
     assert parse.legacy_severity(text) == sev
+
+
+def test_discard_reasons_are_counted_and_sampled():
+    items = [_f(path="Nope.java", title="ghost"), _f(path=""), _f(severity="bogus"), _f(title=""), "x"]
+    found, stats = parse.to_findings(json.dumps({"findings": items}), SKILLS, D, "m")
+    assert found == [] and stats["discarded"] == 5
+    assert stats["discard_reasons"] == {
+        "path_not_in_diff": 1,
+        "missing_path": 1,
+        "invalid_severity": 1,
+        "missing_title": 1,
+        "not_an_object": 1,
+    }
+    assert len(stats["discarded_samples"]) == 3
+    assert stats["discarded_samples"][0] == {"reason": "path_not_in_diff", "path": "Nope.java", "title": "ghost"}
+
+
+def test_discard_samples_are_truncated():
+    _, stats = parse.to_findings(json.dumps({"findings": [_f(path="p" * 999, title="t" * 999)]}), SKILLS, D, "m")
+    s = stats["discarded_samples"][0]
+    assert len(s["path"]) == 200 and len(s["title"]) == 120

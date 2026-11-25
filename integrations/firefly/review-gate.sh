@@ -12,5 +12,5 @@ if [ -n "${ACR_HOME:-}" ]; then
   exec env PYTHONPATH="$ACR_HOME" ACR_MODEL_HOST="${LLM_HOST:-${ACR_MODEL_HOST:-http://127.0.0.1:11434}}" \
     python3 -m orchestrator review --profile "$PROFILE" --format "$FORMAT"
 fi
-exec docker run --rm -i --read-only --cap-drop ALL --add-host=host.docker.internal:host-gateway \
+exec docker run --rm -i --read-only --tmpfs /tmp -e ACR_CACHE_DIR=/tmp/acr-cache --cap-drop ALL --add-host=host.docker.internal:host-gateway \
   -e ACR_MODEL_HOST="$HOST" -e LLM_MODEL="${LLM_MODEL:-}" "$IMAGE" review --profile "$PROFILE" --format "$FORMAT"
