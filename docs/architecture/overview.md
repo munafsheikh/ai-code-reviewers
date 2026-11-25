@@ -8,7 +8,7 @@ flowchart LR
     D[unified diff<br/>stdin / file / git range / HTTP]
   end
   subgraph Engine[orchestrator]
-    P[diff parser] --> R[rules engine<br/>skills/*/skill.toml]
+    P[diff parser] --> R[rules engine<br/>skills/*/skill.toml<br/>+ analyzers]
     P --> RT[router<br/>profiles + model registry]
     RT --> W[wrapper adapter<br/>acr.wrapper/v1]
     W --> REC[recovery<br/>retry · circuit · cache · deadline]
@@ -78,6 +78,7 @@ sequenceDiagram
 |---|---|
 | Python stdlib-only runtime | No third-party runtime dependencies → minimal supply-chain surface; image is ~178 MB with pip removed. |
 | Rules + models, never models alone | Rules give a deterministic recall floor and cannot be talked out of a finding by prompt injection; models add hypotheses. |
+| Structural questions go to analyzers, not models | A regex finds candidates; a stdlib analyzer (`orchestrator/engine/analyzers.py`: Python `ast`, `shlex`) confirms or rejects each one, and confirmed findings are `verified`. In the [tiny-verify experiment](../../benchmarks/experiments/tiny-verify/README.md) analyzers scored F1 1.0 on structural cases where models of 135M–1.5B scored 0.0–0.68. |
 | Model findings are always `hypothesis` | Probabilistic output is labelled as such; only high-confidence rule matches are `verified`. |
 | Findings must cite a file in the diff | Hallucinated paths are discarded; out-of-hunk lines are kept at `low` confidence with `location.verified = false`. |
 | Degrade, don't fail, by default | An unavailable model must not block delivery; the `strict` policy opts into failing (exit 2). Degradation is always reported. |

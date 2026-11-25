@@ -6,6 +6,10 @@ telemetry, no source code leaves your machine.
 
 - **Rules + models.** Deterministic rules (with self-testing examples) set a recall floor that
   prompt injection cannot talk away; local models (Ollama, llama.cpp, any CLI) add hypotheses.
+  Structural questions (is this `$VAR` quoted, does this call pass `timeout=`) are confirmed by
+  stdlib [analyzers](docs/development/extending.md#confirm-candidates-with-an-analyzer-structural-questions),
+  not by models: [measured](benchmarks/experiments/tiny-verify/README.md), analyzers scored F1 1.0
+  where models up to 1.5B scored 0.68.
 - **Honest output.** Every finding has location, severity, explanation, evidence (secrets
   redacted), remediation, confidence (`low`/`medium`/`high`), and `verified` vs `hypothesis`.
   A minimum confidence (policy default `low`; `--min-confidence` or `ACR_MIN_CONFIDENCE`
@@ -56,7 +60,7 @@ See [lifecycle artifacts](docs/development/extending.md#lifecycle-artifacts).
 
 ```mermaid
 flowchart LR
-  diff[diff] --> rules[rules] --> merge
+  diff[diff] --> rules["rules + analyzers"] --> merge
   diff --> router{router} -->|small / large / rules-only| model[local model] --> parse[validate vs diff] --> merge
   merge --> gate{policy gate} --> out[JSON · SARIF · Markdown]
 ```

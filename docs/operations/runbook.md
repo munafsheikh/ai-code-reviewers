@@ -52,7 +52,10 @@ Releases are automatic. Every green CI run on `main` goes through the `Release` 
    section. `### Removed` or "BREAKING" means major (minor while 0.x). `### Added`, `### Changed`
    or `### Deprecated` means minor. `### Fixed` or `### Security` means patch. An empty section
    means no release. A label on the merged PR overrides it: `release:major`, `release:minor`,
-   `release:patch` or `release:skip`.
+   `release:patch` or `release:skip`. To batch several merges into one release, label all but
+   the last `release:skip`: their entries stay under `[Unreleased]` and ship with the next
+   unlabelled merge. Do not merge to `main` while a release's bump job is running: its push of
+   `Release X.Y.Z` is a fast-forward and fails if `main` moved.
 2. **Bump** (`release apply X.Y.Z`): rewrites `pyproject.toml`,
    `orchestrator.__version__`, the CHANGELOG (`[Unreleased]` becomes `[X.Y.Z] - date`) and the
    tag and image references in `integrations/`. The `ci` task then re-tests the bumped tree, and
