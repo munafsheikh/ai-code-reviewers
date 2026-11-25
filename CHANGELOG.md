@@ -4,6 +4,8 @@ All notable changes are documented here. Format: [Keep a Changelog](https://keep
 
 ## [Unreleased]
 
+## [0.11.0] - 2026-11-25
+
 ### Added
 - Rule analyzers: `analyzer = "<id>"` on a rule confirms (reported `verified`) or rejects each regex candidate with a deterministic, stdlib-only check; `analyzer_fallback` decides undecidable candidates. Shipped: `python.http-without-timeout`, `python.sql-built-string`, `shell.unquoted-expansion`. Rule examples are validated through the analyzer.
 - `lang.shell.core` 1.0.0 (deterministic only): SH-001 unquoted expansion, SH-002 unguarded `rm -r` on a variable path, SH-003 `curl | sh`, SH-004 unchecked `cd`, SH-005 `eval` of a variable, SH-006 world-writable `chmod`. Added to the `balanced` profile.
