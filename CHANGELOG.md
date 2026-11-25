@@ -4,6 +4,8 @@ All notable changes are documented here. Format: [Keep a Changelog](https://keep
 
 ## [Unreleased]
 
+## [0.10.0] - 2026-11-25
+
 ### Security
 - Base image `python:3.13-slim` bumped to `sha256:7249d558…`; expired `zlib1g` exceptions (CVE-2026-85091, CVE-2026-76844) removed from `policies/security/trivyignore`.
 

@@ -28,13 +28,13 @@ Only Docker is required, and only the pulls use the network.
 ```bash
 # Rules only: seconds, and the container has no network interface at all
 git diff main... | docker run --rm -i --read-only --network none \
-  munafsheikh/ai-code-reviewers:0.9.0 review --profile offline
+  munafsheikh/ai-code-reviewers:0.10.0 review --profile offline
 
 # With the local model: the runtime image has the weights baked in and sits on a network with no route out
 docker network create --internal acr
-docker run -d --name llm-runtime --network acr --read-only --tmpfs /tmp munafsheikh/ai-code-reviewers-runtime:0.9.0
+docker run -d --name llm-runtime --network acr --read-only --tmpfs /tmp munafsheikh/ai-code-reviewers-runtime:0.10.0
 git diff main... | docker run --rm -i --read-only --network acr -e ACR_MODEL_HOST=http://llm-runtime:11434 \
-  munafsheikh/ai-code-reviewers:0.9.0 review --profile balanced
+  munafsheikh/ai-code-reviewers:0.10.0 review --profile balanced
 ```
 
 Exit codes: `0` pass/warn, `1` blocked, `2` could not review (strict policy, bad input). From a
