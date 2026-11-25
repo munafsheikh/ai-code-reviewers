@@ -33,7 +33,8 @@ steps:
       fi
       mkdir -p acr-review && chmod 0777 acr-review
       set +e
-      docker run --rm -i ${NET:-} --read-only --cap-drop ALL -v "$PWD/acr-review:/out" -e ACR_MODEL_HOST=http://llm-runtime:11434 \
+      docker run --rm -i ${NET:-} --read-only --cap-drop ALL --tmpfs /tmp -e ACR_CACHE_DIR=/tmp/acr-cache \
+        -v "$PWD/acr-review:/out" -e ACR_MODEL_HOST=http://llm-runtime:11434 \
         "${{ parameters.image }}" review --profile "${{ parameters.profile }}" --format json,sarif,markdown,legacy \
         --out-dir /out --stdout markdown --revision "$(Build.SourceVersion)" < "$(Agent.TempDirectory)/acr.diff"
       code=$?

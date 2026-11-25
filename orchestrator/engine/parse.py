@@ -50,7 +50,15 @@ def extract_json(text: str) -> Any:
 
 def to_findings(text: str, skills: list[Skill], files: list[FileDiff], model: str) -> tuple[list[Finding], dict]:
     """Validate model findings against the diff. Returns findings and parse statistics."""
-    stats = {"raw": 0, "accepted": 0, "discarded": 0, "unverified_location": 0, "parse_error": None}
+    stats = {
+        "raw": 0,
+        "accepted": 0,
+        "discarded": 0,
+        "unverified_location": 0,
+        "parse_error": None,
+        "discard_reasons": {},
+        "discarded_samples": [],
+    }
     try:
         data = extract_json(text)
     except ValueError as e:
@@ -63,27 +71,49 @@ def to_findings(text: str, skills: list[Skill], files: list[FileDiff], model: st
     for item in items:
         stats["raw"] += 1
         f = _one(item, by_path, skill_ids, skills, model, stats)
-        if f:
+        if isinstance(f, Finding):
             out.append(f)
             stats["accepted"] += 1
         else:
-            stats["discarded"] += 1
+            _discard(stats, f, item)
     return out, stats
+
+
+# Discards are audited so a reviewer can tell a hallucinated path from a malformed reply.
+# Model output is untrusted: samples are truncated and only carry path, title and reason.
+_MAX_DISCARD_SAMPLES = 3
+
+
+def _discard(stats: dict, reason: str, item: Any) -> None:
+    stats["discarded"] += 1
+    stats["discard_reasons"][reason] = stats["discard_reasons"].get(reason, 0) + 1
+    if len(stats["discarded_samples"]) < _MAX_DISCARD_SAMPLES:
+        d = item if isinstance(item, dict) else {}
+        stats["discarded_samples"].append(
+            {
+                "reason": reason,
+                "path": str(d.get("path") or d.get("file") or "")[:200],
+                "title": str(d.get("title") or d.get("issue") or "")[:120],
+            }
+        )
 
 
 def _one(
     item: Any, by_path: dict[str, FileDiff], skill_ids: dict[str, Skill], skills: list[Skill], model: str, stats: dict
-) -> Finding | None:
+) -> Finding | str:
+    """A validated finding, or the reason the item was discarded."""
     if not isinstance(item, dict):
-        return None
+        return "not_an_object"
     path = str(item.get("path") or item.get("file") or "").removeprefix("b/").strip()
     fd = by_path.get(path)
     if fd is None:  # a file not in the diff is a hallucination
-        return None
+        return "path_not_in_diff" if path else "missing_path"
     sev = _SEV_ALIASES.get(str(item.get("severity", "")).strip().lower())
     title = str(item.get("title") or item.get("issue") or "").strip()
-    if not sev or not title:
-        return None
+    if not sev:
+        return "invalid_severity"
+    if not title:
+        return "missing_title"
     try:
         line = int(item.get("line") or 0)
     except (TypeError, ValueError):

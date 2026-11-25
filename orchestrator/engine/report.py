@@ -117,9 +117,14 @@ def to_markdown(result: dict[str, Any]) -> str:
         disc = sum(p["discarded"] for p in parse)
         unv = sum(p["unverified_location"] for p in parse)
         errs = [p["parse_error"] for p in parse if p.get("parse_error")]
+        reasons: dict[str, int] = {}
+        for p in parse:
+            for k, v in (p.get("discard_reasons") or {}).items():
+                reasons[k] = reasons.get(k, 0) + v
+        why = ", ".join(f"{k.replace('_', ' ')}: {v}" for k, v in sorted(reasons.items()))
         lines.append(
             f"Model output: {raw} findings returned, {acc} accepted, {disc} discarded "
-            f"(not in the diff or invalid), {unv} cited lines outside the changed hunks"
+            f"({why or 'not in the diff or invalid'}), {unv} cited lines outside the changed hunks"
             + (f"; unparseable reply: {errs[0]}" if errs else "")
         )
     conf = run.get("confidence")

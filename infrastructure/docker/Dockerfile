@@ -40,6 +40,12 @@ LABEL org.opencontainers.image.title="ai-code-reviewers-base" \
       org.opencontainers.image.revision="${REVISION}"
 ENV PYTHONDONTWRITEBYTECODE=1 \
     PYTHONUNBUFFERED=1
+# Security fixes Debian has shipped but the pinned python image does not carry yet.
+# Pinned so builds stay reproducible; drop each line once PYTHON_IMAGE includes the version.
+#   libzstd1: CVE-2026-124851 (HIGH), fixed in 1.5.7+dfsg-1+deb13u1
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends --only-upgrade libzstd1=1.5.7+dfsg-1+deb13u1 \
+ && rm -rf /var/lib/apt/lists/*
 RUN groupadd --system --gid 10001 acr \
  && useradd --system --uid 10001 --gid acr --home-dir /nonexistent --shell /usr/sbin/nologin acr
 USER 10001:10001

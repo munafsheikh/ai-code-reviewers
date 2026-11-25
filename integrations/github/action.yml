@@ -192,6 +192,7 @@ runs:
           done
           docker run --rm -i "${net[@]}" --read-only --cap-drop ALL --security-opt no-new-privileges:true \
             --tmpfs /tmp -v "$PWD/$OUT:/out" -e ACR_MODEL_HOST=http://llm-runtime:11434 \
+            -e ACR_CACHE_DIR=/tmp/acr-cache \
             -e ACR_RUN_URL="$GITHUB_SERVER_URL/$GITHUB_REPOSITORY/actions/runs/$GITHUB_RUN_ID" \
             ${LLM_MODEL:+-e LLM_MODEL="$LLM_MODEL"} ${ACR_INSTRUCTIONS:+-e ACR_INSTRUCTIONS} "${imounts[@]}" \
             "$IMAGE" "${args[@]}" < "$RUNNER_TEMP/acr.diff" 2> "$OUT/review.log"
