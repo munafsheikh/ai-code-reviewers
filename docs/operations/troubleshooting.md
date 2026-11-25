@@ -10,6 +10,9 @@
 | Exit code 2 | strict policy + infra failure, unreadable diff, or schema violation | read stderr; `-v` prints structured recovery logs |
 | Review slow / `budget_limited` | diff larger than `max_diff_chars × max_model_calls` | use `deep` profile, or review per directory with `--paths` |
 | `circuit open` | runtime failed repeatedly | wait `cooldown_s` or fix the runtime; the next call half-opens |
+| Release `docs / deploy`: `Creating Pages deployment failed`, `HttpError: Not Found` | GitHub Pages is not enabled with GitHub Actions as its source (the workflow token cannot enable it) | repository **Settings → Pages → Build and deployment → Source: GitHub Actions**; the next green `main` publishes the site |
+| Release `bump` fails to push `Release X.Y.Z` | `main` moved while the release ran (a merge landed mid-release) | re-run the Release workflow (manual, `bump: auto`); avoid merging while a release's bump job runs |
+| `model_output` shows discards | the model cited a file not in the diff, or returned an invalid item | the reason per discard is in the audit log and the PR comment (`path not in diff`, `invalid severity`, ...) |
 | Docker build fails on corporate network | proxy/CA not visible to build containers | build with `--network host` and proxy build args; scans accept `SCAN_DOCKER_ARGS` |
 | `validate` fails on a rule example | a regex change broke its declared behaviour | fix the pattern or the example; examples are the rule's unit tests |
 

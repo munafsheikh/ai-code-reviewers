@@ -18,6 +18,24 @@ Nothing here is downloaded until a runtime pulls it.
 It prefers code-specialised models, then size, which is a proxy for quality and not a
 measurement. Adopt a model only after it passes the benchmark gate on your fixtures.
 
+## What small models are good for
+
+Measured on CPU ([tiny-verify experiment](../../benchmarks/experiments/tiny-verify/README.md),
+2026-11-25):
+
+- **Open review at 0.5B is noisy.** `qwen2.5-coder-0.5b` added 11 false positives across the 14
+  benchmark fixtures, including a critical one, and blocked clean diffs (gate accuracy 0.64). Use
+  `fast` where rules carry the gate and model findings are read as hints.
+- **1.5B is safe but adds little.** `qwen2.5-coder-1.5b` (`balanced`) added no false positives
+  and no findings beyond the rules.
+- **Yes/no adjudication does not rescue them.** Asked one narrow question per candidate, models
+  from 135M to 1.5B scored at or barely above "flag everything" (F1 0.667), with or without
+  worked examples. Structural questions are therefore answered by analyzers; semantic ones
+  (is this value a secret, is this double money) stay with high-precision rules.
+
+For semantic review that adds real findings, plan for 7B and up (`deep`, `gpu`); larger models
+were not part of this experiment.
+
 ## Families
 
 | Family | Sizes here | License | Why include it |
