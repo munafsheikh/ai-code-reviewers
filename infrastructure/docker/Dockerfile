@@ -13,7 +13,7 @@
 # BASE selects the parent of the derived stages. Locally it is the `base` stage below; the
 # publish workflow sets it to the pushed base digest so every published image is layered
 # on exactly the base it was released with.
-ARG PYTHON_IMAGE=python:3.13-slim@sha256:e48f59cdba69a3cbd9ed2cf0f348d90d45a8d350d98134cf1070bc106ee9ed90
+ARG PYTHON_IMAGE=python:3.13-slim@sha256:7249d5587b78209a006dc4a3b5340678f84ea729239193aa559962cd8c1fce50
 ARG BASE=base
 ARG OLLAMA_IMAGE=ollama/ollama:0.40.11@sha256:dea72d1e22270fe095b68fdf756d2b489d615643c5a2eaebbc5f569181e322d8
 # The OS Ollama's image is built on; the CPU runtime needs nothing from it but libc/libstdc++.

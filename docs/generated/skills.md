@@ -8,7 +8,7 @@
 | `code-quality.error-handling` | 1.0.0 | code-quality | small | java, python, javascript, typescript, kotlin, csharp | 3 |
 | `documentation.content` | 1.1.0 | documentation | small | * | 4 |
 | `documentation.sync` | 1.0.0 | documentation | none | * | 4 |
-| `lang.java.core` | 1.0.0 | code-quality | small | java | 3 |
+| `lang.java.core` | 1.1.0 | code-quality | small | java | 16 |
 | `lang.java.first-pass-gate` | 1.0.0 | code-quality | small | java | 0 |
 | `lang.javascript.core` | 1.0.0 | security | small | javascript, typescript | 1 |
 | `lang.python.core` | 1.1.0 | code-quality | small | python | 16 |
@@ -34,6 +34,19 @@
 | `JAVA-001` | `lang.java.core` | major | medium | hypothesis | Closeable opened outside try-with-resources |
 | `JAVA-002` | `lang.java.core` | minor | low | hypothesis | Optional.get() without presence check |
 | `JAVA-003` | `lang.java.core` | major | medium | hypothesis | String compared with == |
+| `JAVA-004` | `lang.java.core` | minor | high | verified | Catching Throwable or Error |
+| `JAVA-005` | `lang.java.core` | major | medium | hypothesis | InterruptedException handled without restoring the interrupt |
+| `JAVA-006` | `lang.java.core` | major | medium | hypothesis | Lock acquired outside try/finally |
+| `JAVA-007` | `lang.java.core` | major | high | verified | Static SimpleDateFormat shared across threads |
+| `JAVA-008` | `lang.java.core` | major | medium | hypothesis | Floating point used for money |
+| `JAVA-009` | `lang.java.core` | major | high | verified | BigDecimal constructed from a double |
+| `JAVA-010` | `lang.java.core` | major | medium | hypothesis | Non-cryptographic random for a secret |
+| `JAVA-011` | `lang.java.core` | major | high | verified | Weak hash or cipher |
+| `JAVA-012` | `lang.java.core` | minor | high | verified | Exception cause discarded |
+| `JAVA-013` | `lang.java.core` | major | high | verified | @Transactional on a private or final method |
+| `JAVA-014` | `lang.java.core` | minor | medium | hypothesis | Field injection |
+| `JAVA-015` | `lang.java.core` | info | medium | hypothesis | String concatenation in a log call |
+| `JAVA-016` | `lang.java.core` | minor | medium | hypothesis | Unbounded cached thread pool |
 | `JS-001` | `lang.javascript.core` | major | medium | hypothesis | Assignment to innerHTML / outerHTML |
 | `PY-001` | `lang.python.core` | minor | high | verified | Mutable default argument |
 | `PY-002` | `lang.python.core` | minor | low | hypothesis | assert used for runtime validation |
