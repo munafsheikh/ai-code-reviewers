@@ -4,6 +4,9 @@ All notable changes are documented here. Format: [Keep a Changelog](https://keep
 
 ## [Unreleased]
 
+### Added
+- `lang.python.core` 1.1.0: 14 Python rules (`PY-003`…`PY-016`): `is` with a literal, `== None`, `open()` without `with`, naive/deprecated UTC datetimes, `requests`/`httpx` calls without a timeout, blocking calls inside `async def`, unreferenced `create_task`, `random` for secrets, MD5/SHA-1 without `usedforsecurity=False`, `tempfile.mktemp`, star imports, blanket `# type: ignore`/`# noqa`, re-raise without `from`, 0o777 permissions. Also reviews `*.pyi`. The model prompt now covers correctness, resources, concurrency, Python-specific security, typing and performance, and skips what the rules already flag. Benchmark fixture `python-pitfalls`.
+
 ## [0.9.0] - 2026-11-22
 
 ### Changed

@@ -1,0 +1,74 @@
+{
+  "findings": [
+    {
+      "path": "svc/worker.py",
+      "line": 10,
+      "rule_id": "PY-013"
+    },
+    {
+      "path": "svc/worker.py",
+      "line": 18,
+      "rule_id": "PY-003"
+    },
+    {
+      "path": "svc/worker.py",
+      "line": 18,
+      "rule_id": "PY-004"
+    },
+    {
+      "path": "svc/worker.py",
+      "line": 24,
+      "rule_id": "PY-005"
+    },
+    {
+      "path": "svc/worker.py",
+      "line": 29,
+      "rule_id": "PY-006"
+    },
+    {
+      "path": "svc/worker.py",
+      "line": 33,
+      "rule_id": "PY-007"
+    },
+    {
+      "path": "svc/worker.py",
+      "line": 36,
+      "rule_id": "PY-008"
+    },
+    {
+      "path": "svc/worker.py",
+      "line": 42,
+      "rule_id": "PY-009"
+    },
+    {
+      "path": "svc/worker.py",
+      "line": 46,
+      "rule_id": "PY-010"
+    },
+    {
+      "path": "svc/worker.py",
+      "line": 51,
+      "rule_id": "PY-011"
+    },
+    {
+      "path": "svc/worker.py",
+      "line": 55,
+      "rule_id": "PY-012"
+    },
+    {
+      "path": "svc/worker.py",
+      "line": 59,
+      "rule_id": "PY-014"
+    },
+    {
+      "path": "svc/worker.py",
+      "line": 66,
+      "rule_id": "PY-015"
+    },
+    {
+      "path": "svc/worker.py",
+      "line": 71,
+      "rule_id": "PY-016"
+    }
+  ]
+}

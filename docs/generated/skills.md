@@ -11,7 +11,7 @@
 | `lang.java.core` | 1.0.0 | code-quality | small | java | 3 |
 | `lang.java.first-pass-gate` | 1.0.0 | code-quality | small | java | 0 |
 | `lang.javascript.core` | 1.0.0 | security | small | javascript, typescript | 1 |
-| `lang.python.core` | 1.0.0 | code-quality | small | python | 2 |
+| `lang.python.core` | 1.1.0 | code-quality | small | python | 16 |
 | `lang.typescript.types` | 1.0.0 | maintainability | none | typescript | 2 |
 | `maintainability.hygiene` | 1.1.0 | maintainability | none | * | 4 |
 | `performance.deep` | 1.0.0 | performance | large | * | 0 |
@@ -37,6 +37,20 @@
 | `JS-001` | `lang.javascript.core` | major | medium | hypothesis | Assignment to innerHTML / outerHTML |
 | `PY-001` | `lang.python.core` | minor | high | verified | Mutable default argument |
 | `PY-002` | `lang.python.core` | minor | low | hypothesis | assert used for runtime validation |
+| `PY-003` | `lang.python.core` | major | high | verified | Identity comparison with a literal |
+| `PY-004` | `lang.python.core` | minor | high | verified | Equality comparison with None |
+| `PY-005` | `lang.python.core` | minor | medium | hypothesis | File opened without a context manager |
+| `PY-006` | `lang.python.core` | minor | medium | hypothesis | Naive or deprecated UTC datetime |
+| `PY-007` | `lang.python.core` | minor | low | hypothesis | HTTP request without timeout |
+| `PY-008` | `lang.python.core` | major | medium | hypothesis | Blocking call inside async function |
+| `PY-009` | `lang.python.core` | minor | medium | hypothesis | Fire-and-forget asyncio task |
+| `PY-010` | `lang.python.core` | major | medium | hypothesis | Non-cryptographic random for a secret |
+| `PY-011` | `lang.python.core` | minor | medium | hypothesis | Weak hash without usedforsecurity=False |
+| `PY-012` | `lang.python.core` | major | high | verified | Insecure temporary file name |
+| `PY-013` | `lang.python.core` | minor | high | verified | Wildcard import |
+| `PY-014` | `lang.python.core` | minor | high | verified | Blanket lint or type suppression |
+| `PY-015` | `lang.python.core` | minor | low | hypothesis | Exception re-raised without chaining |
+| `PY-016` | `lang.python.core` | major | high | verified | World-writable file permissions |
 | `TS-001` | `lang.typescript.types` | minor | high | verified | Type checking suppressed |
 | `TS-002` | `lang.typescript.types` | info | high | verified | Explicit any |
 | `MNT-001` | `maintainability.hygiene` | major | high | verified | Debugger statement |
