@@ -8,15 +8,16 @@
 | `code-quality.error-handling` | 1.0.0 | code-quality | small | java, python, javascript, typescript, kotlin, csharp | 3 |
 | `documentation.content` | 1.1.0 | documentation | small | * | 4 |
 | `documentation.sync` | 1.0.0 | documentation | none | * | 4 |
-| `lang.java.core` | 1.1.0 | code-quality | small | java | 16 |
+| `lang.java.core` | 1.2.0 | code-quality | small | java | 18 |
 | `lang.java.first-pass-gate` | 1.0.0 | code-quality | small | java | 0 |
 | `lang.javascript.core` | 1.0.0 | security | small | javascript, typescript | 1 |
-| `lang.python.core` | 1.1.0 | code-quality | small | python | 16 |
+| `lang.python.core` | 1.2.0 | code-quality | small | python | 16 |
+| `lang.shell.core` | 1.0.0 | code-quality | none | shell | 6 |
 | `lang.typescript.types` | 1.0.0 | maintainability | none | typescript | 2 |
 | `maintainability.hygiene` | 1.1.0 | maintainability | none | * | 4 |
 | `performance.deep` | 1.0.0 | performance | large | * | 0 |
 | `refinement.issue` | 1.0.0 | refinement | small | * | 7 |
-| `security.injection` | 1.0.0 | security | small | java, python, javascript, typescript, kotlin, csharp, go, ruby | 5 |
+| `security.injection` | 1.1.0 | security | small | java, python, javascript, typescript, kotlin, csharp, go, ruby | 6 |
 | `security.secrets` | 1.0.0 | security | none | * | 4 |
 | `testing.hygiene` | 1.0.0 | testing | none | java, python, javascript, typescript, kotlin | 3 |
 
@@ -47,6 +48,8 @@
 | `JAVA-014` | `lang.java.core` | minor | medium | hypothesis | Field injection |
 | `JAVA-015` | `lang.java.core` | info | medium | hypothesis | String concatenation in a log call |
 | `JAVA-016` | `lang.java.core` | minor | medium | hypothesis | Unbounded cached thread pool |
+| `JAVA-017` | `lang.java.core` | minor | high | verified | BigDecimal compared with equals() |
+| `JAVA-018` | `lang.java.core` | major | medium | hypothesis | Credential written to a log |
 | `JS-001` | `lang.javascript.core` | major | medium | hypothesis | Assignment to innerHTML / outerHTML |
 | `PY-001` | `lang.python.core` | minor | high | verified | Mutable default argument |
 | `PY-002` | `lang.python.core` | minor | low | hypothesis | assert used for runtime validation |
@@ -64,6 +67,12 @@
 | `PY-014` | `lang.python.core` | minor | high | verified | Blanket lint or type suppression |
 | `PY-015` | `lang.python.core` | minor | low | hypothesis | Exception re-raised without chaining |
 | `PY-016` | `lang.python.core` | major | high | verified | World-writable file permissions |
+| `SH-001` | `lang.shell.core` | minor | medium | hypothesis | Unquoted variable expansion |
+| `SH-002` | `lang.shell.core` | major | medium | hypothesis | Recursive rm on a variable path without a guard |
+| `SH-003` | `lang.shell.core` | major | high | verified | Remote script piped into a shell |
+| `SH-004` | `lang.shell.core` | minor | medium | hypothesis | cd without a failure check |
+| `SH-005` | `lang.shell.core` | major | medium | hypothesis | eval of a variable |
+| `SH-006` | `lang.shell.core` | major | high | verified | World-writable permissions |
 | `TS-001` | `lang.typescript.types` | minor | high | verified | Type checking suppressed |
 | `TS-002` | `lang.typescript.types` | info | high | verified | Explicit any |
 | `MNT-001` | `maintainability.hygiene` | major | high | verified | Debugger statement |
@@ -77,6 +86,7 @@
 | `INJ-003` | `security.injection` | critical | medium | hypothesis | Shell command built from variables |
 | `INJ-004` | `security.injection` | major | high | verified | TLS certificate verification disabled |
 | `INJ-005` | `security.injection` | major | medium | hypothesis | Unsafe deserialisation |
+| `INJ-006` | `security.injection` | critical | medium | hypothesis | SQL query built with string formatting |
 | `SEC-001` | `security.secrets` | critical | high | verified | Private key committed |
 | `SEC-002` | `security.secrets` | critical | high | verified | AWS access key id |
 | `SEC-003` | `security.secrets` | critical | high | verified | GitHub / Slack token |

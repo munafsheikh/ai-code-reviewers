@@ -106,7 +106,7 @@ User-facing surfaces (build, CI, deployment, make targets, CLI options, env vars
 
 <a id="skill-lang-java-core"></a>
 
-## Skill `lang.java.core` (v1.1.0)
+## Skill `lang.java.core` (v1.2.0)
 
 Java resource safety, null-safety, concurrency, crypto, money handling and Spring pitfalls (structured successor of the first-pass gate). Category: code-quality. Model tier: small.
 
@@ -272,6 +272,26 @@ A cached pool creates a thread per concurrent task with no upper bound; a burst 
 
 **Fix:** Use a bounded ThreadPoolExecutor with a bounded queue and a rejection policy, or Executors.newVirtualThreadPerTaskExecutor() on Java 21+.
 
+<a id="java-017"></a>
+
+### JAVA-017: BigDecimal compared with equals()
+
+Severity **minor** · confidence high (verified) · languages: java
+
+BigDecimal.equals compares scale as well as value, so 2.0 and 2.00 are not equal; balance checks and test assertions silently fail.
+
+**Fix:** Use a.compareTo(b) == 0 (or signum() == 0 for zero checks).
+
+<a id="java-018"></a>
+
+### JAVA-018: Credential written to a log
+
+Severity **major** · confidence medium (hypothesis) · languages: java
+
+Logs are retained, shipped to third parties and read by many people; a credential in a log is a credential leak.
+
+**Fix:** Log an identifier instead (user id, key id, last 4 digits) or mask the value before logging.
+
 <a id="skill-lang-java-first-pass-gate"></a>
 
 ## Skill `lang.java.first-pass-gate` (v1.0.0)
@@ -300,7 +320,7 @@ Writing unsanitised strings as HTML enables cross-site scripting.
 
 <a id="skill-lang-python-core"></a>
 
-## Skill `lang.python.core` (v1.1.0)
+## Skill `lang.python.core` (v1.2.0)
 
 Python correctness, async, resource, typing-suppression and stdlib-security pitfalls. Category: code-quality. Model tier: small.
 
@@ -466,6 +486,72 @@ Mode xx7 lets any local user modify the file or directory.
 
 **Fix:** Grant the narrowest mode needed (0o600 / 0o644 for files, 0o700 / 0o755 for directories).
 
+<a id="skill-lang-shell-core"></a>
+
+## Skill `lang.shell.core` (v1.0.0)
+
+Bash/sh pitfalls that are decidable without a model: quoting, unguarded rm, curl|sh, unchecked cd, eval, world-writable modes. Category: code-quality. Model tier: none.
+
+<a id="sh-001"></a>
+
+### SH-001: Unquoted variable expansion
+
+Severity **minor** · confidence medium (hypothesis) · languages: shell
+
+An unquoted $VAR is split on whitespace and glob-expanded, so a path with a space or a * changes which files the command touches.
+
+**Fix:** Quote it: "$VAR" (use [[ ]] for tests, and arrays for lists of arguments).
+
+<a id="sh-002"></a>
+
+### SH-002: Recursive rm on a variable path without a guard
+
+Severity **major** · confidence medium (hypothesis) · languages: shell
+
+If the variable is empty or unset, the path collapses to / or the current directory and rm -r deletes far more than intended.
+
+**Fix:** Guard the expansion: rm -rf "${DIR:?}/" (fails when DIR is empty), or check [ -n "$DIR" ] immediately before.
+
+<a id="sh-003"></a>
+
+### SH-003: Remote script piped into a shell
+
+Severity **major** · confidence high (verified) · languages: shell
+
+The script runs with no integrity check; a compromised host, DNS or a truncated download executes arbitrary code.
+
+**Fix:** Download to a file, verify a pinned checksum or signature, then run it.
+
+<a id="sh-004"></a>
+
+### SH-004: cd without a failure check
+
+Severity **minor** · confidence medium (hypothesis) · languages: shell
+
+If cd fails the script keeps running in the wrong directory, and later relative paths (rm, cp, build steps) act on it.
+
+**Fix:** Use cd "$DIR" || exit 1 (or run under set -e).
+
+<a id="sh-005"></a>
+
+### SH-005: eval of a variable
+
+Severity **major** · confidence medium (hypothesis) · languages: shell
+
+eval re-parses its argument as code, so any shell syntax inside the variable runs.
+
+**Fix:** Avoid eval: use arrays for argument lists and declare/printf -v for indirect assignment.
+
+<a id="sh-006"></a>
+
+### SH-006: World-writable permissions
+
+Severity **major** · confidence high (verified) · languages: shell
+
+Any local user can modify the file or directory.
+
+**Fix:** Grant the narrowest mode needed (e.g. 755 for directories, 644 or 600 for files).
+
 <a id="skill-lang-typescript-types"></a>
 
 ## Skill `lang.typescript.types` (v1.0.0)
@@ -626,7 +712,7 @@ A title alone leaves the scope, the reason and the acceptance test to whoever pi
 
 <a id="skill-security-injection"></a>
 
-## Skill `security.injection` (v1.0.0)
+## Skill `security.injection` (v1.1.0)
 
 Injection, unsafe evaluation, disabled TLS verification and unsafe deserialisation. Category: security. Model tier: small.
 
@@ -681,6 +767,16 @@ Severity **major** · confidence medium (hypothesis) · languages: java, python,
 Deserialising untrusted data with these APIs can execute arbitrary code.
 
 **Fix:** Use a data-only format (JSON) or a safe loader (yaml.safe_load); validate the input source.
+
+<a id="inj-006"></a>
+
+### INJ-006: SQL query built with string formatting
+
+Severity **critical** · confidence medium (hypothesis) · languages: python
+
+Interpolating values into SQL text lets input change the query (SQL injection); the driver cannot escape what it never sees separately.
+
+**Fix:** Use placeholders and pass values separately: cur.execute("... WHERE id = %s", (id,)).
 
 <a id="skill-security-secrets"></a>
 

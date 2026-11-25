@@ -1,5 +1,5 @@
 id = "lang.java.core"
-version = "1.1.0"
+version = "1.2.0"
 interface = "acr.skill/v1"
 category = "code-quality"
 description = "Java resource safety, null-safety, concurrency, crypto, money handling and Spring pitfalls (structured successor of the first-pass gate)."
@@ -192,3 +192,25 @@ explanation = "A cached pool creates a thread per concurrent task with no upper 
 remediation = "Use a bounded ThreadPoolExecutor with a bounded queue and a rejection policy, or Executors.newVirtualThreadPerTaskExecutor() on Java 21+."
 examples.match = ["ExecutorService pool = Executors.newCachedThreadPool();"]
 examples.no_match = ["Executors.newFixedThreadPool(8)", "Executors.newVirtualThreadPerTaskExecutor()"]
+
+[[rules]]
+id = "JAVA-017"
+title = "BigDecimal compared with equals()"
+severity = "minor"
+confidence = "high"
+pattern = '(?:BigDecimal\.(?:ZERO|ONE|TEN)|new\s+BigDecimal\s*\([^)]*\)|BigDecimal\.valueOf\s*\([^)]*\))\s*\.equals\s*\(|\.equals\s*\(\s*(?:BigDecimal\.(?:ZERO|ONE|TEN)\b|new\s+BigDecimal\s*\(|BigDecimal\.valueOf\s*\()'
+explanation = "BigDecimal.equals compares scale as well as value, so 2.0 and 2.00 are not equal; balance checks and test assertions silently fail."
+remediation = "Use a.compareTo(b) == 0 (or signum() == 0 for zero checks)."
+examples.match = ["return balance.equals(BigDecimal.ZERO);", "if (fee.equals(new BigDecimal(\"10.00\"))) {", "BigDecimal.ONE.equals(rate)"]
+examples.no_match = ["return balance.compareTo(BigDecimal.ZERO) == 0;", "if (\"PAID\".equals(status)) {", "a.getId().equals(b.getId())"]
+
+[[rules]]
+id = "JAVA-018"
+title = "Credential written to a log"
+severity = "major"
+confidence = "medium"
+pattern = '''\b(?:log|logger|LOG|LOGGER)\.(?:trace|debug|info|warn|error)\s*\(\s*"[^"]*"\s*(?:,|\+)[^;]*?(?:\b(?:password|passwd|secret|clientSecret|apiKey|api_key|accessToken|refreshToken|token|cardNumber|cvv)\b(?:\(\))?(?!\w)|\.get(?:Password|Secret|ApiKey|Token|AccessToken|CardNumber|Cvv)\(\)|\.apiKey\(\)|getHeader\(\s*"(?:Authorization|Cookie)"\))'''
+explanation = "Logs are retained, shipped to third parties and read by many people; a credential in a log is a credential leak."
+remediation = "Log an identifier instead (user id, key id, last 4 digits) or mask the value before logging."
+examples.match = ["log.debug(\"login user={} password={}\", user, password);", "LOGGER.info(\"Issued token \" + token + \" for \" + id);", "log.info(\"cfg apiKey={}\", cfg.apiKey());", "log.error(\"rejected: {}\", request.getHeader(\"Authorization\"));"]
+examples.no_match = ["log.debug(\"login user={}\", user);", "LOGGER.info(\"Password policy updated: minLength={}\", p.minLength());", "log.error(\"Token refresh failed for user {}\", userId, ex);", "log.info(\"Rotated API key id={}\", key.id());"]

@@ -31,6 +31,8 @@
         "pattern": {"type": "string"},
         "unless": {"type": "string"},
         "scope": {"enum": ["line", "block"], "description": "line (default) or block = consecutive added lines, for multi-line patterns."},
+        "analyzer": {"type": "string", "description": "Deterministic analyzer (orchestrator/engine/analyzers.py) that confirms (reported as high confidence) or rejects each regex candidate."},
+        "analyzer_fallback": {"enum": ["keep", "drop"], "description": "When the analyzer cannot decide (e.g. the added lines do not parse): keep the candidate at the rule's confidence (default) or drop it."},
         "languages": {"type": "array", "items": {"type": "string"}},
         "explanation": {"type": "string"},
         "remediation": {"type": "string"},

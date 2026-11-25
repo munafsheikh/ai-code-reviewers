@@ -1,0 +1,242 @@
+# Hyperspecific checks for the candidate -> verify experiment.
+#
+# candidate  high-recall regex applied to the marked line (the "tool" that finds places to look)
+# question   the single yes/no question a tiny model answers about that place
+# tool       optional deterministic verifier that answers the same question without a model
+#            ("py-ast-timeout", "py-ast-sql", "shellcheck:SC2086", "shellcheck:SC2115")
+# kind       semantic: needs judgement about meaning; structural: decidable from syntax
+
+[[check]]
+id = "py.random-secret"
+lang = "python"
+kind = "semantic"
+candidate = '\brandom\.\w+\('
+question = "Is the value produced by Python's random module on the marked line used as a secret, token, password, key, salt, nonce, one-time code or other security-sensitive value?"
+
+[[check]]
+id = "py.assert-guard"
+lang = "python"
+kind = "semantic"
+candidate = '^\s*assert\b'
+question = "Does the assert on the marked line enforce an authentication, authorization or user/request input check that must still run in production (where python -O strips asserts)?"
+
+[[check]]
+id = "py.sql-format"
+lang = "python"
+kind = "structural"
+candidate = '\.execute(?:many)?\s*\('
+tool = "py-ast-sql"
+question = "Is the SQL string passed to execute() on the marked line built with string formatting or concatenation of a variable (f-string, %, +, .format), instead of placeholders with separate parameters?"
+
+[[check]]
+id = "py.http-timeout"
+lang = "python"
+kind = "structural"
+candidate = '\b(?:requests|httpx)\.(?:get|post|put|patch|delete|head|request)\s*\('
+tool = "py-ast-timeout"
+question = "Does the HTTP call that starts on the marked line lack a timeout= argument?"
+
+[[check]]
+id = "java.money-double"
+lang = "java"
+kind = "semantic"
+candidate = '\b(?:double|float|Double|Float)\s+\w+\s*[=;,)]'
+question = "Does the double/float variable declared on the marked line hold a monetary amount (price, balance, fee, payment, salary or another currency value)?"
+
+[[check]]
+id = "java.bigdecimal-equals"
+lang = "java"
+kind = "semantic"
+candidate = '\.equals\s*\('
+question = "Is the .equals() call on the marked line comparing two BigDecimal values?"
+
+[[check]]
+id = "java.log-secret"
+lang = "java"
+kind = "semantic"
+candidate = '\b(?:log|logger|LOG|LOGGER)\.(?:trace|debug|info|warn|error)\s*\('
+question = "Does the log statement on the marked line write a password, secret, token, API key, full card number or other credential value?"
+
+[[check]]
+id = "bash.unquoted-var"
+lang = "shell"
+kind = "structural"
+candidate = '\$\{?[A-Za-z_]'
+tool = "shellcheck:SC2086"
+question = "Is a variable expansion on the marked line left unquoted in a command argument, where word splitting or globbing could change the command?"
+
+[[check]]
+id = "bash.rm-empty-var"
+lang = "shell"
+kind = "semantic"
+candidate = '\brm\s+-[a-zA-Z]*[rR]'
+tool = "shellcheck:SC2115"
+question = "Could the rm command on the marked line delete / or an unintended directory if a variable in its path were empty or unset (no ${VAR:?} guard and no check before it)?"
+
+# Few-shot examples (--shots): distinct from cases.toml, two per answer, semantic checks only.
+[[shot]]
+check = "py.random-secret"
+answer = "yes"
+code = '''
+>> invite_code = "".join(random.choice(string.digits) for _ in range(8))
+   send_invite(email, invite_code)
+'''
+[[shot]]
+check = "py.random-secret"
+answer = "yes"
+code = '''
+>> csrf = hex(random.getrandbits(64))
+   response.set_cookie("csrf", csrf)
+'''
+[[shot]]
+check = "py.random-secret"
+answer = "no"
+code = '''
+>> delay = random.uniform(0.5, 1.5)
+   time.sleep(delay)
+'''
+[[shot]]
+check = "py.random-secret"
+answer = "no"
+code = '''
+>> colour = random.choice(PALETTE)
+   chart.add_series(name, data, colour=colour)
+'''
+
+[[shot]]
+check = "py.assert-guard"
+answer = "yes"
+code = '''
+   def cancel_order(request, order):
+>>     assert order.customer_id == request.user.id
+       order.cancel()
+'''
+[[shot]]
+check = "py.assert-guard"
+answer = "yes"
+code = '''
+   qty = int(request.args["qty"])
+>> assert 0 < qty <= 100
+'''
+[[shot]]
+check = "py.assert-guard"
+answer = "no"
+code = '''
+   def test_cancel(client):
+>>     assert client.post("/orders/1/cancel").status_code == 200
+'''
+[[shot]]
+check = "py.assert-guard"
+answer = "no"
+code = '''
+   def _resize(self, n):
+>>     assert n >= len(self._buf), "internal invariant"
+'''
+
+[[shot]]
+check = "java.money-double"
+answer = "yes"
+code = '''
+>> double depositAmount = form.getAmount();
+   account.credit(depositAmount);
+'''
+[[shot]]
+check = "java.money-double"
+answer = "yes"
+code = '''
+>> double vat = net * 0.15;
+   invoice.setVat(vat);
+'''
+[[shot]]
+check = "java.money-double"
+answer = "no"
+code = '''
+>> double cpuLoad = os.getSystemLoadAverage();
+'''
+[[shot]]
+check = "java.money-double"
+answer = "no"
+code = '''
+>> double discountRate = 0.1; // a percentage, applied to BigDecimal prices
+'''
+
+[[shot]]
+check = "java.bigdecimal-equals"
+answer = "yes"
+code = '''
+   BigDecimal paid = tx.getPaid();
+>> if (paid.equals(invoice.getDue())) { close(invoice); }
+'''
+[[shot]]
+check = "java.bigdecimal-equals"
+answer = "yes"
+code = '''
+>> assertTrue(result.getAmount().equals(new BigDecimal("5.0")));
+'''
+[[shot]]
+check = "java.bigdecimal-equals"
+answer = "no"
+code = '''
+>> if (tx.getReference().equals(expectedRef)) { match(tx); }
+'''
+[[shot]]
+check = "java.bigdecimal-equals"
+answer = "no"
+code = '''
+>> if (account.getType().equals(AccountType.SAVINGS)) { accrue(account); }
+'''
+
+[[shot]]
+check = "java.log-secret"
+answer = "yes"
+code = '''
+>> log.info("Connecting with secret={}", clientSecret);
+'''
+[[shot]]
+check = "java.log-secret"
+answer = "yes"
+code = '''
+>> logger.debug("Request headers: " + request.getHeader("Cookie"));
+'''
+[[shot]]
+check = "java.log-secret"
+answer = "no"
+code = '''
+>> log.info("Secret rotation scheduled for {}", rotationDate);
+'''
+[[shot]]
+check = "java.log-secret"
+answer = "no"
+code = '''
+>> logger.warn("Invalid password for user {} (attempt {})", userId, attempt);
+'''
+
+[[shot]]
+check = "bash.rm-empty-var"
+answer = "yes"
+code = '''
+   #!/bin/bash
+>> rm -rf "$DEPLOY_ROOT/current"
+'''
+[[shot]]
+check = "bash.rm-empty-var"
+answer = "yes"
+code = '''
+   #!/bin/bash
+>> rm -rf $OUT/*
+'''
+[[shot]]
+check = "bash.rm-empty-var"
+answer = "no"
+code = '''
+   #!/bin/bash
+>> rm -rf "${DEPLOY_ROOT:?}/current"
+'''
+[[shot]]
+check = "bash.rm-empty-var"
+answer = "no"
+code = '''
+   #!/bin/bash
+   work=$(mktemp -d)
+>> rm -rf "$work"
+'''

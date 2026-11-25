@@ -119,7 +119,7 @@ jobs:
           # CI pulls into stock Ollama; on a user's machine the runtime image has the model baked in.
           runtime-image: ollama/ollama:0.40.11@sha256:dea72d1e22270fe095b68fdf756d2b489d615643c5a2eaebbc5f569181e322d8
           pull-models: qwen2.5-coder:1.5b
-          paths: ':!benchmarks/fixtures :!skills/security/secrets :!tests/unit/test_rules.py :!tests/integration/test_review_pipeline.py :!docs/usage/examples.md'
+          paths: ':!benchmarks/fixtures :!skills/security/secrets :!tests/unit/test_rules.py :!tests/unit/test_analyzers.py :!tests/integration/test_review_pipeline.py :!docs/usage/examples.md'
           output-dir: acr-review-${{ matrix.lane }}
           artifact-name: review-${{ matrix.lane }}
           comment: 'false'

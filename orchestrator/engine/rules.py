@@ -14,6 +14,7 @@ from pathlib import PurePosixPath
 
 from orchestrator.config import Skill
 from orchestrator.contracts import Finding, Location
+from orchestrator.engine import analyzers
 from orchestrator.engine.diff import FileDiff
 
 _REDACT = re.compile(r"(?i)((?:password|passwd|secret|token|api[_-]?key)\s*[:=]\s*[\"']?)([^\"'\s]{4})[^\"'\s]*")
@@ -57,6 +58,12 @@ def run_rules(skill: Skill, files: list[FileDiff]) -> list[Finding]:
                     end_no = line_map[text.count("\n", 0, max(m.start(), m.end() - 1))]
                     evidence = snippet if rule.get("scope") == "block" else text
                     conf = rule.get("confidence", "medium")
+                    if rule.get("analyzer"):
+                        verdict = analyze(rule, f.added, line_no)
+                        if verdict is False or (verdict is None and rule.get("analyzer_fallback") == "drop"):
+                            continue
+                        if verdict:
+                            conf = "high"  # confirmed by a deterministic analyzer
                     out.append(
                         Finding(
                             rule_id=rule["id"],
@@ -76,6 +83,14 @@ def run_rules(skill: Skill, files: list[FileDiff]) -> list[Finding]:
                     if rule.get("scope") != "block":
                         break  # one finding per line per rule
     return out
+
+
+def analyze(rule: dict, added: list[tuple[int, str]], line_no: int) -> bool | None:
+    """Run the rule's analyzer on the block of consecutive added lines containing ``line_no``."""
+    for _, text, line_map in _blocks(added):
+        if line_no in line_map:
+            return analyzers.get(rule["analyzer"])(text.split("\n"), line_map.index(line_no))
+    return None
 
 
 def _blocks(added: list[tuple[int, str]]) -> list[tuple[int, str, list[int]]]:

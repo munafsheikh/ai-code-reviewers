@@ -1,5 +1,5 @@
 id = "security.injection"
-version = "1.0.0"
+version = "1.1.0"
 interface = "acr.skill/v1"
 category = "security"
 description = "Injection, unsafe evaluation, disabled TLS verification and unsafe deserialisation."
@@ -66,3 +66,23 @@ explanation = "Deserialising untrusted data with these APIs can execute arbitrar
 remediation = "Use a data-only format (JSON) or a safe loader (yaml.safe_load); validate the input source."
 examples.match = ["obj = pickle.loads(blob)", "cfg = yaml.load(fh)", "new ObjectInputStream(socket.getInputStream())"]
 examples.no_match = ["cfg = yaml.safe_load(fh)", "yaml.load(fh, Loader=yaml.SafeLoader)"]
+
+[[rules]]
+id = "INJ-006"
+title = "SQL query built with string formatting"
+severity = "critical"
+confidence = "medium"
+languages = ["python"]
+pattern = '\.execute(?:many)?\s*\('
+# Defers to INJ-001 exactly where INJ-001 fires (same pattern), so a line is reported once;
+# INJ-001 misses f-strings with quoted placeholders (f"... = '{x}'"), which this rule covers.
+unless = '''(?i)(?:SELECT\b.+?\bFROM|INSERT\s+INTO|UPDATE\s+\w+\s+SET|DELETE\s+FROM)\b.*["'`]\s*\+\s*\w|(?:SELECT\b.+?\bFROM|INSERT\s+INTO|UPDATE\s+\w+\s+SET|DELETE\s+FROM)\b[^"'`]*\$\{|\bf["'](?:SELECT\b.+?\bFROM|INSERT\s+INTO|UPDATE\s+\w+\s+SET|DELETE\s+FROM)\b[^"']*\{'''
+# The AST analyzer confirms the query argument is an f-string, %-format, concatenation or
+# .format() result, following a local assignment (q = f"..."; cur.execute(q)). Undecidable -> dropped.
+analyzer = "python.sql-built-string"
+analyzer_fallback = "drop"
+explanation = "Interpolating values into SQL text lets input change the query (SQL injection); the driver cannot escape what it never sees separately."
+remediation = "Use placeholders and pass values separately: cur.execute(\"... WHERE id = %s\", (id,))."
+examples.match = ["cur.execute(f\"SELECT * FROM users WHERE name = '{name}'\")", "cur.execute(\"SELECT * FROM t WHERE id = %s\" % uid)", "cur.execute(\"SELECT id FROM docs WHERE title LIKE '{}%'\".format(term))", "q = f\"SELECT count(*) FROM jobs WHERE status = '{status}'\"\ncur.execute(q)"]
+examples.no_match = ["cur.execute(\"SELECT * FROM t WHERE id = %s\", (uid,))", "cur.executemany(\"INSERT INTO t VALUES (?, ?)\", rows)", "ex.execute(fn, items)", "cur.execute(f\"SELECT * FROM t WHERE id = {uid}\")"]
+# The last no_match is INJ-001's (it reports that line); f"... = '{name}'" is INJ-006's.

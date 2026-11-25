@@ -13,6 +13,29 @@
 Use `confidence = "high"` only when a match is almost certainly a defect; those findings are
 reported as `verified`.
 
+### Confirm candidates with an analyzer (structural questions)
+
+When the question is decidable from syntax ("does this call pass `timeout=`?", "is this query
+an f-string?", "is this `$VAR` quoted?"), keep the regex broad and name an analyzer from
+`orchestrator/engine/analyzers.py`:
+
+```toml
+pattern = '\.execute(?:many)?\s*\('
+analyzer = "python.sql-built-string"
+analyzer_fallback = "drop"   # or "keep" (default): what to do when the added lines do not parse
+```
+
+The analyzer sees the block of consecutive added lines around the candidate. A confirmed
+candidate is reported at `high` confidence (`verified`), a rejected one is dropped, and an
+undecidable one follows `analyzer_fallback`. Examples are validated through the analyzer too, so
+multi-line `examples.match` strings (`"r = requests.post(\n    url,\n)"`) are supported.
+Analyzers are stdlib-only, never execute the reviewed code, and need unit tests in
+`tests/unit/test_analyzers.py`.
+
+Prefer an analyzer to a model prompt for structural questions: in
+[the tiny-verify experiment](../../benchmarks/experiments/tiny-verify/README.md) deterministic
+verifiers scored F1 1.0 on structural cases where models of 135M–1.5B parameters scored 0.0–0.68.
+
 ## Add a companion rule (diff-level)
 
 Line rules see one added line at a time. A `[[companions]]` entry instead checks the whole diff:

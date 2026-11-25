@@ -1,0 +1,1516 @@
+{
+  "models": [],
+  "shots": false,
+  "cases": 90,
+  "overall": {
+    "candidate": {
+      "n": 90,
+      "tp": 45,
+      "fp": 45,
+      "fn": 0,
+      "tn": 0,
+      "unanswered": 0,
+      "precision": 0.5,
+      "recall": 1.0,
+      "f1": 0.667,
+      "accuracy": 0.5,
+      "covered_checks": [
+        "bash.rm-empty-var",
+        "bash.unquoted-var",
+        "java.bigdecimal-equals",
+        "java.log-secret",
+        "java.money-double",
+        "py.assert-guard",
+        "py.http-timeout",
+        "py.random-secret",
+        "py.sql-format"
+      ]
+    },
+    "rule": {
+      "n": 90,
+      "tp": 32,
+      "fp": 3,
+      "fn": 13,
+      "tn": 42,
+      "unanswered": 0,
+      "precision": 0.914,
+      "recall": 0.711,
+      "f1": 0.8,
+      "accuracy": 0.822,
+      "covered_checks": [
+        "bash.rm-empty-var",
+        "bash.unquoted-var",
+        "java.bigdecimal-equals",
+        "java.log-secret",
+        "java.money-double",
+        "py.assert-guard",
+        "py.http-timeout",
+        "py.random-secret",
+        "py.sql-format"
+      ]
+    },
+    "tool": {
+      "n": 40,
+      "tp": 19,
+      "fp": 1,
+      "fn": 1,
+      "tn": 19,
+      "unanswered": 0,
+      "precision": 0.95,
+      "recall": 0.95,
+      "f1": 0.95,
+      "accuracy": 0.95,
+      "covered_checks": [
+        "bash.rm-empty-var",
+        "bash.unquoted-var",
+        "py.http-timeout",
+        "py.sql-format"
+      ]
+    }
+  },
+  "by_kind": {
+    "semantic": {
+      "candidate": {
+        "n": 60,
+        "tp": 30,
+        "fp": 30,
+        "fn": 0,
+        "tn": 0,
+        "unanswered": 0,
+        "precision": 0.5,
+        "recall": 1.0,
+        "f1": 0.667,
+        "accuracy": 0.5
+      },
+      "rule": {
+        "n": 60,
+        "tp": 17,
+        "fp": 3,
+        "fn": 13,
+        "tn": 27,
+        "unanswered": 0,
+        "precision": 0.85,
+        "recall": 0.567,
+        "f1": 0.68,
+        "accuracy": 0.733
+      },
+      "tool": {
+        "n": 10,
+        "tp": 4,
+        "fp": 1,
+        "fn": 1,
+        "tn": 4,
+        "unanswered": 0,
+        "precision": 0.8,
+        "recall": 0.8,
+        "f1": 0.8,
+        "accuracy": 0.8
+      }
+    },
+    "structural": {
+      "candidate": {
+        "n": 30,
+        "tp": 15,
+        "fp": 15,
+        "fn": 0,
+        "tn": 0,
+        "unanswered": 0,
+        "precision": 0.5,
+        "recall": 1.0,
+        "f1": 0.667,
+        "accuracy": 0.5
+      },
+      "rule": {
+        "n": 30,
+        "tp": 15,
+        "fp": 0,
+        "fn": 0,
+        "tn": 15,
+        "unanswered": 0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "accuracy": 1.0
+      },
+      "tool": {
+        "n": 30,
+        "tp": 15,
+        "fp": 0,
+        "fn": 0,
+        "tn": 15,
+        "unanswered": 0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "accuracy": 1.0
+      }
+    }
+  },
+  "by_check": {
+    "py.random-secret": {
+      "candidate": {
+        "n": 10,
+        "tp": 5,
+        "fp": 5,
+        "fn": 0,
+        "tn": 0,
+        "unanswered": 0,
+        "precision": 0.5,
+        "recall": 1.0,
+        "f1": 0.667,
+        "accuracy": 0.5
+      },
+      "rule": {
+        "n": 10,
+        "tp": 3,
+        "fp": 0,
+        "fn": 2,
+        "tn": 5,
+        "unanswered": 0,
+        "precision": 1.0,
+        "recall": 0.6,
+        "f1": 0.75,
+        "accuracy": 0.8
+      }
+    },
+    "py.assert-guard": {
+      "candidate": {
+        "n": 10,
+        "tp": 5,
+        "fp": 5,
+        "fn": 0,
+        "tn": 0,
+        "unanswered": 0,
+        "precision": 0.5,
+        "recall": 1.0,
+        "f1": 0.667,
+        "accuracy": 0.5
+      },
+      "rule": {
+        "n": 10,
+        "tp": 1,
+        "fp": 0,
+        "fn": 4,
+        "tn": 5,
+        "unanswered": 0,
+        "precision": 1.0,
+        "recall": 0.2,
+        "f1": 0.333,
+        "accuracy": 0.6
+      }
+    },
+    "py.sql-format": {
+      "candidate": {
+        "n": 10,
+        "tp": 5,
+        "fp": 5,
+        "fn": 0,
+        "tn": 0,
+        "unanswered": 0,
+        "precision": 0.5,
+        "recall": 1.0,
+        "f1": 0.667,
+        "accuracy": 0.5
+      },
+      "rule": {
+        "n": 10,
+        "tp": 5,
+        "fp": 0,
+        "fn": 0,
+        "tn": 5,
+        "unanswered": 0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "accuracy": 1.0
+      },
+      "tool": {
+        "n": 10,
+        "tp": 5,
+        "fp": 0,
+        "fn": 0,
+        "tn": 5,
+        "unanswered": 0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "accuracy": 1.0
+      }
+    },
+    "py.http-timeout": {
+      "candidate": {
+        "n": 10,
+        "tp": 5,
+        "fp": 5,
+        "fn": 0,
+        "tn": 0,
+        "unanswered": 0,
+        "precision": 0.5,
+        "recall": 1.0,
+        "f1": 0.667,
+        "accuracy": 0.5
+      },
+      "rule": {
+        "n": 10,
+        "tp": 5,
+        "fp": 0,
+        "fn": 0,
+        "tn": 5,
+        "unanswered": 0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "accuracy": 1.0
+      },
+      "tool": {
+        "n": 10,
+        "tp": 5,
+        "fp": 0,
+        "fn": 0,
+        "tn": 5,
+        "unanswered": 0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "accuracy": 1.0
+      }
+    },
+    "java.money-double": {
+      "candidate": {
+        "n": 10,
+        "tp": 5,
+        "fp": 5,
+        "fn": 0,
+        "tn": 0,
+        "unanswered": 0,
+        "precision": 0.5,
+        "recall": 1.0,
+        "f1": 0.667,
+        "accuracy": 0.5
+      },
+      "rule": {
+        "n": 10,
+        "tp": 3,
+        "fp": 1,
+        "fn": 2,
+        "tn": 4,
+        "unanswered": 0,
+        "precision": 0.75,
+        "recall": 0.6,
+        "f1": 0.667,
+        "accuracy": 0.7
+      }
+    },
+    "java.bigdecimal-equals": {
+      "candidate": {
+        "n": 10,
+        "tp": 5,
+        "fp": 5,
+        "fn": 0,
+        "tn": 0,
+        "unanswered": 0,
+        "precision": 0.5,
+        "recall": 1.0,
+        "f1": 0.667,
+        "accuracy": 0.5
+      },
+      "rule": {
+        "n": 10,
+        "tp": 1,
+        "fp": 0,
+        "fn": 4,
+        "tn": 5,
+        "unanswered": 0,
+        "precision": 1.0,
+        "recall": 0.2,
+        "f1": 0.333,
+        "accuracy": 0.6
+      }
+    },
+    "java.log-secret": {
+      "candidate": {
+        "n": 10,
+        "tp": 5,
+        "fp": 5,
+        "fn": 0,
+        "tn": 0,
+        "unanswered": 0,
+        "precision": 0.5,
+        "recall": 1.0,
+        "f1": 0.667,
+        "accuracy": 0.5
+      },
+      "rule": {
+        "n": 10,
+        "tp": 4,
+        "fp": 0,
+        "fn": 1,
+        "tn": 5,
+        "unanswered": 0,
+        "precision": 1.0,
+        "recall": 0.8,
+        "f1": 0.889,
+        "accuracy": 0.9
+      }
+    },
+    "bash.unquoted-var": {
+      "candidate": {
+        "n": 10,
+        "tp": 5,
+        "fp": 5,
+        "fn": 0,
+        "tn": 0,
+        "unanswered": 0,
+        "precision": 0.5,
+        "recall": 1.0,
+        "f1": 0.667,
+        "accuracy": 0.5
+      },
+      "rule": {
+        "n": 10,
+        "tp": 5,
+        "fp": 0,
+        "fn": 0,
+        "tn": 5,
+        "unanswered": 0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "accuracy": 1.0
+      },
+      "tool": {
+        "n": 10,
+        "tp": 5,
+        "fp": 0,
+        "fn": 0,
+        "tn": 5,
+        "unanswered": 0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1": 1.0,
+        "accuracy": 1.0
+      }
+    },
+    "bash.rm-empty-var": {
+      "candidate": {
+        "n": 10,
+        "tp": 5,
+        "fp": 5,
+        "fn": 0,
+        "tn": 0,
+        "unanswered": 0,
+        "precision": 0.5,
+        "recall": 1.0,
+        "f1": 0.667,
+        "accuracy": 0.5
+      },
+      "rule": {
+        "n": 10,
+        "tp": 5,
+        "fp": 2,
+        "fn": 0,
+        "tn": 3,
+        "unanswered": 0,
+        "precision": 0.714,
+        "recall": 1.0,
+        "f1": 0.833,
+        "accuracy": 0.8
+      },
+      "tool": {
+        "n": 10,
+        "tp": 4,
+        "fp": 1,
+        "fn": 1,
+        "tn": 4,
+        "unanswered": 0,
+        "precision": 0.8,
+        "recall": 0.8,
+        "f1": 0.8,
+        "accuracy": 0.8
+      }
+    }
+  },
+  "latency_s": {},
+  "rows": [
+    {
+      "id": "py.random-secret#0",
+      "check": "py.random-secret",
+      "kind": "semantic",
+      "label": true,
+      "pred": {
+        "candidate": true,
+        "rule": true,
+        "tool": null
+      },
+      "raw": {}
+    },
+    {
+      "id": "py.random-secret#1",
+      "check": "py.random-secret",
+      "kind": "semantic",
+      "label": true,
+      "pred": {
+        "candidate": true,
+        "rule": false,
+        "tool": null
+      },
+      "raw": {}
+    },
+    {
+      "id": "py.random-secret#2",
+      "check": "py.random-secret",
+      "kind": "semantic",
+      "label": true,
+      "pred": {
+        "candidate": true,
+        "rule": true,
+        "tool": null
+      },
+      "raw": {}
+    },
+    {
+      "id": "py.random-secret#3",
+      "check": "py.random-secret",
+      "kind": "semantic",
+      "label": true,
+      "pred": {
+        "candidate": true,
+        "rule": false,
+        "tool": null
+      },
+      "raw": {}
+    },
+    {
+      "id": "py.random-secret#4",
+      "check": "py.random-secret",
+      "kind": "semantic",
+      "label": true,
+      "pred": {
+        "candidate": true,
+        "rule": true,
+        "tool": null
+      },
+      "raw": {}
+    },
+    {
+      "id": "py.random-secret#5",
+      "check": "py.random-secret",
+      "kind": "semantic",
+      "label": false,
+      "pred": {
+        "candidate": true,
+        "rule": false,
+        "tool": null
+      },
+      "raw": {}
+    },
+    {
+      "id": "py.random-secret#6",
+      "check": "py.random-secret",
+      "kind": "semantic",
+      "label": false,
+      "pred": {
+        "candidate": true,
+        "rule": false,
+        "tool": null
+      },
+      "raw": {}
+    },
+    {
+      "id": "py.random-secret#7",
+      "check": "py.random-secret",
+      "kind": "semantic",
+      "label": false,
+      "pred": {
+        "candidate": true,
+        "rule": false,
+        "tool": null
+      },
+      "raw": {}
+    },
+    {
+      "id": "py.random-secret#8",
+      "check": "py.random-secret",
+      "kind": "semantic",
+      "label": false,
+      "pred": {
+        "candidate": true,
+        "rule": false,
+        "tool": null
+      },
+      "raw": {}
+    },
+    {
+      "id": "py.random-secret#9",
+      "check": "py.random-secret",
+      "kind": "semantic",
+      "label": false,
+      "pred": {
+        "candidate": true,
+        "rule": false,
+        "tool": null
+      },
+      "raw": {}
+    },
+    {
+      "id": "py.assert-guard#10",
+      "check": "py.assert-guard",
+      "kind": "semantic",
+      "label": true,
+      "pred": {
+        "candidate": true,
+        "rule": true,
+        "tool": null
+      },
+      "raw": {}
+    },
+    {
+      "id": "py.assert-guard#11",
+      "check": "py.assert-guard",
+      "kind": "semantic",
+      "label": true,
+      "pred": {
+        "candidate": true,
+        "rule": false,
+        "tool": null
+      },
+      "raw": {}
+    },
+    {
+      "id": "py.assert-guard#12",
+      "check": "py.assert-guard",
+      "kind": "semantic",
+      "label": true,
+      "pred": {
+        "candidate": true,
+        "rule": false,
+        "tool": null
+      },
+      "raw": {}
+    },
+    {
+      "id": "py.assert-guard#13",
+      "check": "py.assert-guard",
+      "kind": "semantic",
+      "label": true,
+      "pred": {
+        "candidate": true,
+        "rule": false,
+        "tool": null
+      },
+      "raw": {}
+    },
+    {
+      "id": "py.assert-guard#14",
+      "check": "py.assert-guard",
+      "kind": "semantic",
+      "label": true,
+      "pred": {
+        "candidate": true,
+        "rule": false,
+        "tool": null
+      },
+      "raw": {}
+    },
+    {
+      "id": "py.assert-guard#15",
+      "check": "py.assert-guard",
+      "kind": "semantic",
+      "label": false,
+      "pred": {
+        "candidate": true,
+        "rule": false,
+        "tool": null
+      },
+      "raw": {}
+    },
+    {
+      "id": "py.assert-guard#16",
+      "check": "py.assert-guard",
+      "kind": "semantic",
+      "label": false,
+      "pred": {
+        "candidate": true,
+        "rule": false,
+        "tool": null
+      },
+      "raw": {}
+    },
+    {
+      "id": "py.assert-guard#17",
+      "check": "py.assert-guard",
+      "kind": "semantic",
+      "label": false,
+      "pred": {
+        "candidate": true,
+        "rule": false,
+        "tool": null
+      },
+      "raw": {}
+    },
+    {
+      "id": "py.assert-guard#18",
+      "check": "py.assert-guard",
+      "kind": "semantic",
+      "label": false,
+      "pred": {
+        "candidate": true,
+        "rule": false,
+        "tool": null
+      },
+      "raw": {}
+    },
+    {
+      "id": "py.assert-guard#19",
+      "check": "py.assert-guard",
+      "kind": "semantic",
+      "label": false,
+      "pred": {
+        "candidate": true,
+        "rule": false,
+        "tool": null
+      },
+      "raw": {}
+    },
+    {
+      "id": "py.sql-format#20",
+      "check": "py.sql-format",
+      "kind": "structural",
+      "label": true,
+      "pred": {
+        "candidate": true,
+        "rule": true,
+        "tool": true
+      },
+      "raw": {}
+    },
+    {
+      "id": "py.sql-format#21",
+      "check": "py.sql-format",
+      "kind": "structural",
+      "label": true,
+      "pred": {
+        "candidate": true,
+        "rule": true,
+        "tool": true
+      },
+      "raw": {}
+    },
+    {
+      "id": "py.sql-format#22",
+      "check": "py.sql-format",
+      "kind": "structural",
+      "label": true,
+      "pred": {
+        "candidate": true,
+        "rule": true,
+        "tool": true
+      },
+      "raw": {}
+    },
+    {
+      "id": "py.sql-format#23",
+      "check": "py.sql-format",
+      "kind": "structural",
+      "label": true,
+      "pred": {
+        "candidate": true,
+        "rule": true,
+        "tool": true
+      },
+      "raw": {}
+    },
+    {
+      "id": "py.sql-format#24",
+      "check": "py.sql-format",
+      "kind": "structural",
+      "label": true,
+      "pred": {
+        "candidate": true,
+        "rule": true,
+        "tool": true
+      },
+      "raw": {}
+    },
+    {
+      "id": "py.sql-format#25",
+      "check": "py.sql-format",
+      "kind": "structural",
+      "label": false,
+      "pred": {
+        "candidate": true,
+        "rule": false,
+        "tool": false
+      },
+      "raw": {}
+    },
+    {
+      "id": "py.sql-format#26",
+      "check": "py.sql-format",
+      "kind": "structural",
+      "label": false,
+      "pred": {
+        "candidate": true,
+        "rule": false,
+        "tool": false
+      },
+      "raw": {}
+    },
+    {
+      "id": "py.sql-format#27",
+      "check": "py.sql-format",
+      "kind": "structural",
+      "label": false,
+      "pred": {
+        "candidate": true,
+        "rule": false,
+        "tool": false
+      },
+      "raw": {}
+    },
+    {
+      "id": "py.sql-format#28",
+      "check": "py.sql-format",
+      "kind": "structural",
+      "label": false,
+      "pred": {
+        "candidate": true,
+        "rule": false,
+        "tool": false
+      },
+      "raw": {}
+    },
+    {
+      "id": "py.sql-format#29",
+      "check": "py.sql-format",
+      "kind": "structural",
+      "label": false,
+      "pred": {
+        "candidate": true,
+        "rule": false,
+        "tool": false
+      },
+      "raw": {}
+    },
+    {
+      "id": "py.http-timeout#30",
+      "check": "py.http-timeout",
+      "kind": "structural",
+      "label": true,
+      "pred": {
+        "candidate": true,
+        "rule": true,
+        "tool": true
+      },
+      "raw": {}
+    },
+    {
+      "id": "py.http-timeout#31",
+      "check": "py.http-timeout",
+      "kind": "structural",
+      "label": true,
+      "pred": {
+        "candidate": true,
+        "rule": true,
+        "tool": true
+      },
+      "raw": {}
+    },
+    {
+      "id": "py.http-timeout#32",
+      "check": "py.http-timeout",
+      "kind": "structural",
+      "label": true,
+      "pred": {
+        "candidate": true,
+        "rule": true,
+        "tool": true
+      },
+      "raw": {}
+    },
+    {
+      "id": "py.http-timeout#33",
+      "check": "py.http-timeout",
+      "kind": "structural",
+      "label": true,
+      "pred": {
+        "candidate": true,
+        "rule": true,
+        "tool": true
+      },
+      "raw": {}
+    },
+    {
+      "id": "py.http-timeout#34",
+      "check": "py.http-timeout",
+      "kind": "structural",
+      "label": true,
+      "pred": {
+        "candidate": true,
+        "rule": true,
+        "tool": true
+      },
+      "raw": {}
+    },
+    {
+      "id": "py.http-timeout#35",
+      "check": "py.http-timeout",
+      "kind": "structural",
+      "label": false,
+      "pred": {
+        "candidate": true,
+        "rule": false,
+        "tool": false
+      },
+      "raw": {}
+    },
+    {
+      "id": "py.http-timeout#36",
+      "check": "py.http-timeout",
+      "kind": "structural",
+      "label": false,
+      "pred": {
+        "candidate": true,
+        "rule": false,
+        "tool": false
+      },
+      "raw": {}
+    },
+    {
+      "id": "py.http-timeout#37",
+      "check": "py.http-timeout",
+      "kind": "structural",
+      "label": false,
+      "pred": {
+        "candidate": true,
+        "rule": false,
+        "tool": false
+      },
+      "raw": {}
+    },
+    {
+      "id": "py.http-timeout#38",
+      "check": "py.http-timeout",
+      "kind": "structural",
+      "label": false,
+      "pred": {
+        "candidate": true,
+        "rule": false,
+        "tool": false
+      },
+      "raw": {}
+    },
+    {
+      "id": "py.http-timeout#39",
+      "check": "py.http-timeout",
+      "kind": "structural",
+      "label": false,
+      "pred": {
+        "candidate": true,
+        "rule": false,
+        "tool": false
+      },
+      "raw": {}
+    },
+    {
+      "id": "java.money-double#40",
+      "check": "java.money-double",
+      "kind": "semantic",
+      "label": true,
+      "pred": {
+        "candidate": true,
+        "rule": true,
+        "tool": null
+      },
+      "raw": {}
+    },
+    {
+      "id": "java.money-double#41",
+      "check": "java.money-double",
+      "kind": "semantic",
+      "label": true,
+      "pred": {
+        "candidate": true,
+        "rule": true,
+        "tool": null
+      },
+      "raw": {}
+    },
+    {
+      "id": "java.money-double#42",
+      "check": "java.money-double",
+      "kind": "semantic",
+      "label": true,
+      "pred": {
+        "candidate": true,
+        "rule": true,
+        "tool": null
+      },
+      "raw": {}
+    },
+    {
+      "id": "java.money-double#43",
+      "check": "java.money-double",
+      "kind": "semantic",
+      "label": true,
+      "pred": {
+        "candidate": true,
+        "rule": false,
+        "tool": null
+      },
+      "raw": {}
+    },
+    {
+      "id": "java.money-double#44",
+      "check": "java.money-double",
+      "kind": "semantic",
+      "label": true,
+      "pred": {
+        "candidate": true,
+        "rule": false,
+        "tool": null
+      },
+      "raw": {}
+    },
+    {
+      "id": "java.money-double#45",
+      "check": "java.money-double",
+      "kind": "semantic",
+      "label": false,
+      "pred": {
+        "candidate": true,
+        "rule": true,
+        "tool": null
+      },
+      "raw": {}
+    },
+    {
+      "id": "java.money-double#46",
+      "check": "java.money-double",
+      "kind": "semantic",
+      "label": false,
+      "pred": {
+        "candidate": true,
+        "rule": false,
+        "tool": null
+      },
+      "raw": {}
+    },
+    {
+      "id": "java.money-double#47",
+      "check": "java.money-double",
+      "kind": "semantic",
+      "label": false,
+      "pred": {
+        "candidate": true,
+        "rule": false,
+        "tool": null
+      },
+      "raw": {}
+    },
+    {
+      "id": "java.money-double#48",
+      "check": "java.money-double",
+      "kind": "semantic",
+      "label": false,
+      "pred": {
+        "candidate": true,
+        "rule": false,
+        "tool": null
+      },
+      "raw": {}
+    },
+    {
+      "id": "java.money-double#49",
+      "check": "java.money-double",
+      "kind": "semantic",
+      "label": false,
+      "pred": {
+        "candidate": true,
+        "rule": false,
+        "tool": null
+      },
+      "raw": {}
+    },
+    {
+      "id": "java.bigdecimal-equals#50",
+      "check": "java.bigdecimal-equals",
+      "kind": "semantic",
+      "label": true,
+      "pred": {
+        "candidate": true,
+        "rule": false,
+        "tool": null
+      },
+      "raw": {}
+    },
+    {
+      "id": "java.bigdecimal-equals#51",
+      "check": "java.bigdecimal-equals",
+      "kind": "semantic",
+      "label": true,
+      "pred": {
+        "candidate": true,
+        "rule": false,
+        "tool": null
+      },
+      "raw": {}
+    },
+    {
+      "id": "java.bigdecimal-equals#52",
+      "check": "java.bigdecimal-equals",
+      "kind": "semantic",
+      "label": true,
+      "pred": {
+        "candidate": true,
+        "rule": true,
+        "tool": null
+      },
+      "raw": {}
+    },
+    {
+      "id": "java.bigdecimal-equals#53",
+      "check": "java.bigdecimal-equals",
+      "kind": "semantic",
+      "label": true,
+      "pred": {
+        "candidate": true,
+        "rule": false,
+        "tool": null
+      },
+      "raw": {}
+    },
+    {
+      "id": "java.bigdecimal-equals#54",
+      "check": "java.bigdecimal-equals",
+      "kind": "semantic",
+      "label": true,
+      "pred": {
+        "candidate": true,
+        "rule": false,
+        "tool": null
+      },
+      "raw": {}
+    },
+    {
+      "id": "java.bigdecimal-equals#55",
+      "check": "java.bigdecimal-equals",
+      "kind": "semantic",
+      "label": false,
+      "pred": {
+        "candidate": true,
+        "rule": false,
+        "tool": null
+      },
+      "raw": {}
+    },
+    {
+      "id": "java.bigdecimal-equals#56",
+      "check": "java.bigdecimal-equals",
+      "kind": "semantic",
+      "label": false,
+      "pred": {
+        "candidate": true,
+        "rule": false,
+        "tool": null
+      },
+      "raw": {}
+    },
+    {
+      "id": "java.bigdecimal-equals#57",
+      "check": "java.bigdecimal-equals",
+      "kind": "semantic",
+      "label": false,
+      "pred": {
+        "candidate": true,
+        "rule": false,
+        "tool": null
+      },
+      "raw": {}
+    },
+    {
+      "id": "java.bigdecimal-equals#58",
+      "check": "java.bigdecimal-equals",
+      "kind": "semantic",
+      "label": false,
+      "pred": {
+        "candidate": true,
+        "rule": false,
+        "tool": null
+      },
+      "raw": {}
+    },
+    {
+      "id": "java.bigdecimal-equals#59",
+      "check": "java.bigdecimal-equals",
+      "kind": "semantic",
+      "label": false,
+      "pred": {
+        "candidate": true,
+        "rule": false,
+        "tool": null
+      },
+      "raw": {}
+    },
+    {
+      "id": "java.log-secret#60",
+      "check": "java.log-secret",
+      "kind": "semantic",
+      "label": true,
+      "pred": {
+        "candidate": true,
+        "rule": true,
+        "tool": null
+      },
+      "raw": {}
+    },
+    {
+      "id": "java.log-secret#61",
+      "check": "java.log-secret",
+      "kind": "semantic",
+      "label": true,
+      "pred": {
+        "candidate": true,
+        "rule": true,
+        "tool": null
+      },
+      "raw": {}
+    },
+    {
+      "id": "java.log-secret#62",
+      "check": "java.log-secret",
+      "kind": "semantic",
+      "label": true,
+      "pred": {
+        "candidate": true,
+        "rule": false,
+        "tool": null
+      },
+      "raw": {}
+    },
+    {
+      "id": "java.log-secret#63",
+      "check": "java.log-secret",
+      "kind": "semantic",
+      "label": true,
+      "pred": {
+        "candidate": true,
+        "rule": true,
+        "tool": null
+      },
+      "raw": {}
+    },
+    {
+      "id": "java.log-secret#64",
+      "check": "java.log-secret",
+      "kind": "semantic",
+      "label": true,
+      "pred": {
+        "candidate": true,
+        "rule": true,
+        "tool": null
+      },
+      "raw": {}
+    },
+    {
+      "id": "java.log-secret#65",
+      "check": "java.log-secret",
+      "kind": "semantic",
+      "label": false,
+      "pred": {
+        "candidate": true,
+        "rule": false,
+        "tool": null
+      },
+      "raw": {}
+    },
+    {
+      "id": "java.log-secret#66",
+      "check": "java.log-secret",
+      "kind": "semantic",
+      "label": false,
+      "pred": {
+        "candidate": true,
+        "rule": false,
+        "tool": null
+      },
+      "raw": {}
+    },
+    {
+      "id": "java.log-secret#67",
+      "check": "java.log-secret",
+      "kind": "semantic",
+      "label": false,
+      "pred": {
+        "candidate": true,
+        "rule": false,
+        "tool": null
+      },
+      "raw": {}
+    },
+    {
+      "id": "java.log-secret#68",
+      "check": "java.log-secret",
+      "kind": "semantic",
+      "label": false,
+      "pred": {
+        "candidate": true,
+        "rule": false,
+        "tool": null
+      },
+      "raw": {}
+    },
+    {
+      "id": "java.log-secret#69",
+      "check": "java.log-secret",
+      "kind": "semantic",
+      "label": false,
+      "pred": {
+        "candidate": true,
+        "rule": false,
+        "tool": null
+      },
+      "raw": {}
+    },
+    {
+      "id": "bash.unquoted-var#70",
+      "check": "bash.unquoted-var",
+      "kind": "structural",
+      "label": true,
+      "pred": {
+        "candidate": true,
+        "rule": true,
+        "tool": true
+      },
+      "raw": {}
+    },
+    {
+      "id": "bash.unquoted-var#71",
+      "check": "bash.unquoted-var",
+      "kind": "structural",
+      "label": true,
+      "pred": {
+        "candidate": true,
+        "rule": true,
+        "tool": true
+      },
+      "raw": {}
+    },
+    {
+      "id": "bash.unquoted-var#72",
+      "check": "bash.unquoted-var",
+      "kind": "structural",
+      "label": true,
+      "pred": {
+        "candidate": true,
+        "rule": true,
+        "tool": true
+      },
+      "raw": {}
+    },
+    {
+      "id": "bash.unquoted-var#73",
+      "check": "bash.unquoted-var",
+      "kind": "structural",
+      "label": true,
+      "pred": {
+        "candidate": true,
+        "rule": true,
+        "tool": true
+      },
+      "raw": {}
+    },
+    {
+      "id": "bash.unquoted-var#74",
+      "check": "bash.unquoted-var",
+      "kind": "structural",
+      "label": true,
+      "pred": {
+        "candidate": true,
+        "rule": true,
+        "tool": true
+      },
+      "raw": {}
+    },
+    {
+      "id": "bash.unquoted-var#75",
+      "check": "bash.unquoted-var",
+      "kind": "structural",
+      "label": false,
+      "pred": {
+        "candidate": true,
+        "rule": false,
+        "tool": false
+      },
+      "raw": {}
+    },
+    {
+      "id": "bash.unquoted-var#76",
+      "check": "bash.unquoted-var",
+      "kind": "structural",
+      "label": false,
+      "pred": {
+        "candidate": true,
+        "rule": false,
+        "tool": false
+      },
+      "raw": {}
+    },
+    {
+      "id": "bash.unquoted-var#77",
+      "check": "bash.unquoted-var",
+      "kind": "structural",
+      "label": false,
+      "pred": {
+        "candidate": true,
+        "rule": false,
+        "tool": false
+      },
+      "raw": {}
+    },
+    {
+      "id": "bash.unquoted-var#78",
+      "check": "bash.unquoted-var",
+      "kind": "structural",
+      "label": false,
+      "pred": {
+        "candidate": true,
+        "rule": false,
+        "tool": false
+      },
+      "raw": {}
+    },
+    {
+      "id": "bash.unquoted-var#79",
+      "check": "bash.unquoted-var",
+      "kind": "structural",
+      "label": false,
+      "pred": {
+        "candidate": true,
+        "rule": false,
+        "tool": false
+      },
+      "raw": {}
+    },
+    {
+      "id": "bash.rm-empty-var#80",
+      "check": "bash.rm-empty-var",
+      "kind": "semantic",
+      "label": true,
+      "pred": {
+        "candidate": true,
+        "rule": true,
+        "tool": true
+      },
+      "raw": {}
+    },
+    {
+      "id": "bash.rm-empty-var#81",
+      "check": "bash.rm-empty-var",
+      "kind": "semantic",
+      "label": true,
+      "pred": {
+        "candidate": true,
+        "rule": true,
+        "tool": true
+      },
+      "raw": {}
+    },
+    {
+      "id": "bash.rm-empty-var#82",
+      "check": "bash.rm-empty-var",
+      "kind": "semantic",
+      "label": true,
+      "pred": {
+        "candidate": true,
+        "rule": true,
+        "tool": false
+      },
+      "raw": {}
+    },
+    {
+      "id": "bash.rm-empty-var#83",
+      "check": "bash.rm-empty-var",
+      "kind": "semantic",
+      "label": true,
+      "pred": {
+        "candidate": true,
+        "rule": true,
+        "tool": true
+      },
+      "raw": {}
+    },
+    {
+      "id": "bash.rm-empty-var#84",
+      "check": "bash.rm-empty-var",
+      "kind": "semantic",
+      "label": true,
+      "pred": {
+        "candidate": true,
+        "rule": true,
+        "tool": true
+      },
+      "raw": {}
+    },
+    {
+      "id": "bash.rm-empty-var#85",
+      "check": "bash.rm-empty-var",
+      "kind": "semantic",
+      "label": false,
+      "pred": {
+        "candidate": true,
+        "rule": false,
+        "tool": false
+      },
+      "raw": {}
+    },
+    {
+      "id": "bash.rm-empty-var#86",
+      "check": "bash.rm-empty-var",
+      "kind": "semantic",
+      "label": false,
+      "pred": {
+        "candidate": true,
+        "rule": true,
+        "tool": false
+      },
+      "raw": {}
+    },
+    {
+      "id": "bash.rm-empty-var#87",
+      "check": "bash.rm-empty-var",
+      "kind": "semantic",
+      "label": false,
+      "pred": {
+        "candidate": true,
+        "rule": false,
+        "tool": false
+      },
+      "raw": {}
+    },
+    {
+      "id": "bash.rm-empty-var#88",
+      "check": "bash.rm-empty-var",
+      "kind": "semantic",
+      "label": false,
+      "pred": {
+        "candidate": true,
+        "rule": true,
+        "tool": true
+      },
+      "raw": {}
+    },
+    {
+      "id": "bash.rm-empty-var#89",
+      "check": "bash.rm-empty-var",
+      "kind": "semantic",
+      "label": false,
+      "pred": {
+        "candidate": true,
+        "rule": false,
+        "tool": false
+      },
+      "raw": {}
+    }
+  ]
+}

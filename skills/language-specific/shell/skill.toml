@@ -1,0 +1,82 @@
+id = "lang.shell.core"
+version = "1.0.0"
+interface = "acr.skill/v1"
+category = "code-quality"
+description = "Bash/sh pitfalls that are decidable without a model: quoting, unguarded rm, curl|sh, unchecked cd, eval, world-writable modes."
+languages = ["shell"]
+file_globs = ["*.sh", "*.bash"]
+tier = "none"
+
+# Deterministic only, by design. benchmarks/experiments/tiny-verify measured tiny models
+# (135M-1.5B) on shell questions: on quoting they scored F1 0.0-0.67 against 1.0 for a
+# deterministic check, so quoting is decided by an analyzer and no prompt is routed.
+
+[[rules]]
+id = "SH-001"
+title = "Unquoted variable expansion"
+severity = "minor"
+confidence = "medium"
+pattern = '\$\{?[A-Za-z_]'
+analyzer = "shell.unquoted-expansion"
+analyzer_fallback = "drop"
+explanation = "An unquoted $VAR is split on whitespace and glob-expanded, so a path with a space or a * changes which files the command touches."
+remediation = "Quote it: \"$VAR\" (use [[ ]] for tests, and arrays for lists of arguments)."
+examples.match = ["cp $SRC_FILE /backup/", "if [ -f $CONFIG ]; then", "grep -r \"$P\" ${TARGET_DIR}", "x=$((a + $b)) && rm $f"]
+examples.no_match = ["cp \"$SRC_FILE\" /backup/", "if [[ -f $CONFIG ]]; then", "name=$USER_NAME", "case $MODE in", "echo \"hello $name\"", "count=$((count + $step))"]
+
+[[rules]]
+id = "SH-002"
+title = "Recursive rm on a variable path without a guard"
+severity = "major"
+confidence = "medium"
+pattern = '\brm\s+(?:-\w+\s+)*-[a-zA-Z]*[rR][a-zA-Z]*\b[^#\n]*\$(?:\{[A-Za-z_]\w*\}|[A-Za-z_]\w*)'
+unless = '\$\{[A-Za-z_]\w*:[?-]'
+explanation = "If the variable is empty or unset, the path collapses to / or the current directory and rm -r deletes far more than intended."
+remediation = "Guard the expansion: rm -rf \"${DIR:?}/\" (fails when DIR is empty), or check [ -n \"$DIR\" ] immediately before."
+examples.match = ["rm -rf \"$BUILD_DIR/\"", "rm -rf \"$STAGING\"/*", "rm -r $HOME/$CACHE_SUBDIR", "rm -fr \"${TMPDIR}/${JOB_ID}\""]
+examples.no_match = ["rm -rf \"${BUILD_DIR:?}/\"", "rm -rf ./dist ./build", "rm -f \"$LOG_FILE\"", "rm -rf \"${CACHE_DIR:-/tmp/app-cache}\""]
+
+[[rules]]
+id = "SH-003"
+title = "Remote script piped into a shell"
+severity = "major"
+confidence = "high"
+pattern = '\b(?:curl|wget)\b[^|#\n]*\|\s*(?:sudo\s+(?:-\w+\s+)*)?(?:ba|z|da|k)?sh\b'
+explanation = "The script runs with no integrity check; a compromised host, DNS or a truncated download executes arbitrary code."
+remediation = "Download to a file, verify a pinned checksum or signature, then run it."
+examples.match = ["curl -fsSL https://get.example.com | sh", "wget -qO- https://x.io/install.sh | sudo bash"]
+examples.no_match = ["curl -fsSLo install.sh https://get.example.com", "curl -s https://api.example.com | jq .version"]
+
+[[rules]]
+id = "SH-004"
+title = "cd without a failure check"
+severity = "minor"
+confidence = "medium"
+pattern = '^\s*cd\s+[^;&|#\n]+$'
+unless = '^\s*cd\s+(?:-|~|/|\.\.?)?\s*$'
+explanation = "If cd fails the script keeps running in the wrong directory, and later relative paths (rm, cp, build steps) act on it."
+remediation = "Use cd \"$DIR\" || exit 1 (or run under set -e)."
+examples.match = ["cd \"$WORKSPACE\"", "  cd build/output"]
+examples.no_match = ["cd \"$WORKSPACE\" || exit 1", "cd build && make", "cd", "cd -"]
+
+[[rules]]
+id = "SH-005"
+title = "eval of a variable"
+severity = "major"
+confidence = "medium"
+pattern = '\beval\s+[^#\n]*\$\{?[A-Za-z_]'
+explanation = "eval re-parses its argument as code, so any shell syntax inside the variable runs."
+remediation = "Avoid eval: use arrays for argument lists and declare/printf -v for indirect assignment."
+examples.match = ["eval \"$CMD\"", "eval $(ssh-agent -s) $EXTRA", "eval \"export $name=$value\""]
+examples.no_match = ["eval \"$(ssh-agent -s)\"", "evaluate \"$x\""]
+
+[[rules]]
+id = "SH-006"
+title = "World-writable permissions"
+severity = "major"
+confidence = "high"
+pattern = '\bchmod\s+(?:-\w+\s+)*(?:0?777|a\+w|o\+w)\b'
+explanation = "Any local user can modify the file or directory."
+remediation = "Grant the narrowest mode needed (e.g. 755 for directories, 644 or 600 for files)."
+examples.match = ["chmod 777 /srv/app", "chmod -R a+w uploads/", "chmod 0777 \"$f\""]
+examples.no_match = ["chmod 755 /srv/app", "chmod u+x run.sh"]

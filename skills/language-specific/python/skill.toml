@@ -1,5 +1,5 @@
 id = "lang.python.core"
-version = "1.1.0"
+version = "1.2.0"
 interface = "acr.skill/v1"
 category = "code-quality"
 description = "Python correctness, async, resource, typing-suppression and stdlib-security pitfalls."
@@ -42,12 +42,13 @@ id = "PY-003"
 title = "Identity comparison with a literal"
 severity = "major"
 confidence = "high"
-pattern = '''\bis\s+(?:not\s+)?(?:-?\d|["'\[\{]|[rbfu]["'])'''
+# The literal must end the expression, so prose in docstrings ("recall is 1.0 by ...") does not match.
+pattern = '''\bis\s+(?:not\s+)?(?:-?\d[\d_.]*|[rbfu]?(?:"[^"\n]*"|'[^'\n]*')|\[\s*\]|\{\s*\})\s*(?:[:)\],]|\b(?:and|or|if|else)\b|#|$)'''
 unless = '^\s*#'
 explanation = "`is` compares object identity; equal ints and strings are only sometimes the same object, so the result depends on the interpreter (CPython emits SyntaxWarning)."
 remediation = "Use == / != for values; keep `is` for None, True, False and sentinels."
-examples.match = ["if code is 200:", "if name is not 'admin':", "while x is []:"]
-examples.no_match = ["if x is None:", "if flag is True:", "if obj is SENTINEL:", "# this is 'quoted'"]
+examples.match = ["if code is 200:", "if name is not 'admin':", "while x is []:", "return status is 0", "ok = a is 1 and b"]
+examples.no_match = ["if x is None:", "if flag is True:", "if obj is SENTINEL:", "# this is 'quoted'", "    candidate   flag every candidate (recall is 1.0 by construction)", "The default is 'auto' unless set."]
 
 [[rules]]
 id = "PY-004"
@@ -90,10 +91,13 @@ severity = "minor"
 confidence = "low"
 pattern = '\b(?:requests|httpx)\.(?:get|post|put|patch|delete|head|options|request)\s*\('
 unless = '\btimeout\s*='
+# The AST analyzer reads the whole call, including arguments on later lines: confirmed
+# findings are reported as high confidence, and multi-line calls that do pass timeout= are dropped.
+analyzer = "python.http-without-timeout"
 explanation = "requests has no default timeout, so a stalled server hangs the caller (and its worker) indefinitely."
 remediation = "Pass timeout=(connect, read) on every call, or use a Session/Client with a default timeout."
-examples.match = ["r = requests.get(url)", "resp = requests.post(url, json=body)"]
-examples.no_match = ["r = requests.get(url, timeout=5)", "session.get(url)"]
+examples.match = ["r = requests.get(url)", "resp = requests.post(url, json=body)", "resp = requests.post(\n    url,\n    json=body,\n)"]
+examples.no_match = ["r = requests.get(url, timeout=5)", "session.get(url)", "resp = requests.post(\n    url,\n    timeout=(3, 27),\n)", "requests.get(url, **opts)"]
 
 [[rules]]
 id = "PY-008"

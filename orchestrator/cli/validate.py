@@ -11,6 +11,7 @@ from pathlib import Path
 
 from orchestrator import config as cfg
 from orchestrator import schema
+from orchestrator.engine import analyzers
 
 REQUIRED_FILES = [
     "README.md",
@@ -79,14 +80,17 @@ def check_skills(root: Path, r: Report) -> None:
             except (re.error, KeyError) as e:
                 r.err(f"{rel}: rule {rid}: invalid regex: {e}")
                 continue
+            if rule.get("analyzer") and rule["analyzer"] not in analyzers.REGISTRY:
+                r.err(f"{rel}: rule {rid}: unknown analyzer {rule['analyzer']!r}")
+                continue
             ex = rule.get("examples", {})
             for s in ex.get("match", []):
                 r.checked += 1
-                if not (rx.search(s) and not (neg and neg.search(s))):
+                if not _rule_fires(rule, rx, neg, s):
                     r.err(f"{rel}: rule {rid} should match example {s!r}")
             for s in ex.get("no_match", []):
                 r.checked += 1
-                if rx.search(s) and not (neg and neg.search(s)):
+                if _rule_fires(rule, rx, neg, s):
                     r.err(f"{rel}: rule {rid} should NOT match example {s!r}")
         for c in d.get("companions", []):
             cid = c.get("id")
@@ -100,6 +104,28 @@ def check_skills(root: Path, r: Report) -> None:
                 r.err(f"{rel}: duplicate rule id {eid} (also {seen_rules[eid]})")
             seen_rules[eid] = rel
             check_expectation(rel, e, r)
+
+
+def _rule_fires(rule: dict, rx: re.Pattern, neg: re.Pattern | None, example: str) -> bool:
+    """Regex (+ unless) on the example, as the engine applies it; analyzer rules must also be confirmed.
+
+    Multi-line examples of line-scoped rules are checked line by line (``unless`` sees only the
+    candidate line, like the engine); block-scoped and single-line examples as a whole.
+    """
+    lines = example.split("\n")
+    if rule.get("scope") == "block" or len(lines) == 1:
+        if not rx.search(example) or (neg and neg.search(example)):
+            return False
+        idx = next((i for i, line in enumerate(lines) if rx.search(line)), 0)
+    else:
+        hits = [i for i, line in enumerate(lines) if rx.search(line) and not (neg and neg.search(line))]
+        if not hits:
+            return False
+        idx = hits[0]
+    if not rule.get("analyzer"):
+        return True
+    verdict = analyzers.get(rule["analyzer"])(lines, idx)
+    return bool(verdict) or (verdict is None and rule.get("analyzer_fallback", "keep") == "keep")
 
 
 def _simulated_diff(example: dict) -> list:
