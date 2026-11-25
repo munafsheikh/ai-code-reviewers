@@ -1,0 +1,2 @@
+description = "Python worker change: identity/None comparisons, leaked file handle, naive datetime, no HTTP timeout, blocking call and orphan task in async code, random token, MD5, mktemp, star import, blanket type: ignore, unchained re-raise, 0o777."
+expected_gate = "block"

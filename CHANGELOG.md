@@ -4,6 +4,13 @@ All notable changes are documented here. Format: [Keep a Changelog](https://keep
 
 ## [Unreleased]
 
+### Security
+- Base image `python:3.13-slim` bumped to `sha256:7249d558…`; expired `zlib1g` exceptions (CVE-2026-85091, CVE-2026-76844) removed from `policies/security/trivyignore`.
+
+### Added
+- `lang.python.core` 1.1.0: 14 Python rules (`PY-003`…`PY-016`): `is` with a literal, `== None`, `open()` without `with`, naive/deprecated UTC datetimes, `requests`/`httpx` calls without a timeout, blocking calls inside `async def`, unreferenced `create_task`, `random` for secrets, MD5/SHA-1 without `usedforsecurity=False`, `tempfile.mktemp`, star imports, blanket `# type: ignore`/`# noqa`, re-raise without `from`, 0o777 permissions. Also reviews `*.pyi`. The model prompt now covers correctness, resources, concurrency, Python-specific security, typing and performance, and skips what the rules already flag. Benchmark fixture `python-pitfalls`.
+- `lang.java.core` 1.1.0: 13 Java rules (`JAVA-004`…`JAVA-016`): catching Throwable/Error, InterruptedException without restoring the interrupt, `lock()` outside try/finally, static `SimpleDateFormat`, `double`/`float` money, `BigDecimal` from a double, `Random` for secrets, MD5/SHA-1/DES/RC4/ECB, discarded exception cause, `@Transactional` on private/final methods, field injection, concatenated log messages, `newCachedThreadPool`. The model prompt now also covers money/time handling, concurrency, collections, Spring/JPA proxies and N+1, and XXE, and skips what the rules already flag. Benchmark fixture `java-pitfalls`.
+
 ## [0.9.0] - 2026-11-22
 
 ### Changed

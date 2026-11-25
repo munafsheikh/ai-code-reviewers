@@ -1,8 +1,8 @@
 id = "lang.java.core"
-version = "1.0.0"
+version = "1.1.0"
 interface = "acr.skill/v1"
 category = "code-quality"
-description = "Java resource safety, null-safety and concurrency (structured successor of the first-pass gate)."
+description = "Java resource safety, null-safety, concurrency, crypto, money handling and Spring pitfalls (structured successor of the first-pass gate)."
 languages = ["java"]
 file_globs = ["*.java"]
 tier = "small"
@@ -44,3 +44,151 @@ explanation = "== compares references, not contents; equal strings may compare u
 remediation = "Use equals() (or Objects.equals for nullable values)."
 examples.match = ['if (status == "OK") {', 'if ("x" != name)']
 examples.no_match = ['if ("OK".equals(status)) {', "if (count == 0)"]
+
+[[rules]]
+id = "JAVA-004"
+title = "Catching Throwable or Error"
+severity = "minor"
+confidence = "high"
+pattern = '\bcatch\s*\(\s*(?:final\s+)?(?:java\.lang\.)?(?:Throwable|Error)\s+\w+\s*\)'
+explanation = "Errors (OutOfMemoryError, StackOverflowError, LinkageError) signal a broken JVM state that application code cannot recover from."
+remediation = "Catch Exception or the specific checked types; let Errors propagate."
+examples.match = ["} catch (Throwable t) {", "catch (final Error e)"]
+examples.no_match = ["} catch (Exception e) {", "} catch (IOError e) {"]
+
+[[rules]]
+id = "JAVA-005"
+title = "InterruptedException handled without restoring the interrupt"
+severity = "major"
+confidence = "medium"
+scope = "block"
+pattern = 'catch\s*\(\s*(?:final\s+)?InterruptedException\s+\w+\s*\)\s*\{(?:(?!Thread\.currentThread\(\)\.interrupt\(\)|\bthrow\b)[^}])+\}'
+unless = '\(\s*(?:final\s+)?InterruptedException\s+(?:ignored|ignore|expected|_)\s*\)'
+explanation = "Catching InterruptedException clears the thread's interrupt flag; without restoring it, shutdown and cancellation requests are silently lost."
+remediation = "Call Thread.currentThread().interrupt() in the handler, or rethrow."
+examples.match = ["} catch (InterruptedException e) {\n    log.warn(\"interrupted\", e);\n}"]
+examples.no_match = ["} catch (InterruptedException e) {\n    Thread.currentThread().interrupt();\n    return;\n}", "} catch (InterruptedException e) {\n    throw new CancellationException();\n}", "} catch (InterruptedException ignored) { }"]
+
+[[rules]]
+id = "JAVA-006"
+title = "Lock acquired outside try/finally"
+severity = "major"
+confidence = "medium"
+scope = "block"
+pattern = '(?m)^[ \t]*[\w.]+\.lock(?:Interruptibly)?\(\)[ \t]*;[ \t]*\n(?![ \t]*try\b)'
+explanation = "If code between lock() and unlock() throws, the lock is never released and other threads deadlock."
+remediation = "Call lock() immediately before `try { ... } finally { lock.unlock(); }`."
+examples.match = ["lock.lock();\ncounter++;\nlock.unlock();"]
+examples.no_match = ["lock.lock();\ntry {\n    counter++;\n} finally {\n    lock.unlock();\n}"]
+
+[[rules]]
+id = "JAVA-007"
+title = "Static SimpleDateFormat shared across threads"
+severity = "major"
+confidence = "high"
+pattern = '\bstatic\s+(?:final\s+)?(?:java\.text\.)?(?:Simple)?DateFormat\s+\w+\s*='
+explanation = "SimpleDateFormat is not thread-safe; a shared instance silently produces wrong dates or throws under concurrency."
+remediation = "Use an immutable java.time.format.DateTimeFormatter constant."
+examples.match = ["private static final SimpleDateFormat FMT = new SimpleDateFormat(\"yyyy-MM-dd\");", "static DateFormat df = DateFormat.getDateInstance();"]
+examples.no_match = ["private static final DateTimeFormatter FMT = DateTimeFormatter.ISO_DATE;", "SimpleDateFormat f = new SimpleDateFormat(p);"]
+
+[[rules]]
+id = "JAVA-008"
+title = "Floating point used for money"
+severity = "major"
+confidence = "medium"
+pattern = '(?i)\b(?:double|float)\s+\w*(?:amount|price|balance|total|cost|fee|charge|payment|salary|money|interest)\w*\s*[=;,)]'
+explanation = "Binary floating point cannot represent most decimal fractions, so sums and comparisons of currency values drift."
+remediation = "Use BigDecimal (with an explicit scale and RoundingMode) or integer minor units (long cents)."
+examples.match = ["double amount = 10.25;", "private Float totalPrice;", "void pay(double fee) {"]
+examples.no_match = ["BigDecimal amount = new BigDecimal(\"10.25\");", "long amountCents = 1025;", "double ratio = 0.5;"]
+
+[[rules]]
+id = "JAVA-009"
+title = "BigDecimal constructed from a double"
+severity = "major"
+confidence = "high"
+pattern = '\bnew\s+BigDecimal\s*\(\s*-?\d+\.\d+[dDfF]?\s*\)|\bnew\s+BigDecimal\s*\(\s*\w+\s*\.\s*doubleValue\(\)\s*\)'
+explanation = "new BigDecimal(0.1) captures the binary approximation (0.1000000000000000055...), not the decimal value written."
+remediation = "Use new BigDecimal(\"0.1\") or BigDecimal.valueOf(double)."
+examples.match = ["BigDecimal fee = new BigDecimal(0.1);", "var x = new BigDecimal(v.doubleValue());"]
+examples.no_match = ["BigDecimal fee = new BigDecimal(\"0.1\");", "BigDecimal.valueOf(0.1)", "new BigDecimal(10)"]
+
+[[rules]]
+id = "JAVA-010"
+title = "Non-cryptographic random for a secret"
+severity = "major"
+confidence = "medium"
+pattern = '(?i)(?:token|password|passwd|secret|otp|nonce|salt|apikey|api_key|sessionid|session_id)\w*\s*=.*(?:new\s+(?:java\.util\.)?Random\s*\(|Math\.random\s*\(|ThreadLocalRandom\.current\(\))'
+explanation = "java.util.Random, Math.random and ThreadLocalRandom are predictable; an attacker who sees a few outputs can reproduce the sequence."
+remediation = "Use java.security.SecureRandom."
+examples.match = ["String otp = String.valueOf(new Random().nextInt(999999));", "long nonce = ThreadLocalRandom.current().nextLong();"]
+examples.no_match = ["byte[] salt = new byte[16]; secureRandom.nextBytes(salt);", "int jitter = new Random().nextInt(100);"]
+
+[[rules]]
+id = "JAVA-011"
+title = "Weak hash or cipher"
+severity = "major"
+confidence = "high"
+pattern = 'MessageDigest\.getInstance\(\s*"(?:MD2|MD5|SHA-?1)"|Cipher\.getInstance\(\s*"(?:DES|DESede|RC2|RC4|Blowfish|AES|[^"]*/ECB/[^"]*)"'
+explanation = "MD5/SHA-1 are broken for integrity; DES, RC4 and Blowfish are weak; ECB (also the default for plain \"AES\") leaks plaintext patterns."
+remediation = "Use SHA-256+ for digests and AES/GCM/NoPadding (or ChaCha20-Poly1305) with a fresh nonce."
+examples.match = ["MessageDigest md = MessageDigest.getInstance(\"MD5\");", "Cipher c = Cipher.getInstance(\"AES\");", "Cipher.getInstance(\"AES/ECB/PKCS5Padding\")"]
+examples.no_match = ["MessageDigest.getInstance(\"SHA-256\")", "Cipher.getInstance(\"AES/GCM/NoPadding\")"]
+
+[[rules]]
+id = "JAVA-012"
+title = "Exception cause discarded"
+severity = "minor"
+confidence = "high"
+pattern = '\bthrow\s+new\s+\w*(?:Exception|Error)\s*\(\s*\w+\.get(?:Localized)?Message\(\)\s*\)'
+explanation = "Wrapping only the message drops the original exception type and stack trace, making the failure hard to diagnose."
+remediation = "Pass the cause: new XException(\"context\", e)."
+examples.match = ["throw new RuntimeException(e.getMessage());", "throw new ServiceException(ex.getLocalizedMessage());"]
+examples.no_match = ["throw new RuntimeException(\"load failed\", e);", "throw new IllegalStateException(e);"]
+
+[[rules]]
+id = "JAVA-013"
+title = "@Transactional on a private or final method"
+severity = "major"
+confidence = "high"
+scope = "block"
+pattern = '(?m)^[ \t]*@(?:org\.springframework\.transaction\.annotation\.)?Transactional\b[^\n]*\n(?:[ \t]*@[^\n]*\n)*[ \t]*(?:private|(?:public|protected)?[ \t]*final)\b[^\n]*\('
+explanation = "Spring applies @Transactional through proxies, which cannot intercept private or final methods; the method silently runs without a transaction."
+remediation = "Make the method public and non-final, or manage the transaction with TransactionTemplate."
+examples.match = ["@Transactional\nprivate void save(Order o) {", "@Transactional(readOnly = true)\n@Override\npublic final List<Order> all() {"]
+examples.no_match = ["@Transactional\npublic void save(Order o) {", "@Transactional\npublic class OrderService {"]
+
+[[rules]]
+id = "JAVA-014"
+title = "Field injection"
+severity = "minor"
+confidence = "medium"
+scope = "block"
+pattern = '(?m)^[ \t]*@(?:Autowired|Inject)\b[^\n(]*\n?[ \t]*(?:private|protected|public)?[ \t]*(?!final\b)[\w.<>,? ]+[ \t]+\w+[ \t]*;'
+explanation = "Field-injected dependencies are hidden, mutable and null in plain unit tests, and they hide constructor bloat."
+remediation = "Use constructor injection with final fields."
+examples.match = ["@Autowired\nprivate OrderRepository repo;", "@Inject private Clock clock;"]
+examples.no_match = ["private final OrderRepository repo;", "@Autowired\npublic OrderService(OrderRepository repo) {"]
+
+[[rules]]
+id = "JAVA-015"
+title = "String concatenation in a log call"
+severity = "info"
+confidence = "medium"
+pattern = '\b(?:log|logger|LOG|LOGGER)\.(?:trace|debug|info|warn|error)\s*\(\s*"[^"]*"\s*\+'
+explanation = "The message is built even when the level is disabled, and concatenation defeats structured logging."
+remediation = "Use placeholders: log.info(\"order {} paid\", id)."
+examples.match = ["log.info(\"order \" + id + \" paid\");", "LOGGER.debug(\"payload: \" + body);"]
+examples.no_match = ["log.info(\"order {} paid\", id);", "log.warn(\"cannot read {}\", p, e);"]
+
+[[rules]]
+id = "JAVA-016"
+title = "Unbounded cached thread pool"
+severity = "minor"
+confidence = "medium"
+pattern = '\bExecutors\.newCachedThreadPool\s*\('
+explanation = "A cached pool creates a thread per concurrent task with no upper bound; a burst of load exhausts memory or native threads."
+remediation = "Use a bounded ThreadPoolExecutor with a bounded queue and a rejection policy, or Executors.newVirtualThreadPerTaskExecutor() on Java 21+."
+examples.match = ["ExecutorService pool = Executors.newCachedThreadPool();"]
+examples.no_match = ["Executors.newFixedThreadPool(8)", "Executors.newVirtualThreadPerTaskExecutor()"]

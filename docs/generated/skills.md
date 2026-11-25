@@ -8,10 +8,10 @@
 | `code-quality.error-handling` | 1.0.0 | code-quality | small | java, python, javascript, typescript, kotlin, csharp | 3 |
 | `documentation.content` | 1.1.0 | documentation | small | * | 4 |
 | `documentation.sync` | 1.0.0 | documentation | none | * | 4 |
-| `lang.java.core` | 1.0.0 | code-quality | small | java | 3 |
+| `lang.java.core` | 1.1.0 | code-quality | small | java | 16 |
 | `lang.java.first-pass-gate` | 1.0.0 | code-quality | small | java | 0 |
 | `lang.javascript.core` | 1.0.0 | security | small | javascript, typescript | 1 |
-| `lang.python.core` | 1.0.0 | code-quality | small | python | 2 |
+| `lang.python.core` | 1.1.0 | code-quality | small | python | 16 |
 | `lang.typescript.types` | 1.0.0 | maintainability | none | typescript | 2 |
 | `maintainability.hygiene` | 1.1.0 | maintainability | none | * | 4 |
 | `performance.deep` | 1.0.0 | performance | large | * | 0 |
@@ -34,9 +34,36 @@
 | `JAVA-001` | `lang.java.core` | major | medium | hypothesis | Closeable opened outside try-with-resources |
 | `JAVA-002` | `lang.java.core` | minor | low | hypothesis | Optional.get() without presence check |
 | `JAVA-003` | `lang.java.core` | major | medium | hypothesis | String compared with == |
+| `JAVA-004` | `lang.java.core` | minor | high | verified | Catching Throwable or Error |
+| `JAVA-005` | `lang.java.core` | major | medium | hypothesis | InterruptedException handled without restoring the interrupt |
+| `JAVA-006` | `lang.java.core` | major | medium | hypothesis | Lock acquired outside try/finally |
+| `JAVA-007` | `lang.java.core` | major | high | verified | Static SimpleDateFormat shared across threads |
+| `JAVA-008` | `lang.java.core` | major | medium | hypothesis | Floating point used for money |
+| `JAVA-009` | `lang.java.core` | major | high | verified | BigDecimal constructed from a double |
+| `JAVA-010` | `lang.java.core` | major | medium | hypothesis | Non-cryptographic random for a secret |
+| `JAVA-011` | `lang.java.core` | major | high | verified | Weak hash or cipher |
+| `JAVA-012` | `lang.java.core` | minor | high | verified | Exception cause discarded |
+| `JAVA-013` | `lang.java.core` | major | high | verified | @Transactional on a private or final method |
+| `JAVA-014` | `lang.java.core` | minor | medium | hypothesis | Field injection |
+| `JAVA-015` | `lang.java.core` | info | medium | hypothesis | String concatenation in a log call |
+| `JAVA-016` | `lang.java.core` | minor | medium | hypothesis | Unbounded cached thread pool |
 | `JS-001` | `lang.javascript.core` | major | medium | hypothesis | Assignment to innerHTML / outerHTML |
 | `PY-001` | `lang.python.core` | minor | high | verified | Mutable default argument |
 | `PY-002` | `lang.python.core` | minor | low | hypothesis | assert used for runtime validation |
+| `PY-003` | `lang.python.core` | major | high | verified | Identity comparison with a literal |
+| `PY-004` | `lang.python.core` | minor | high | verified | Equality comparison with None |
+| `PY-005` | `lang.python.core` | minor | medium | hypothesis | File opened without a context manager |
+| `PY-006` | `lang.python.core` | minor | medium | hypothesis | Naive or deprecated UTC datetime |
+| `PY-007` | `lang.python.core` | minor | low | hypothesis | HTTP request without timeout |
+| `PY-008` | `lang.python.core` | major | medium | hypothesis | Blocking call inside async function |
+| `PY-009` | `lang.python.core` | minor | medium | hypothesis | Fire-and-forget asyncio task |
+| `PY-010` | `lang.python.core` | major | medium | hypothesis | Non-cryptographic random for a secret |
+| `PY-011` | `lang.python.core` | minor | medium | hypothesis | Weak hash without usedforsecurity=False |
+| `PY-012` | `lang.python.core` | major | high | verified | Insecure temporary file name |
+| `PY-013` | `lang.python.core` | minor | high | verified | Wildcard import |
+| `PY-014` | `lang.python.core` | minor | high | verified | Blanket lint or type suppression |
+| `PY-015` | `lang.python.core` | minor | low | hypothesis | Exception re-raised without chaining |
+| `PY-016` | `lang.python.core` | major | high | verified | World-writable file permissions |
 | `TS-001` | `lang.typescript.types` | minor | high | verified | Type checking suppressed |
 | `TS-002` | `lang.typescript.types` | info | high | verified | Explicit any |
 | `MNT-001` | `maintainability.hygiene` | major | high | verified | Debugger statement |

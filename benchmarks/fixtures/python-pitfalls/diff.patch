@@ -1,0 +1,76 @@
+diff --git a/svc/worker.py b/svc/worker.py
+index 21b405d..c4df3ac 100644
+--- a/svc/worker.py
++++ b/svc/worker.py
+@@ -1 +1,71 @@
+ import os
++import asyncio
++import hashlib
++import random
++import tempfile
++import time
++from datetime import datetime
++
++import requests
++from svc.helpers import *
++
++
++class ConfigError(Exception):
++    pass
++
++
++def check(code, value):
++    if code is 200 and value == None:
++        return True
++    return False
++
++
++def load(path):
++    fh = open(path)
++    return fh.read()
++
++
++def stamp():
++    return datetime.utcnow()
++
++
++def ping(url):
++    return requests.get(url)
++
++
++async def poll(url):
++    time.sleep(1)
++    return url
++
++
++async def start(job):
++    asyncio.create_task(job())
++
++
++def new_token(chars):
++    token = "".join(random.choices(chars, k=32))
++    return token
++
++
++def digest(data):
++    return hashlib.md5(data).hexdigest()
++
++
++def scratch():
++    return tempfile.mktemp()
++
++
++def parse(cfg):
++    value = helper(cfg)  # type: ignore
++    return value
++
++
++def lookup(cfg, key):
++    try:
++        return cfg[key]
++    except KeyError as err:
++        raise ConfigError(f"missing {key}")
++
++
++def share(path):
++    os.chmod(path, 0o777)

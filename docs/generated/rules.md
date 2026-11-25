@@ -106,9 +106,9 @@ User-facing surfaces (build, CI, deployment, make targets, CLI options, env vars
 
 <a id="skill-lang-java-core"></a>
 
-## Skill `lang.java.core` (v1.0.0)
+## Skill `lang.java.core` (v1.1.0)
 
-Java resource safety, null-safety and concurrency (structured successor of the first-pass gate). Category: code-quality. Model tier: small.
+Java resource safety, null-safety, concurrency, crypto, money handling and Spring pitfalls (structured successor of the first-pass gate). Category: code-quality. Model tier: small.
 
 Model findings from this skill are reported as `model.lang.java.core` and are always hypotheses.
 
@@ -142,6 +142,136 @@ Severity **major** · confidence medium (hypothesis) · languages: java
 
 **Fix:** Use equals() (or Objects.equals for nullable values).
 
+<a id="java-004"></a>
+
+### JAVA-004: Catching Throwable or Error
+
+Severity **minor** · confidence high (verified) · languages: java
+
+Errors (OutOfMemoryError, StackOverflowError, LinkageError) signal a broken JVM state that application code cannot recover from.
+
+**Fix:** Catch Exception or the specific checked types; let Errors propagate.
+
+<a id="java-005"></a>
+
+### JAVA-005: InterruptedException handled without restoring the interrupt
+
+Severity **major** · confidence medium (hypothesis) · languages: java
+
+Catching InterruptedException clears the thread's interrupt flag; without restoring it, shutdown and cancellation requests are silently lost.
+
+**Fix:** Call Thread.currentThread().interrupt() in the handler, or rethrow.
+
+<a id="java-006"></a>
+
+### JAVA-006: Lock acquired outside try/finally
+
+Severity **major** · confidence medium (hypothesis) · languages: java
+
+If code between lock() and unlock() throws, the lock is never released and other threads deadlock.
+
+**Fix:** Call lock() immediately before `try { ... } finally { lock.unlock(); }`.
+
+<a id="java-007"></a>
+
+### JAVA-007: Static SimpleDateFormat shared across threads
+
+Severity **major** · confidence high (verified) · languages: java
+
+SimpleDateFormat is not thread-safe; a shared instance silently produces wrong dates or throws under concurrency.
+
+**Fix:** Use an immutable java.time.format.DateTimeFormatter constant.
+
+<a id="java-008"></a>
+
+### JAVA-008: Floating point used for money
+
+Severity **major** · confidence medium (hypothesis) · languages: java
+
+Binary floating point cannot represent most decimal fractions, so sums and comparisons of currency values drift.
+
+**Fix:** Use BigDecimal (with an explicit scale and RoundingMode) or integer minor units (long cents).
+
+<a id="java-009"></a>
+
+### JAVA-009: BigDecimal constructed from a double
+
+Severity **major** · confidence high (verified) · languages: java
+
+new BigDecimal(0.1) captures the binary approximation (0.1000000000000000055...), not the decimal value written.
+
+**Fix:** Use new BigDecimal("0.1") or BigDecimal.valueOf(double).
+
+<a id="java-010"></a>
+
+### JAVA-010: Non-cryptographic random for a secret
+
+Severity **major** · confidence medium (hypothesis) · languages: java
+
+java.util.Random, Math.random and ThreadLocalRandom are predictable; an attacker who sees a few outputs can reproduce the sequence.
+
+**Fix:** Use java.security.SecureRandom.
+
+<a id="java-011"></a>
+
+### JAVA-011: Weak hash or cipher
+
+Severity **major** · confidence high (verified) · languages: java
+
+MD5/SHA-1 are broken for integrity; DES, RC4 and Blowfish are weak; ECB (also the default for plain "AES") leaks plaintext patterns.
+
+**Fix:** Use SHA-256+ for digests and AES/GCM/NoPadding (or ChaCha20-Poly1305) with a fresh nonce.
+
+<a id="java-012"></a>
+
+### JAVA-012: Exception cause discarded
+
+Severity **minor** · confidence high (verified) · languages: java
+
+Wrapping only the message drops the original exception type and stack trace, making the failure hard to diagnose.
+
+**Fix:** Pass the cause: new XException("context", e).
+
+<a id="java-013"></a>
+
+### JAVA-013: @Transactional on a private or final method
+
+Severity **major** · confidence high (verified) · languages: java
+
+Spring applies @Transactional through proxies, which cannot intercept private or final methods; the method silently runs without a transaction.
+
+**Fix:** Make the method public and non-final, or manage the transaction with TransactionTemplate.
+
+<a id="java-014"></a>
+
+### JAVA-014: Field injection
+
+Severity **minor** · confidence medium (hypothesis) · languages: java
+
+Field-injected dependencies are hidden, mutable and null in plain unit tests, and they hide constructor bloat.
+
+**Fix:** Use constructor injection with final fields.
+
+<a id="java-015"></a>
+
+### JAVA-015: String concatenation in a log call
+
+Severity **info** · confidence medium (hypothesis) · languages: java
+
+The message is built even when the level is disabled, and concatenation defeats structured logging.
+
+**Fix:** Use placeholders: log.info("order {} paid", id).
+
+<a id="java-016"></a>
+
+### JAVA-016: Unbounded cached thread pool
+
+Severity **minor** · confidence medium (hypothesis) · languages: java
+
+A cached pool creates a thread per concurrent task with no upper bound; a burst of load exhausts memory or native threads.
+
+**Fix:** Use a bounded ThreadPoolExecutor with a bounded queue and a rejection policy, or Executors.newVirtualThreadPerTaskExecutor() on Java 21+.
+
 <a id="skill-lang-java-first-pass-gate"></a>
 
 ## Skill `lang.java.first-pass-gate` (v1.0.0)
@@ -170,9 +300,9 @@ Writing unsanitised strings as HTML enables cross-site scripting.
 
 <a id="skill-lang-python-core"></a>
 
-## Skill `lang.python.core` (v1.0.0)
+## Skill `lang.python.core` (v1.1.0)
 
-Python correctness pitfalls. Category: code-quality. Model tier: small.
+Python correctness, async, resource, typing-suppression and stdlib-security pitfalls. Category: code-quality. Model tier: small.
 
 Model findings from this skill are reported as `model.lang.python.core` and are always hypotheses.
 
@@ -195,6 +325,146 @@ Severity **minor** · confidence low (hypothesis) · languages: python
 assert statements are removed under python -O, silently disabling the check.
 
 **Fix:** Raise an explicit exception.
+
+<a id="py-003"></a>
+
+### PY-003: Identity comparison with a literal
+
+Severity **major** · confidence high (verified) · languages: python
+
+`is` compares object identity; equal ints and strings are only sometimes the same object, so the result depends on the interpreter (CPython emits SyntaxWarning).
+
+**Fix:** Use == / != for values; keep `is` for None, True, False and sentinels.
+
+<a id="py-004"></a>
+
+### PY-004: Equality comparison with None
+
+Severity **minor** · confidence high (verified) · languages: python
+
+__eq__ can be overridden (numpy, ORMs), so == None may not mean 'is None'.
+
+**Fix:** Use `is None` / `is not None`.
+
+<a id="py-005"></a>
+
+### PY-005: File opened without a context manager
+
+Severity **minor** · confidence medium (hypothesis) · languages: python
+
+The handle is not closed on every path, leaking file descriptors and leaving writes unflushed on error.
+
+**Fix:** Use `with open(...) as fh:` (or pathlib read_text/write_text for one-shot I/O).
+
+<a id="py-006"></a>
+
+### PY-006: Naive or deprecated UTC datetime
+
+Severity **minor** · confidence medium (hypothesis) · languages: python
+
+utcnow()/utcfromtimestamp() are deprecated since 3.12 and return naive datetimes; naive now() uses host local time. Mixing naive and aware values raises or silently shifts times.
+
+**Fix:** Use datetime.now(timezone.utc) / datetime.fromtimestamp(ts, timezone.utc).
+
+<a id="py-007"></a>
+
+### PY-007: HTTP request without timeout
+
+Severity **minor** · confidence low (hypothesis) · languages: python
+
+requests has no default timeout, so a stalled server hangs the caller (and its worker) indefinitely.
+
+**Fix:** Pass timeout=(connect, read) on every call, or use a Session/Client with a default timeout.
+
+<a id="py-008"></a>
+
+### PY-008: Blocking call inside async function
+
+Severity **major** · confidence medium (hypothesis) · languages: python
+
+A synchronous blocking call stalls the event loop, freezing every other task on it.
+
+**Fix:** Use the async equivalent (asyncio.sleep, httpx.AsyncClient, asyncio.create_subprocess_exec) or asyncio.to_thread.
+
+<a id="py-009"></a>
+
+### PY-009: Fire-and-forget asyncio task
+
+Severity **minor** · confidence medium (hypothesis) · languages: python
+
+The event loop keeps only a weak reference to tasks; an unreferenced task can be garbage-collected mid-run and its exception is never observed.
+
+**Fix:** Keep a reference (a set plus add_done_callback(discard)) or use asyncio.TaskGroup.
+
+<a id="py-010"></a>
+
+### PY-010: Non-cryptographic random for a secret
+
+Severity **major** · confidence medium (hypothesis) · languages: python
+
+The random module is a predictable PRNG; values derived from it can be reproduced by an attacker.
+
+**Fix:** Use the secrets module (secrets.token_urlsafe, secrets.choice, secrets.randbelow).
+
+<a id="py-011"></a>
+
+### PY-011: Weak hash without usedforsecurity=False
+
+Severity **minor** · confidence medium (hypothesis) · languages: python
+
+MD5 and SHA-1 are broken for integrity and passwords; FIPS builds also reject them unless marked non-security.
+
+**Fix:** Use sha256/blake2b, a password KDF (hashlib.scrypt, argon2) for passwords, or pass usedforsecurity=False for checksums/cache keys.
+
+<a id="py-012"></a>
+
+### PY-012: Insecure temporary file name
+
+Severity **major** · confidence high (verified) · languages: python
+
+mktemp returns a name without creating the file; another process can create it first (race / symlink attack).
+
+**Fix:** Use tempfile.NamedTemporaryFile, mkstemp or TemporaryDirectory.
+
+<a id="py-013"></a>
+
+### PY-013: Wildcard import
+
+Severity **minor** · confidence high (verified) · languages: python
+
+Star imports hide where names come from, shadow builtins and break static analysis.
+
+**Fix:** Import the names you use explicitly, or import the module.
+
+<a id="py-014"></a>
+
+### PY-014: Blanket lint or type suppression
+
+Severity **minor** · confidence high (verified) · languages: python
+
+An unscoped suppression silences every current and future diagnostic on the line, including real bugs.
+
+**Fix:** Scope it to the specific code (`# type: ignore[attr-defined]`, `# noqa: E501`) and say why.
+
+<a id="py-015"></a>
+
+### PY-015: Exception re-raised without chaining
+
+Severity **minor** · confidence low (hypothesis) · languages: python
+
+Raising a new exception inside a handler without `from` loses the explicit cause, and the traceback misleadingly reads 'during handling ... another exception occurred'.
+
+**Fix:** Use `raise NewError(...) from err` (or `from None` to deliberately hide the cause).
+
+<a id="py-016"></a>
+
+### PY-016: World-writable file permissions
+
+Severity **major** · confidence high (verified) · languages: python
+
+Mode xx7 lets any local user modify the file or directory.
+
+**Fix:** Grant the narrowest mode needed (0o600 / 0o644 for files, 0o700 / 0o755 for directories).
 
 <a id="skill-lang-typescript-types"></a>
 
