@@ -4,6 +4,9 @@ All notable changes are documented here. Format: [Keep a Changelog](https://keep
 
 ## [Unreleased]
 
+### Security
+- `libzstd1` upgraded to `1.5.7+dfsg-1+deb13u1` in the image `base` stage (CVE-2026-124851, HIGH) until the pinned `python:3.13-slim` carries the fix.
+
 ### Fixed
 - Model discards are now explained: parse stats, the `model_output` audit line and the PR comment carry a reason per discard (`path_not_in_diff`, `missing_path`, `invalid_severity`, `missing_title`, `not_an_object`) plus up to three truncated samples.
 - Model completion cache no longer fails on read-only containers: the GitHub action, Azure pipeline and Firefly gate set `ACR_CACHE_DIR=/tmp/acr-cache` on a `/tmp` tmpfs.
