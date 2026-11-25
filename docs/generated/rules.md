@@ -106,9 +106,9 @@ User-facing surfaces (build, CI, deployment, make targets, CLI options, env vars
 
 <a id="skill-lang-java-core"></a>
 
-## Skill `lang.java.core` (v1.0.0)
+## Skill `lang.java.core` (v1.1.0)
 
-Java resource safety, null-safety and concurrency (structured successor of the first-pass gate). Category: code-quality. Model tier: small.
+Java resource safety, null-safety, concurrency, crypto, money handling and Spring pitfalls (structured successor of the first-pass gate). Category: code-quality. Model tier: small.
 
 Model findings from this skill are reported as `model.lang.java.core` and are always hypotheses.
 
@@ -141,6 +141,136 @@ Severity **major** · confidence medium (hypothesis) · languages: java
 == compares references, not contents; equal strings may compare unequal.
 
 **Fix:** Use equals() (or Objects.equals for nullable values).
+
+<a id="java-004"></a>
+
+### JAVA-004: Catching Throwable or Error
+
+Severity **minor** · confidence high (verified) · languages: java
+
+Errors (OutOfMemoryError, StackOverflowError, LinkageError) signal a broken JVM state that application code cannot recover from.
+
+**Fix:** Catch Exception or the specific checked types; let Errors propagate.
+
+<a id="java-005"></a>
+
+### JAVA-005: InterruptedException handled without restoring the interrupt
+
+Severity **major** · confidence medium (hypothesis) · languages: java
+
+Catching InterruptedException clears the thread's interrupt flag; without restoring it, shutdown and cancellation requests are silently lost.
+
+**Fix:** Call Thread.currentThread().interrupt() in the handler, or rethrow.
+
+<a id="java-006"></a>
+
+### JAVA-006: Lock acquired outside try/finally
+
+Severity **major** · confidence medium (hypothesis) · languages: java
+
+If code between lock() and unlock() throws, the lock is never released and other threads deadlock.
+
+**Fix:** Call lock() immediately before `try { ... } finally { lock.unlock(); }`.
+
+<a id="java-007"></a>
+
+### JAVA-007: Static SimpleDateFormat shared across threads
+
+Severity **major** · confidence high (verified) · languages: java
+
+SimpleDateFormat is not thread-safe; a shared instance silently produces wrong dates or throws under concurrency.
+
+**Fix:** Use an immutable java.time.format.DateTimeFormatter constant.
+
+<a id="java-008"></a>
+
+### JAVA-008: Floating point used for money
+
+Severity **major** · confidence medium (hypothesis) · languages: java
+
+Binary floating point cannot represent most decimal fractions, so sums and comparisons of currency values drift.
+
+**Fix:** Use BigDecimal (with an explicit scale and RoundingMode) or integer minor units (long cents).
+
+<a id="java-009"></a>
+
+### JAVA-009: BigDecimal constructed from a double
+
+Severity **major** · confidence high (verified) · languages: java
+
+new BigDecimal(0.1) captures the binary approximation (0.1000000000000000055...), not the decimal value written.
+
+**Fix:** Use new BigDecimal("0.1") or BigDecimal.valueOf(double).
+
+<a id="java-010"></a>
+
+### JAVA-010: Non-cryptographic random for a secret
+
+Severity **major** · confidence medium (hypothesis) · languages: java
+
+java.util.Random, Math.random and ThreadLocalRandom are predictable; an attacker who sees a few outputs can reproduce the sequence.
+
+**Fix:** Use java.security.SecureRandom.
+
+<a id="java-011"></a>
+
+### JAVA-011: Weak hash or cipher
+
+Severity **major** · confidence high (verified) · languages: java
+
+MD5/SHA-1 are broken for integrity; DES, RC4 and Blowfish are weak; ECB (also the default for plain "AES") leaks plaintext patterns.
+
+**Fix:** Use SHA-256+ for digests and AES/GCM/NoPadding (or ChaCha20-Poly1305) with a fresh nonce.
+
+<a id="java-012"></a>
+
+### JAVA-012: Exception cause discarded
+
+Severity **minor** · confidence high (verified) · languages: java
+
+Wrapping only the message drops the original exception type and stack trace, making the failure hard to diagnose.
+
+**Fix:** Pass the cause: new XException("context", e).
+
+<a id="java-013"></a>
+
+### JAVA-013: @Transactional on a private or final method
+
+Severity **major** · confidence high (verified) · languages: java
+
+Spring applies @Transactional through proxies, which cannot intercept private or final methods; the method silently runs without a transaction.
+
+**Fix:** Make the method public and non-final, or manage the transaction with TransactionTemplate.
+
+<a id="java-014"></a>
+
+### JAVA-014: Field injection
+
+Severity **minor** · confidence medium (hypothesis) · languages: java
+
+Field-injected dependencies are hidden, mutable and null in plain unit tests, and they hide constructor bloat.
+
+**Fix:** Use constructor injection with final fields.
+
+<a id="java-015"></a>
+
+### JAVA-015: String concatenation in a log call
+
+Severity **info** · confidence medium (hypothesis) · languages: java
+
+The message is built even when the level is disabled, and concatenation defeats structured logging.
+
+**Fix:** Use placeholders: log.info("order {} paid", id).
+
+<a id="java-016"></a>
+
+### JAVA-016: Unbounded cached thread pool
+
+Severity **minor** · confidence medium (hypothesis) · languages: java
+
+A cached pool creates a thread per concurrent task with no upper bound; a burst of load exhausts memory or native threads.
+
+**Fix:** Use a bounded ThreadPoolExecutor with a bounded queue and a rejection policy, or Executors.newVirtualThreadPerTaskExecutor() on Java 21+.
 
 <a id="skill-lang-java-first-pass-gate"></a>
 

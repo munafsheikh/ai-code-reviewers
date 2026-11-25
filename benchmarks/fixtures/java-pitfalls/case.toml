@@ -1,0 +1,2 @@
+description = "Spring payment service change: static SimpleDateFormat, cached pool, field injection, BigDecimal from double, double money, lock outside try/finally, private @Transactional, Random OTP, MD5, lost interrupt, catch Throwable, discarded cause, concatenated log."
+expected_gate = "block"

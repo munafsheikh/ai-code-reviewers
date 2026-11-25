@@ -1,0 +1,69 @@
+{
+  "findings": [
+    {
+      "path": "src/main/java/app/PaymentService.java",
+      "line": 14,
+      "rule_id": "JAVA-007"
+    },
+    {
+      "path": "src/main/java/app/PaymentService.java",
+      "line": 16,
+      "rule_id": "JAVA-016"
+    },
+    {
+      "path": "src/main/java/app/PaymentService.java",
+      "line": 18,
+      "rule_id": "JAVA-014"
+    },
+    {
+      "path": "src/main/java/app/PaymentService.java",
+      "line": 22,
+      "rule_id": "JAVA-009"
+    },
+    {
+      "path": "src/main/java/app/PaymentService.java",
+      "line": 25,
+      "rule_id": "JAVA-008"
+    },
+    {
+      "path": "src/main/java/app/PaymentService.java",
+      "line": 26,
+      "rule_id": "JAVA-006"
+    },
+    {
+      "path": "src/main/java/app/PaymentService.java",
+      "line": 31,
+      "rule_id": "JAVA-013"
+    },
+    {
+      "path": "src/main/java/app/PaymentService.java",
+      "line": 37,
+      "rule_id": "JAVA-010"
+    },
+    {
+      "path": "src/main/java/app/PaymentService.java",
+      "line": 42,
+      "rule_id": "JAVA-011"
+    },
+    {
+      "path": "src/main/java/app/PaymentService.java",
+      "line": 48,
+      "rule_id": "JAVA-005"
+    },
+    {
+      "path": "src/main/java/app/PaymentService.java",
+      "line": 56,
+      "rule_id": "JAVA-004"
+    },
+    {
+      "path": "src/main/java/app/PaymentService.java",
+      "line": 57,
+      "rule_id": "JAVA-012"
+    },
+    {
+      "path": "src/main/java/app/PaymentService.java",
+      "line": 62,
+      "rule_id": "JAVA-015"
+    }
+  ]
+}

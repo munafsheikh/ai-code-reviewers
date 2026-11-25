@@ -4,6 +4,9 @@ All notable changes are documented here. Format: [Keep a Changelog](https://keep
 
 ## [Unreleased]
 
+### Added
+- `lang.java.core` 1.1.0: 13 Java rules (`JAVA-004`…`JAVA-016`): catching Throwable/Error, InterruptedException without restoring the interrupt, `lock()` outside try/finally, static `SimpleDateFormat`, `double`/`float` money, `BigDecimal` from a double, `Random` for secrets, MD5/SHA-1/DES/RC4/ECB, discarded exception cause, `@Transactional` on private/final methods, field injection, concatenated log messages, `newCachedThreadPool`. The model prompt now also covers money/time handling, concurrency, collections, Spring/JPA proxies and N+1, and XXE, and skips what the rules already flag. Benchmark fixture `java-pitfalls`.
+
 ## [0.9.0] - 2026-11-22
 
 ### Changed
