@@ -4,6 +4,8 @@ All notable changes are documented here. Format: [Keep a Changelog](https://keep
 
 ## [Unreleased]
 
+## [0.10.1] - 2026-11-25
+
 ### Security
 - `libzstd1` upgraded to `1.5.7+dfsg-1+deb13u1` in the image `base` stage (CVE-2026-124851, HIGH) until the pinned `python:3.13-slim` carries the fix.
 

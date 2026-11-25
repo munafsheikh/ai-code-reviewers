@@ -8,11 +8,11 @@ needed once the images are on the machine.
 
 | Image | What it is | Use it to |
 |---|---|---|
-| `munafsheikh/ai-code-reviewers:0.10.0` | The reviewer: CLI, HTTP service, rules, skills, policies | Review a diff, run the service, gate CI |
-| `munafsheikh/ai-code-reviewers-runtime:0.10.0` | Ollama (CPU build) with `qwen2.5-coder:1.5b` baked in | Give the reviewer a local model; never downloads at run time |
-| `munafsheikh/ai-code-reviewers-base:0.10.0` | Python slim + non-root user, shared by the others | Build your own images on the same layers |
-| `munafsheikh/ai-code-reviewers-toolbox:0.10.0` | Pinned development tooling | Contribute to this project (the `dev` Compose service) |
-| `munafsheikh/ai-code-reviewers-fake-runtime:0.10.0` | Deterministic model stand-in | End-to-end tests without model weights |
+| `munafsheikh/ai-code-reviewers:0.10.1` | The reviewer: CLI, HTTP service, rules, skills, policies | Review a diff, run the service, gate CI |
+| `munafsheikh/ai-code-reviewers-runtime:0.10.1` | Ollama (CPU build) with `qwen2.5-coder:1.5b` baked in | Give the reviewer a local model; never downloads at run time |
+| `munafsheikh/ai-code-reviewers-base:0.10.1` | Python slim + non-root user, shared by the others | Build your own images on the same layers |
+| `munafsheikh/ai-code-reviewers-toolbox:0.10.1` | Pinned development tooling | Contribute to this project (the `dev` Compose service) |
+| `munafsheikh/ai-code-reviewers-fake-runtime:0.10.1` | Deterministic model stand-in | End-to-end tests without model weights |
 
 All images are multi-arch (amd64, arm64) and signed. The reviewer is also published, signed
 and attested, as `ghcr.io/munafsheikh/ai-code-reviewers`.
@@ -20,12 +20,12 @@ and attested, as `ghcr.io/munafsheikh/ai-code-reviewers`.
 ## Step 1: pull the images (the only step that needs a network)
 
 ```bash
-docker pull munafsheikh/ai-code-reviewers:0.10.0
-docker pull munafsheikh/ai-code-reviewers-runtime:0.10.0     # ~1.2 GB: Ollama (CPU) + model weights
+docker pull munafsheikh/ai-code-reviewers:0.10.1
+docker pull munafsheikh/ai-code-reviewers-runtime:0.10.1     # ~1.2 GB: Ollama (CPU) + model weights
 ```
 
 On an air-gapped machine, pull on a connected one and move them with
-`docker save munafsheikh/ai-code-reviewers:0.10.0 munafsheikh/ai-code-reviewers-runtime:0.10.0 | gzip > acr.tgz`
+`docker save munafsheikh/ai-code-reviewers:0.10.1 munafsheikh/ai-code-reviewers-runtime:0.10.1 | gzip > acr.tgz`
 and `docker load < acr.tgz`.
 
 ## Step 2: your first review (rules only, seconds)
@@ -34,7 +34,7 @@ From any Git repository, review your branch against `main`:
 
 ```bash
 git diff main... | docker run --rm -i --read-only --network none \
-  munafsheikh/ai-code-reviewers:0.10.0 review --profile offline
+  munafsheikh/ai-code-reviewers:0.10.1 review --profile offline
 ```
 
 `--network none` gives the container no network at all; the `offline` profile uses only the
@@ -57,11 +57,11 @@ Start the runtime on a private network with no route out, then review through it
 ```bash
 docker network create --internal acr
 docker run -d --name llm-runtime --network acr --read-only --tmpfs /tmp \
-  munafsheikh/ai-code-reviewers-runtime:0.10.0
+  munafsheikh/ai-code-reviewers-runtime:0.10.1
 
 git diff main... | docker run --rm -i --read-only --network acr \
   -e ACR_MODEL_HOST=http://llm-runtime:11434 \
-  munafsheikh/ai-code-reviewers:0.10.0 review --profile balanced
+  munafsheikh/ai-code-reviewers:0.10.1 review --profile balanced
 ```
 
 The report now says `Models: qwen2.5-coder:1.5b` and lists model findings as
@@ -107,7 +107,7 @@ runtime itself stays on the internal network only.
 docker network create acr-edge
 docker run -d --name acr --network acr-edge -p 127.0.0.1:8088:8088 --read-only --tmpfs /tmp \
   -e ACR_MODEL_HOST=http://llm-runtime:11434 \
-  munafsheikh/ai-code-reviewers:0.10.0 serve
+  munafsheikh/ai-code-reviewers:0.10.1 serve
 docker network connect acr acr
 curl -s --data-binary @change.patch http://127.0.0.1:8088/v1/review        # JSON result
 curl -s http://127.0.0.1:8088/readyz                                       # ready (model reachable)?
@@ -130,7 +130,7 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with: {fetch-depth: 0}
-      - uses: munafsheikh/ai-code-reviewers/integrations/github@v0.10.0
+      - uses: munafsheikh/ai-code-reviewers/integrations/github@v0.10.1
         with:
           profile: balanced          # runtime defaults to the image with the model baked in
           require-model: 'true'      # fail instead of silently falling back to rules
@@ -145,7 +145,7 @@ action once per lane with `skills:`, then merge with `merge-results:`; see
 
 ```bash
 gh issue view 42 --json number,title,body,labels,url | \
-  docker run --rm -i --read-only --network none munafsheikh/ai-code-reviewers:0.10.0 review --issue - --profile offline
+  docker run --rm -i --read-only --network none munafsheikh/ai-code-reviewers:0.10.1 review --issue - --profile offline
 ```
 
 Issues are checked against a Definition of Ready (acceptance criteria, reproducible bug

@@ -32,7 +32,7 @@ from three places, all optional and combined in this order:
 git diff main... | docker run --rm -i --read-only --network acr \
   -v "$PWD/instructions.d:/etc/acr/instructions.d:ro" \
   -e ACR_MODEL_HOST=http://llm-runtime:11434 \
-  munafsheikh/ai-code-reviewers:0.10.0 review --profile balanced
+  munafsheikh/ai-code-reviewers:0.10.1 review --profile balanced
 
 # or one file for this run, or inline:
 ... review --instructions .github/review-instructions.md
@@ -93,7 +93,7 @@ developer and pipeline runs exactly the same review. This is
 [`examples/custom-image`](https://github.com/munafsheikh/ai-code-reviewers/tree/main/examples/custom-image):
 
 ```dockerfile
-ARG REVIEWER_IMAGE=munafsheikh/ai-code-reviewers:0.10.0
+ARG REVIEWER_IMAGE=munafsheikh/ai-code-reviewers:0.10.1
 FROM ${REVIEWER_IMAGE}
 COPY instructions.d/ /etc/acr/instructions.d/
 COPY skills.d/ /etc/acr/skills.d/
@@ -124,7 +124,7 @@ does the same from the published images:
 ```yaml
 services:
   reviewer:
-    image: munafsheikh/ai-code-reviewers:0.10.0
+    image: munafsheikh/ai-code-reviewers:0.10.1
     volumes:
       - ./instructions.d:/etc/acr/instructions.d:ro
       - ./skills.d:/etc/acr/skills.d:ro
@@ -185,7 +185,7 @@ can block. Raise it per run when you want less noise:
 
 ```bash
 git diff main... | docker run --rm -i --read-only --network none \
-  munafsheikh/ai-code-reviewers:0.10.0 review --profile offline --min-confidence high
+  munafsheikh/ai-code-reviewers:0.10.1 review --profile offline --min-confidence high
 # Minimum confidence: high (from --min-confidence); hidden below it: 1 critical, 1 major
 ```
 
