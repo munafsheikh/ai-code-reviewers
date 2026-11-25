@@ -1,0 +1,2 @@
+description = "Analyzer-verified Python: a multi-line requests.get that passes timeout= is not flagged, a multi-line post without one is confirmed; SQL via a quoted f-string and via a %-formatted variable is confirmed, a parameterised query is not."
+expected_gate = "block"

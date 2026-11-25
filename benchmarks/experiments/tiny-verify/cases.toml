@@ -1,0 +1,871 @@
+# Labelled cases: every case's marked line matches its check's candidate regex, so the
+# question is always "is this candidate a real instance?". label = true means it is.
+# Negatives are deliberately near-misses: same API, harmless use.
+
+# --- py.random-secret ------------------------------------------------------------------
+[[case]]
+check = "py.random-secret"
+label = true
+line = 2
+code = '''
+def make_reset_token(user):
+    token = "".join(random.choices(string.ascii_letters + string.digits, k=32))
+    store_reset(user, token)
+'''
+
+[[case]]
+check = "py.random-secret"
+label = true
+line = 2
+code = '''
+def send_otp(phone):
+    code = random.randint(100000, 999999)
+    sms.send(phone, f"Your login code is {code}")
+'''
+
+[[case]]
+check = "py.random-secret"
+label = true
+line = 1
+code = '''
+salt = bytes(random.getrandbits(8) for _ in range(16))
+digest = hashlib.pbkdf2_hmac("sha256", password, salt, 100_000)
+'''
+
+[[case]]
+check = "py.random-secret"
+label = true
+line = 3
+code = '''
+def new_api_key():
+    alphabet = string.ascii_letters + string.digits
+    return "sk_" + "".join(random.choice(alphabet) for _ in range(40))
+'''
+
+[[case]]
+check = "py.random-secret"
+label = true
+line = 2
+code = '''
+def create_session(user_id):
+    session_id = "%032x" % random.getrandbits(128)
+    redis.set(f"session:{session_id}", user_id)
+'''
+
+[[case]]
+check = "py.random-secret"
+label = false
+line = 3
+code = '''
+def backoff(attempt):
+    base = min(30, 2 ** attempt)
+    return base + random.uniform(0, 1)
+'''
+
+[[case]]
+check = "py.random-secret"
+label = false
+line = 2
+code = '''
+def sample_for_review(orders):
+    return random.sample(orders, k=min(10, len(orders)))
+'''
+
+[[case]]
+check = "py.random-secret"
+label = false
+line = 1
+code = '''
+random.shuffle(questions)
+quiz = Quiz(questions[:20])
+'''
+
+[[case]]
+check = "py.random-secret"
+label = false
+line = 2
+code = '''
+def test_sort_handles_large_lists():
+    data = [random.randint(0, 1000) for _ in range(10_000)]
+    assert my_sort(data) == sorted(data)
+'''
+
+[[case]]
+check = "py.random-secret"
+label = false
+line = 2
+code = '''
+def pick_server(servers):
+    return random.choice(servers)  # simple load spreading
+'''
+
+# --- py.assert-guard -------------------------------------------------------------------
+[[case]]
+check = "py.assert-guard"
+label = true
+line = 2
+code = '''
+def delete_account(request, account_id):
+    assert request.user.is_staff, "forbidden"
+    Account.objects.get(id=account_id).delete()
+'''
+
+[[case]]
+check = "py.assert-guard"
+label = true
+line = 3
+code = '''
+def transfer(payload):
+    amount = Decimal(payload["amount"])
+    assert amount > 0, "amount must be positive"
+    ledger.move(payload["from"], payload["to"], amount)
+'''
+
+[[case]]
+check = "py.assert-guard"
+label = true
+line = 2
+code = '''
+def download(path_param):
+    assert ".." not in path_param
+    return send_file(os.path.join(BASE_DIR, path_param))
+'''
+
+[[case]]
+check = "py.assert-guard"
+label = true
+line = 2
+code = '''
+def handle_webhook(req):
+    assert hmac.compare_digest(req.headers["X-Signature"], sign(req.body))
+    process(req.json())
+'''
+
+[[case]]
+check = "py.assert-guard"
+label = true
+line = 2
+code = '''
+def update_profile(user, form):
+    assert form.owner_id == user.id
+    form.save()
+'''
+
+[[case]]
+check = "py.assert-guard"
+label = false
+line = 3
+code = '''
+def test_login_rejects_bad_password(client):
+    resp = client.post("/login", data={"user": "a", "password": "x"})
+    assert resp.status_code == 401
+'''
+
+[[case]]
+check = "py.assert-guard"
+label = false
+line = 3
+code = '''
+def _merge_sorted(a, b):
+    out = heapq.merge(a, b)
+    assert out is not None  # heapq.merge always returns an iterator
+    return list(out)
+'''
+
+[[case]]
+check = "py.assert-guard"
+label = false
+line = 2
+code = '''
+def normalise(matrix):
+    assert matrix.ndim == 2, "internal: caller passes 2-D arrays"
+    return matrix / matrix.sum(axis=1, keepdims=True)
+'''
+
+[[case]]
+check = "py.assert-guard"
+label = false
+line = 3
+code = '''
+class Stack:
+    def pop(self):
+        assert self._items, "pop called on empty stack (bug in caller)"
+        return self._items.pop()
+'''
+
+[[case]]
+check = "py.assert-guard"
+label = false
+line = 2
+code = '''
+def test_admin_can_delete(admin_client):
+    assert admin_client.delete("/accounts/1").status_code == 204
+'''
+
+# --- py.sql-format ---------------------------------------------------------------------
+[[case]]
+check = "py.sql-format"
+label = true
+line = 2
+code = '''
+def find_user(cur, name):
+    cur.execute(f"SELECT * FROM users WHERE name = '{name}'")
+    return cur.fetchone()
+'''
+
+[[case]]
+check = "py.sql-format"
+label = true
+line = 2
+code = '''
+def orders_for(cur, customer_id):
+    cur.execute("SELECT * FROM orders WHERE customer_id = %s" % customer_id)
+'''
+
+[[case]]
+check = "py.sql-format"
+label = true
+line = 2
+code = '''
+def delete_rows(cur, table, ids):
+    cur.execute("DELETE FROM " + table + " WHERE id IN (" + ",".join(ids) + ")")
+'''
+
+[[case]]
+check = "py.sql-format"
+label = true
+line = 2
+code = '''
+def search(cur, term):
+    cur.execute("SELECT id FROM docs WHERE title LIKE '{}%'".format(term))
+'''
+
+[[case]]
+check = "py.sql-format"
+label = true
+line = 3
+code = '''
+def count(cur, status):
+    q = f"SELECT count(*) FROM jobs WHERE status = '{status}'"
+    cur.execute(q)
+'''
+
+[[case]]
+check = "py.sql-format"
+label = false
+line = 2
+code = '''
+def find_user(cur, name):
+    cur.execute("SELECT * FROM users WHERE name = %s", (name,))
+    return cur.fetchone()
+'''
+
+[[case]]
+check = "py.sql-format"
+label = false
+line = 2
+code = '''
+def add_many(cur, rows):
+    cur.executemany("INSERT INTO items (sku, qty) VALUES (?, ?)", rows)
+'''
+
+[[case]]
+check = "py.sql-format"
+label = false
+line = 1
+code = '''
+cur.execute("CREATE TABLE IF NOT EXISTS audit (id SERIAL PRIMARY KEY, msg TEXT)")
+'''
+
+[[case]]
+check = "py.sql-format"
+label = false
+line = 2
+code = '''
+def by_status(cur, status):
+    cur.execute("SELECT * FROM jobs WHERE status = :s", {"s": status})
+'''
+
+[[case]]
+check = "py.sql-format"
+label = false
+line = 3
+code = '''
+def run(pool, fn, items):
+    with ThreadPoolExecutor() as ex:
+        ex.execute(fn, items)  # project helper, not SQL
+'''
+
+# --- py.http-timeout -------------------------------------------------------------------
+[[case]]
+check = "py.http-timeout"
+label = true
+line = 2
+code = '''
+def fetch_rates():
+    return requests.get("https://api.example.com/rates").json()
+'''
+
+[[case]]
+check = "py.http-timeout"
+label = true
+line = 2
+code = '''
+def notify(url, payload):
+    resp = requests.post(
+        url,
+        json=payload,
+        headers={"Content-Type": "application/json"},
+    )
+    resp.raise_for_status()
+'''
+
+[[case]]
+check = "py.http-timeout"
+label = true
+line = 2
+code = '''
+def ping(host):
+    return httpx.get(f"https://{host}/health", follow_redirects=True).status_code == 200
+'''
+
+[[case]]
+check = "py.http-timeout"
+label = true
+line = 2
+code = '''
+def upload(path, url):
+    requests.put(url, data=open(path, "rb"), headers={"x-timeout-hint": "30"})
+'''
+
+[[case]]
+check = "py.http-timeout"
+label = true
+line = 2
+code = '''
+def call(method, url):
+    return requests.request(method, url, params={"timeout": 5})
+'''
+
+[[case]]
+check = "py.http-timeout"
+label = false
+line = 2
+code = '''
+def fetch_rates():
+    return requests.get("https://api.example.com/rates", timeout=5).json()
+'''
+
+[[case]]
+check = "py.http-timeout"
+label = false
+line = 2
+code = '''
+def notify(url, payload):
+    resp = requests.post(
+        url,
+        json=payload,
+        timeout=(3.05, 27),
+    )
+    resp.raise_for_status()
+'''
+
+[[case]]
+check = "py.http-timeout"
+label = false
+line = 2
+code = '''
+def ping(host):
+    return httpx.get(f"https://{host}/health", timeout=2.0).status_code == 200
+'''
+
+[[case]]
+check = "py.http-timeout"
+label = false
+line = 3
+code = '''
+def call(method, url):
+    kwargs = {"timeout": 10}
+    return requests.request(method, url, **kwargs)
+'''
+
+[[case]]
+check = "py.http-timeout"
+label = false
+line = 2
+code = '''
+def get_json(url, timeout=5):
+    return requests.get(url, timeout=timeout).json()
+'''
+
+# --- java.money-double -----------------------------------------------------------------
+[[case]]
+check = "java.money-double"
+label = true
+line = 1
+code = '''
+double accountBalance = account.getBalance();
+accountBalance -= withdrawal;
+'''
+
+[[case]]
+check = "java.money-double"
+label = true
+line = 2
+code = '''
+public Invoice build(Order o) {
+    double total = o.lines().stream().mapToDouble(l -> l.unitPrice() * l.qty()).sum();
+    return new Invoice(o.id(), total);
+}
+'''
+
+[[case]]
+check = "java.money-double"
+label = true
+line = 1
+code = '''
+float shippingCost = zone.isRemote() ? 49.99f : 19.99f;
+'''
+
+[[case]]
+check = "java.money-double"
+label = true
+line = 1
+code = '''
+public void refund(String txId, double amt) {
+    gateway.refund(txId, amt);
+}
+'''
+
+[[case]]
+check = "java.money-double"
+label = true
+line = 2
+code = '''
+for (Employee e : staff) {
+    double monthly = e.annualSalary() / 12;
+    payroll.pay(e, monthly);
+}
+'''
+
+[[case]]
+check = "java.money-double"
+label = false
+line = 1
+code = '''
+double interestRate = 0.0725; // annual percentage, applied to BigDecimal principal below
+BigDecimal interest = principal.multiply(BigDecimal.valueOf(interestRate));
+'''
+
+[[case]]
+check = "java.money-double"
+label = false
+line = 2
+code = '''
+public double distanceKm(Point a, Point b) {
+    double dx = a.x() - b.x();
+    return Math.sqrt(dx * dx + Math.pow(a.y() - b.y(), 2));
+}
+'''
+
+[[case]]
+check = "java.money-double"
+label = false
+line = 1
+code = '''
+double loadFactor = 0.75;
+Map<String, Order> cache = new HashMap<>(256, (float) loadFactor);
+'''
+
+[[case]]
+check = "java.money-double"
+label = false
+line = 2
+code = '''
+long start = System.nanoTime();
+double elapsedMs = (System.nanoTime() - start) / 1_000_000.0;
+metrics.record("checkout.latency", elapsedMs);
+'''
+
+[[case]]
+check = "java.money-double"
+label = false
+line = 1
+code = '''
+double fraudScore = model.predict(features);
+if (fraudScore > 0.9) { review(tx); }
+'''
+
+# --- java.bigdecimal-equals ------------------------------------------------------------
+[[case]]
+check = "java.bigdecimal-equals"
+label = true
+line = 1
+code = '''
+if (order.getTotal().equals(payment.getAmount())) {
+    order.markPaid();
+}
+'''
+
+[[case]]
+check = "java.bigdecimal-equals"
+label = true
+line = 3
+code = '''
+BigDecimal expected = new BigDecimal("10.00");
+BigDecimal actual = calculator.fee(tx);
+boolean ok = expected.equals(actual);
+'''
+
+[[case]]
+check = "java.bigdecimal-equals"
+label = true
+line = 2
+code = '''
+public boolean isZero(BigDecimal balance) {
+    return balance.equals(BigDecimal.ZERO);
+}
+'''
+
+[[case]]
+check = "java.bigdecimal-equals"
+label = true
+line = 2
+code = '''
+BigDecimal limit = account.creditLimit();
+if (!limit.equals(request.requestedLimit())) { audit.change(limit, request.requestedLimit()); }
+'''
+
+[[case]]
+check = "java.bigdecimal-equals"
+label = true
+line = 1
+code = '''
+return Objects.equals(invoice.getVatAmount(), BigDecimal.valueOf(0.15).multiply(invoice.getNet()));
+'''
+
+[[case]]
+check = "java.bigdecimal-equals"
+label = false
+line = 1
+code = '''
+if (order.getCurrency().equals(Currency.getInstance("ZAR"))) {
+    applyLocalFees(order);
+}
+'''
+
+[[case]]
+check = "java.bigdecimal-equals"
+label = false
+line = 1
+code = '''
+if ("PAID".equals(order.getStatus())) {
+    ship(order);
+}
+'''
+
+[[case]]
+check = "java.bigdecimal-equals"
+label = false
+line = 2
+code = '''
+public boolean sameCustomer(Order a, Order b) {
+    return a.getCustomerId().equals(b.getCustomerId());
+}
+'''
+
+[[case]]
+check = "java.bigdecimal-equals"
+label = false
+line = 2
+code = '''
+BigDecimal a = x.getAmount(), b = y.getAmount();
+boolean same = a.compareTo(b) == 0 && a.scale() >= 0 && x.getId().equals(y.getId());
+'''
+
+[[case]]
+check = "java.bigdecimal-equals"
+label = false
+line = 1
+code = '''
+if (event.getType().equals(EventType.REFUND)) { handleRefund(event); }
+'''
+
+# --- java.log-secret -------------------------------------------------------------------
+[[case]]
+check = "java.log-secret"
+label = true
+line = 2
+code = '''
+public void login(String user, String password) {
+    log.debug("login attempt user={} password={}", user, password);
+}
+'''
+
+[[case]]
+check = "java.log-secret"
+label = true
+line = 2
+code = '''
+String token = jwt.issue(user);
+LOGGER.info("Issued token " + token + " for " + user.getId());
+'''
+
+[[case]]
+check = "java.log-secret"
+label = true
+line = 1
+code = '''
+logger.warn("Payment declined for card {} exp {}", card.getNumber(), card.getExpiry());
+'''
+
+[[case]]
+check = "java.log-secret"
+label = true
+line = 2
+code = '''
+var cfg = vault.read("payments");
+log.info("Loaded gateway config apiKey={} endpoint={}", cfg.apiKey(), cfg.endpoint());
+'''
+
+[[case]]
+check = "java.log-secret"
+label = true
+line = 1
+code = '''
+log.error("Auth header rejected: {}", request.getHeader("Authorization"));
+'''
+
+[[case]]
+check = "java.log-secret"
+label = false
+line = 2
+code = '''
+public void login(String user, String password) {
+    log.debug("login attempt user={}", user);
+}
+'''
+
+[[case]]
+check = "java.log-secret"
+label = false
+line = 1
+code = '''
+logger.warn("Payment declined for card ending {} reason={}", card.last4(), result.reason());
+'''
+
+[[case]]
+check = "java.log-secret"
+label = false
+line = 1
+code = '''
+LOGGER.info("Password policy updated: minLength={} requireDigit={}", policy.minLength(), policy.requireDigit());
+'''
+
+[[case]]
+check = "java.log-secret"
+label = false
+line = 1
+code = '''
+log.error("Token refresh failed for user {} after {} attempts", userId, attempts, ex);
+'''
+
+[[case]]
+check = "java.log-secret"
+label = false
+line = 1
+code = '''
+log.info("Rotated API key id={} createdAt={}", key.id(), key.createdAt());
+'''
+
+# --- bash.unquoted-var -----------------------------------------------------------------
+[[case]]
+check = "bash.unquoted-var"
+label = true
+line = 2
+code = '''
+#!/bin/bash
+cp $SRC_FILE /backup/
+'''
+
+[[case]]
+check = "bash.unquoted-var"
+label = true
+line = 3
+code = '''
+#!/bin/bash
+for f in "$@"; do
+  wc -l $f
+done
+'''
+
+[[case]]
+check = "bash.unquoted-var"
+label = true
+line = 2
+code = '''
+#!/bin/bash
+if [ -f $CONFIG ]; then source "$CONFIG"; fi
+'''
+
+[[case]]
+check = "bash.unquoted-var"
+label = true
+line = 2
+code = '''
+#!/bin/bash
+grep -r "$PATTERN" ${TARGET_DIR}
+'''
+
+[[case]]
+check = "bash.unquoted-var"
+label = true
+line = 2
+code = '''
+#!/bin/bash
+mv "$tmp" $OUTPUT_DIR/report.csv
+'''
+
+[[case]]
+check = "bash.unquoted-var"
+label = false
+line = 2
+code = '''
+#!/bin/bash
+cp "$SRC_FILE" /backup/
+'''
+
+[[case]]
+check = "bash.unquoted-var"
+label = false
+line = 2
+code = '''
+#!/bin/bash
+count=$((count + $step))
+'''
+
+[[case]]
+check = "bash.unquoted-var"
+label = false
+line = 2
+code = '''
+#!/bin/bash
+if [[ -f $CONFIG ]]; then source "$CONFIG"; fi
+'''
+
+[[case]]
+check = "bash.unquoted-var"
+label = false
+line = 2
+code = '''
+#!/bin/bash
+name=$USER_NAME
+echo "hello $name"
+'''
+
+[[case]]
+check = "bash.unquoted-var"
+label = false
+line = 2
+code = '''
+#!/bin/bash
+case $MODE in
+  prod) deploy ;;
+esac
+'''
+
+# --- bash.rm-empty-var -----------------------------------------------------------------
+[[case]]
+check = "bash.rm-empty-var"
+label = true
+line = 2
+code = '''
+#!/bin/bash
+rm -rf "$BUILD_DIR/"
+'''
+
+[[case]]
+check = "bash.rm-empty-var"
+label = true
+line = 3
+code = '''
+#!/bin/bash
+cd "$WORKSPACE"
+rm -rf "$STAGING"/*
+'''
+
+[[case]]
+check = "bash.rm-empty-var"
+label = true
+line = 2
+code = '''
+#!/bin/bash
+rm -rf "$PREFIX/lib/myapp"
+'''
+
+[[case]]
+check = "bash.rm-empty-var"
+label = true
+line = 3
+code = '''
+#!/bin/bash
+cleanup() {
+  rm -rf "${TMPDIR}/${JOB_ID}"
+}
+'''
+
+[[case]]
+check = "bash.rm-empty-var"
+label = true
+line = 2
+code = '''
+#!/bin/bash
+rm -r $HOME/$CACHE_SUBDIR
+'''
+
+[[case]]
+check = "bash.rm-empty-var"
+label = false
+line = 2
+code = '''
+#!/bin/bash
+rm -rf "${BUILD_DIR:?}/"
+'''
+
+[[case]]
+check = "bash.rm-empty-var"
+label = false
+line = 3
+code = '''
+#!/bin/bash
+tmp=$(mktemp -d)
+rm -rf "$tmp"
+'''
+
+[[case]]
+check = "bash.rm-empty-var"
+label = false
+line = 2
+code = '''
+#!/bin/bash
+rm -rf ./dist ./build
+'''
+
+[[case]]
+check = "bash.rm-empty-var"
+label = false
+line = 3
+code = '''
+#!/bin/bash
+[ -n "$STAGING" ] || { echo "STAGING unset" >&2; exit 1; }
+rm -rf "$STAGING"/*
+'''
+
+[[case]]
+check = "bash.rm-empty-var"
+label = false
+line = 2
+code = '''
+#!/bin/bash
+rm -rf "${CACHE_DIR:-/tmp/myapp-cache}"
+'''

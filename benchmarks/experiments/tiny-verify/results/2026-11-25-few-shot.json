@@ -1,0 +1,2307 @@
+{
+  "models": [
+    "gemma3:270m",
+    "qwen3:0.6b",
+    "qwen2.5-coder:1.5b"
+  ],
+  "shots": true,
+  "cases": 60,
+  "overall": {
+    "candidate": {
+      "n": 60,
+      "tp": 30,
+      "fp": 30,
+      "fn": 0,
+      "tn": 0,
+      "unanswered": 0,
+      "precision": 0.5,
+      "recall": 1.0,
+      "f1": 0.667,
+      "accuracy": 0.5,
+      "covered_checks": [
+        "bash.rm-empty-var",
+        "java.bigdecimal-equals",
+        "java.log-secret",
+        "java.money-double",
+        "py.assert-guard",
+        "py.random-secret"
+      ]
+    },
+    "rule": {
+      "n": 30,
+      "tp": 7,
+      "fp": 1,
+      "fn": 8,
+      "tn": 14,
+      "unanswered": 0,
+      "precision": 0.875,
+      "recall": 0.467,
+      "f1": 0.609,
+      "accuracy": 0.7,
+      "covered_checks": [
+        "java.money-double",
+        "py.assert-guard",
+        "py.random-secret"
+      ]
+    },
+    "tool": {
+      "n": 10,
+      "tp": 4,
+      "fp": 1,
+      "fn": 1,
+      "tn": 4,
+      "unanswered": 0,
+      "precision": 0.8,
+      "recall": 0.8,
+      "f1": 0.8,
+      "accuracy": 0.8,
+      "covered_checks": [
+        "bash.rm-empty-var"
+      ]
+    },
+    "model:gemma3:270m": {
+      "n": 60,
+      "tp": 9,
+      "fp": 4,
+      "fn": 21,
+      "tn": 26,
+      "unanswered": 0,
+      "precision": 0.692,
+      "recall": 0.3,
+      "f1": 0.419,
+      "accuracy": 0.583,
+      "covered_checks": [
+        "bash.rm-empty-var",
+        "java.bigdecimal-equals",
+        "java.log-secret",
+        "java.money-double",
+        "py.assert-guard",
+        "py.random-secret"
+      ]
+    },
+    "hybrid:gemma3:270m": {
+      "n": 60,
+      "tp": 13,
+      "fp": 5,
+      "fn": 17,
+      "tn": 25,
+      "unanswered": 0,
+      "precision": 0.722,
+      "recall": 0.433,
+      "f1": 0.542,
+      "accuracy": 0.633,
+      "covered_checks": [
+        "bash.rm-empty-var",
+        "java.bigdecimal-equals",
+        "java.log-secret",
+        "java.money-double",
+        "py.assert-guard",
+        "py.random-secret"
+      ]
+    },
+    "model:qwen3:0.6b": {
+      "n": 60,
+      "tp": 7,
+      "fp": 0,
+      "fn": 23,
+      "tn": 30,
+      "unanswered": 0,
+      "precision": 1.0,
+      "recall": 0.233,
+      "f1": 0.378,
+      "accuracy": 0.617,
+      "covered_checks": [
+        "bash.rm-empty-var",
+        "java.bigdecimal-equals",
+        "java.log-secret",
+        "java.money-double",
+        "py.assert-guard",
+        "py.random-secret"
+      ]
+    },
+    "hybrid:qwen3:0.6b": {
+      "n": 60,
+      "tp": 11,
+      "fp": 1,
+      "fn": 19,
+      "tn": 29,
+      "unanswered": 0,
+      "precision": 0.917,
+      "recall": 0.367,
+      "f1": 0.524,
+      "accuracy": 0.667,
+      "covered_checks": [
+        "bash.rm-empty-var",
+        "java.bigdecimal-equals",
+        "java.log-secret",
+        "java.money-double",
+        "py.assert-guard",
+        "py.random-secret"
+      ]
+    },
+    "model:qwen2.5-coder:1.5b": {
+      "n": 60,
+      "tp": 28,
+      "fp": 20,
+      "fn": 2,
+      "tn": 10,
+      "unanswered": 0,
+      "precision": 0.583,
+      "recall": 0.933,
+      "f1": 0.718,
+      "accuracy": 0.633,
+      "covered_checks": [
+        "bash.rm-empty-var",
+        "java.bigdecimal-equals",
+        "java.log-secret",
+        "java.money-double",
+        "py.assert-guard",
+        "py.random-secret"
+      ]
+    },
+    "hybrid:qwen2.5-coder:1.5b": {
+      "n": 60,
+      "tp": 27,
+      "fp": 18,
+      "fn": 3,
+      "tn": 12,
+      "unanswered": 0,
+      "precision": 0.6,
+      "recall": 0.9,
+      "f1": 0.72,
+      "accuracy": 0.65,
+      "covered_checks": [
+        "bash.rm-empty-var",
+        "java.bigdecimal-equals",
+        "java.log-secret",
+        "java.money-double",
+        "py.assert-guard",
+        "py.random-secret"
+      ]
+    }
+  },
+  "by_kind": {
+    "semantic": {
+      "candidate": {
+        "n": 60,
+        "tp": 30,
+        "fp": 30,
+        "fn": 0,
+        "tn": 0,
+        "unanswered": 0,
+        "precision": 0.5,
+        "recall": 1.0,
+        "f1": 0.667,
+        "accuracy": 0.5
+      },
+      "rule": {
+        "n": 30,
+        "tp": 7,
+        "fp": 1,
+        "fn": 8,
+        "tn": 14,
+        "unanswered": 0,
+        "precision": 0.875,
+        "recall": 0.467,
+        "f1": 0.609,
+        "accuracy": 0.7
+      },
+      "tool": {
+        "n": 10,
+        "tp": 4,
+        "fp": 1,
+        "fn": 1,
+        "tn": 4,
+        "unanswered": 0,
+        "precision": 0.8,
+        "recall": 0.8,
+        "f1": 0.8,
+        "accuracy": 0.8
+      },
+      "model:gemma3:270m": {
+        "n": 60,
+        "tp": 9,
+        "fp": 4,
+        "fn": 21,
+        "tn": 26,
+        "unanswered": 0,
+        "precision": 0.692,
+        "recall": 0.3,
+        "f1": 0.419,
+        "accuracy": 0.583
+      },
+      "hybrid:gemma3:270m": {
+        "n": 60,
+        "tp": 13,
+        "fp": 5,
+        "fn": 17,
+        "tn": 25,
+        "unanswered": 0,
+        "precision": 0.722,
+        "recall": 0.433,
+        "f1": 0.542,
+        "accuracy": 0.633
+      },
+      "model:qwen3:0.6b": {
+        "n": 60,
+        "tp": 7,
+        "fp": 0,
+        "fn": 23,
+        "tn": 30,
+        "unanswered": 0,
+        "precision": 1.0,
+        "recall": 0.233,
+        "f1": 0.378,
+        "accuracy": 0.617
+      },
+      "hybrid:qwen3:0.6b": {
+        "n": 60,
+        "tp": 11,
+        "fp": 1,
+        "fn": 19,
+        "tn": 29,
+        "unanswered": 0,
+        "precision": 0.917,
+        "recall": 0.367,
+        "f1": 0.524,
+        "accuracy": 0.667
+      },
+      "model:qwen2.5-coder:1.5b": {
+        "n": 60,
+        "tp": 28,
+        "fp": 20,
+        "fn": 2,
+        "tn": 10,
+        "unanswered": 0,
+        "precision": 0.583,
+        "recall": 0.933,
+        "f1": 0.718,
+        "accuracy": 0.633
+      },
+      "hybrid:qwen2.5-coder:1.5b": {
+        "n": 60,
+        "tp": 27,
+        "fp": 18,
+        "fn": 3,
+        "tn": 12,
+        "unanswered": 0,
+        "precision": 0.6,
+        "recall": 0.9,
+        "f1": 0.72,
+        "accuracy": 0.65
+      }
+    },
+    "structural": {
+      "candidate": {
+        "n": 0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 0,
+        "tn": 0,
+        "unanswered": 0,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "accuracy": 0.0
+      },
+      "rule": {
+        "n": 0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 0,
+        "tn": 0,
+        "unanswered": 0,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "accuracy": 0.0
+      },
+      "tool": {
+        "n": 0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 0,
+        "tn": 0,
+        "unanswered": 0,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "accuracy": 0.0
+      },
+      "model:gemma3:270m": {
+        "n": 0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 0,
+        "tn": 0,
+        "unanswered": 0,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "accuracy": 0.0
+      },
+      "hybrid:gemma3:270m": {
+        "n": 0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 0,
+        "tn": 0,
+        "unanswered": 0,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "accuracy": 0.0
+      },
+      "model:qwen3:0.6b": {
+        "n": 0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 0,
+        "tn": 0,
+        "unanswered": 0,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "accuracy": 0.0
+      },
+      "hybrid:qwen3:0.6b": {
+        "n": 0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 0,
+        "tn": 0,
+        "unanswered": 0,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "accuracy": 0.0
+      },
+      "model:qwen2.5-coder:1.5b": {
+        "n": 0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 0,
+        "tn": 0,
+        "unanswered": 0,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "accuracy": 0.0
+      },
+      "hybrid:qwen2.5-coder:1.5b": {
+        "n": 0,
+        "tp": 0,
+        "fp": 0,
+        "fn": 0,
+        "tn": 0,
+        "unanswered": 0,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "accuracy": 0.0
+      }
+    }
+  },
+  "by_check": {
+    "py.random-secret": {
+      "candidate": {
+        "n": 10,
+        "tp": 5,
+        "fp": 5,
+        "fn": 0,
+        "tn": 0,
+        "unanswered": 0,
+        "precision": 0.5,
+        "recall": 1.0,
+        "f1": 0.667,
+        "accuracy": 0.5
+      },
+      "rule": {
+        "n": 10,
+        "tp": 3,
+        "fp": 0,
+        "fn": 2,
+        "tn": 5,
+        "unanswered": 0,
+        "precision": 1.0,
+        "recall": 0.6,
+        "f1": 0.75,
+        "accuracy": 0.8
+      },
+      "model:gemma3:270m": {
+        "n": 10,
+        "tp": 2,
+        "fp": 0,
+        "fn": 3,
+        "tn": 5,
+        "unanswered": 0,
+        "precision": 1.0,
+        "recall": 0.4,
+        "f1": 0.571,
+        "accuracy": 0.7
+      },
+      "hybrid:gemma3:270m": {
+        "n": 10,
+        "tp": 2,
+        "fp": 0,
+        "fn": 3,
+        "tn": 5,
+        "unanswered": 0,
+        "precision": 1.0,
+        "recall": 0.4,
+        "f1": 0.571,
+        "accuracy": 0.7
+      },
+      "model:qwen3:0.6b": {
+        "n": 10,
+        "tp": 4,
+        "fp": 0,
+        "fn": 1,
+        "tn": 5,
+        "unanswered": 0,
+        "precision": 1.0,
+        "recall": 0.8,
+        "f1": 0.889,
+        "accuracy": 0.9
+      },
+      "hybrid:qwen3:0.6b": {
+        "n": 10,
+        "tp": 4,
+        "fp": 0,
+        "fn": 1,
+        "tn": 5,
+        "unanswered": 0,
+        "precision": 1.0,
+        "recall": 0.8,
+        "f1": 0.889,
+        "accuracy": 0.9
+      },
+      "model:qwen2.5-coder:1.5b": {
+        "n": 10,
+        "tp": 5,
+        "fp": 3,
+        "fn": 0,
+        "tn": 2,
+        "unanswered": 0,
+        "precision": 0.625,
+        "recall": 1.0,
+        "f1": 0.769,
+        "accuracy": 0.7
+      },
+      "hybrid:qwen2.5-coder:1.5b": {
+        "n": 10,
+        "tp": 5,
+        "fp": 3,
+        "fn": 0,
+        "tn": 2,
+        "unanswered": 0,
+        "precision": 0.625,
+        "recall": 1.0,
+        "f1": 0.769,
+        "accuracy": 0.7
+      }
+    },
+    "py.assert-guard": {
+      "candidate": {
+        "n": 10,
+        "tp": 5,
+        "fp": 5,
+        "fn": 0,
+        "tn": 0,
+        "unanswered": 0,
+        "precision": 0.5,
+        "recall": 1.0,
+        "f1": 0.667,
+        "accuracy": 0.5
+      },
+      "rule": {
+        "n": 10,
+        "tp": 1,
+        "fp": 0,
+        "fn": 4,
+        "tn": 5,
+        "unanswered": 0,
+        "precision": 1.0,
+        "recall": 0.2,
+        "f1": 0.333,
+        "accuracy": 0.6
+      },
+      "model:gemma3:270m": {
+        "n": 10,
+        "tp": 3,
+        "fp": 1,
+        "fn": 2,
+        "tn": 4,
+        "unanswered": 0,
+        "precision": 0.75,
+        "recall": 0.6,
+        "f1": 0.667,
+        "accuracy": 0.7
+      },
+      "hybrid:gemma3:270m": {
+        "n": 10,
+        "tp": 3,
+        "fp": 1,
+        "fn": 2,
+        "tn": 4,
+        "unanswered": 0,
+        "precision": 0.75,
+        "recall": 0.6,
+        "f1": 0.667,
+        "accuracy": 0.7
+      },
+      "model:qwen3:0.6b": {
+        "n": 10,
+        "tp": 0,
+        "fp": 0,
+        "fn": 5,
+        "tn": 5,
+        "unanswered": 0,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "accuracy": 0.5
+      },
+      "hybrid:qwen3:0.6b": {
+        "n": 10,
+        "tp": 0,
+        "fp": 0,
+        "fn": 5,
+        "tn": 5,
+        "unanswered": 0,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "accuracy": 0.5
+      },
+      "model:qwen2.5-coder:1.5b": {
+        "n": 10,
+        "tp": 5,
+        "fp": 5,
+        "fn": 0,
+        "tn": 0,
+        "unanswered": 0,
+        "precision": 0.5,
+        "recall": 1.0,
+        "f1": 0.667,
+        "accuracy": 0.5
+      },
+      "hybrid:qwen2.5-coder:1.5b": {
+        "n": 10,
+        "tp": 5,
+        "fp": 5,
+        "fn": 0,
+        "tn": 0,
+        "unanswered": 0,
+        "precision": 0.5,
+        "recall": 1.0,
+        "f1": 0.667,
+        "accuracy": 0.5
+      }
+    },
+    "java.money-double": {
+      "candidate": {
+        "n": 10,
+        "tp": 5,
+        "fp": 5,
+        "fn": 0,
+        "tn": 0,
+        "unanswered": 0,
+        "precision": 0.5,
+        "recall": 1.0,
+        "f1": 0.667,
+        "accuracy": 0.5
+      },
+      "rule": {
+        "n": 10,
+        "tp": 3,
+        "fp": 1,
+        "fn": 2,
+        "tn": 4,
+        "unanswered": 0,
+        "precision": 0.75,
+        "recall": 0.6,
+        "f1": 0.667,
+        "accuracy": 0.7
+      },
+      "model:gemma3:270m": {
+        "n": 10,
+        "tp": 1,
+        "fp": 1,
+        "fn": 4,
+        "tn": 4,
+        "unanswered": 0,
+        "precision": 0.5,
+        "recall": 0.2,
+        "f1": 0.286,
+        "accuracy": 0.5
+      },
+      "hybrid:gemma3:270m": {
+        "n": 10,
+        "tp": 1,
+        "fp": 1,
+        "fn": 4,
+        "tn": 4,
+        "unanswered": 0,
+        "precision": 0.5,
+        "recall": 0.2,
+        "f1": 0.286,
+        "accuracy": 0.5
+      },
+      "model:qwen3:0.6b": {
+        "n": 10,
+        "tp": 0,
+        "fp": 0,
+        "fn": 5,
+        "tn": 5,
+        "unanswered": 0,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "accuracy": 0.5
+      },
+      "hybrid:qwen3:0.6b": {
+        "n": 10,
+        "tp": 0,
+        "fp": 0,
+        "fn": 5,
+        "tn": 5,
+        "unanswered": 0,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "accuracy": 0.5
+      },
+      "model:qwen2.5-coder:1.5b": {
+        "n": 10,
+        "tp": 5,
+        "fp": 4,
+        "fn": 0,
+        "tn": 1,
+        "unanswered": 0,
+        "precision": 0.556,
+        "recall": 1.0,
+        "f1": 0.714,
+        "accuracy": 0.6
+      },
+      "hybrid:qwen2.5-coder:1.5b": {
+        "n": 10,
+        "tp": 5,
+        "fp": 4,
+        "fn": 0,
+        "tn": 1,
+        "unanswered": 0,
+        "precision": 0.556,
+        "recall": 1.0,
+        "f1": 0.714,
+        "accuracy": 0.6
+      }
+    },
+    "java.bigdecimal-equals": {
+      "candidate": {
+        "n": 10,
+        "tp": 5,
+        "fp": 5,
+        "fn": 0,
+        "tn": 0,
+        "unanswered": 0,
+        "precision": 0.5,
+        "recall": 1.0,
+        "f1": 0.667,
+        "accuracy": 0.5
+      },
+      "model:gemma3:270m": {
+        "n": 10,
+        "tp": 2,
+        "fp": 2,
+        "fn": 3,
+        "tn": 3,
+        "unanswered": 0,
+        "precision": 0.5,
+        "recall": 0.4,
+        "f1": 0.444,
+        "accuracy": 0.5
+      },
+      "hybrid:gemma3:270m": {
+        "n": 10,
+        "tp": 2,
+        "fp": 2,
+        "fn": 3,
+        "tn": 3,
+        "unanswered": 0,
+        "precision": 0.5,
+        "recall": 0.4,
+        "f1": 0.444,
+        "accuracy": 0.5
+      },
+      "model:qwen3:0.6b": {
+        "n": 10,
+        "tp": 1,
+        "fp": 0,
+        "fn": 4,
+        "tn": 5,
+        "unanswered": 0,
+        "precision": 1.0,
+        "recall": 0.2,
+        "f1": 0.333,
+        "accuracy": 0.6
+      },
+      "hybrid:qwen3:0.6b": {
+        "n": 10,
+        "tp": 1,
+        "fp": 0,
+        "fn": 4,
+        "tn": 5,
+        "unanswered": 0,
+        "precision": 1.0,
+        "recall": 0.2,
+        "f1": 0.333,
+        "accuracy": 0.6
+      },
+      "model:qwen2.5-coder:1.5b": {
+        "n": 10,
+        "tp": 5,
+        "fp": 5,
+        "fn": 0,
+        "tn": 0,
+        "unanswered": 0,
+        "precision": 0.5,
+        "recall": 1.0,
+        "f1": 0.667,
+        "accuracy": 0.5
+      },
+      "hybrid:qwen2.5-coder:1.5b": {
+        "n": 10,
+        "tp": 5,
+        "fp": 5,
+        "fn": 0,
+        "tn": 0,
+        "unanswered": 0,
+        "precision": 0.5,
+        "recall": 1.0,
+        "f1": 0.667,
+        "accuracy": 0.5
+      }
+    },
+    "java.log-secret": {
+      "candidate": {
+        "n": 10,
+        "tp": 5,
+        "fp": 5,
+        "fn": 0,
+        "tn": 0,
+        "unanswered": 0,
+        "precision": 0.5,
+        "recall": 1.0,
+        "f1": 0.667,
+        "accuracy": 0.5
+      },
+      "model:gemma3:270m": {
+        "n": 10,
+        "tp": 1,
+        "fp": 0,
+        "fn": 4,
+        "tn": 5,
+        "unanswered": 0,
+        "precision": 1.0,
+        "recall": 0.2,
+        "f1": 0.333,
+        "accuracy": 0.6
+      },
+      "hybrid:gemma3:270m": {
+        "n": 10,
+        "tp": 1,
+        "fp": 0,
+        "fn": 4,
+        "tn": 5,
+        "unanswered": 0,
+        "precision": 1.0,
+        "recall": 0.2,
+        "f1": 0.333,
+        "accuracy": 0.6
+      },
+      "model:qwen3:0.6b": {
+        "n": 10,
+        "tp": 2,
+        "fp": 0,
+        "fn": 3,
+        "tn": 5,
+        "unanswered": 0,
+        "precision": 1.0,
+        "recall": 0.4,
+        "f1": 0.571,
+        "accuracy": 0.7
+      },
+      "hybrid:qwen3:0.6b": {
+        "n": 10,
+        "tp": 2,
+        "fp": 0,
+        "fn": 3,
+        "tn": 5,
+        "unanswered": 0,
+        "precision": 1.0,
+        "recall": 0.4,
+        "f1": 0.571,
+        "accuracy": 0.7
+      },
+      "model:qwen2.5-coder:1.5b": {
+        "n": 10,
+        "tp": 3,
+        "fp": 0,
+        "fn": 2,
+        "tn": 5,
+        "unanswered": 0,
+        "precision": 1.0,
+        "recall": 0.6,
+        "f1": 0.75,
+        "accuracy": 0.8
+      },
+      "hybrid:qwen2.5-coder:1.5b": {
+        "n": 10,
+        "tp": 3,
+        "fp": 0,
+        "fn": 2,
+        "tn": 5,
+        "unanswered": 0,
+        "precision": 1.0,
+        "recall": 0.6,
+        "f1": 0.75,
+        "accuracy": 0.8
+      }
+    },
+    "bash.rm-empty-var": {
+      "candidate": {
+        "n": 10,
+        "tp": 5,
+        "fp": 5,
+        "fn": 0,
+        "tn": 0,
+        "unanswered": 0,
+        "precision": 0.5,
+        "recall": 1.0,
+        "f1": 0.667,
+        "accuracy": 0.5
+      },
+      "tool": {
+        "n": 10,
+        "tp": 4,
+        "fp": 1,
+        "fn": 1,
+        "tn": 4,
+        "unanswered": 0,
+        "precision": 0.8,
+        "recall": 0.8,
+        "f1": 0.8,
+        "accuracy": 0.8
+      },
+      "model:gemma3:270m": {
+        "n": 10,
+        "tp": 0,
+        "fp": 0,
+        "fn": 5,
+        "tn": 5,
+        "unanswered": 0,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "accuracy": 0.5
+      },
+      "hybrid:gemma3:270m": {
+        "n": 10,
+        "tp": 4,
+        "fp": 1,
+        "fn": 1,
+        "tn": 4,
+        "unanswered": 0,
+        "precision": 0.8,
+        "recall": 0.8,
+        "f1": 0.8,
+        "accuracy": 0.8
+      },
+      "model:qwen3:0.6b": {
+        "n": 10,
+        "tp": 0,
+        "fp": 0,
+        "fn": 5,
+        "tn": 5,
+        "unanswered": 0,
+        "precision": 0.0,
+        "recall": 0.0,
+        "f1": 0.0,
+        "accuracy": 0.5
+      },
+      "hybrid:qwen3:0.6b": {
+        "n": 10,
+        "tp": 4,
+        "fp": 1,
+        "fn": 1,
+        "tn": 4,
+        "unanswered": 0,
+        "precision": 0.8,
+        "recall": 0.8,
+        "f1": 0.8,
+        "accuracy": 0.8
+      },
+      "model:qwen2.5-coder:1.5b": {
+        "n": 10,
+        "tp": 5,
+        "fp": 3,
+        "fn": 0,
+        "tn": 2,
+        "unanswered": 0,
+        "precision": 0.625,
+        "recall": 1.0,
+        "f1": 0.769,
+        "accuracy": 0.7
+      },
+      "hybrid:qwen2.5-coder:1.5b": {
+        "n": 10,
+        "tp": 4,
+        "fp": 1,
+        "fn": 1,
+        "tn": 4,
+        "unanswered": 0,
+        "precision": 0.8,
+        "recall": 0.8,
+        "f1": 0.8,
+        "accuracy": 0.8
+      }
+    }
+  },
+  "latency_s": {
+    "gemma3:270m": {
+      "mean": 1.26,
+      "max": 2.51
+    },
+    "qwen3:0.6b": {
+      "mean": 0.94,
+      "max": 4.24
+    },
+    "qwen2.5-coder:1.5b": {
+      "mean": 3.27,
+      "max": 7.11
+    }
+  },
+  "rows": [
+    {
+      "id": "py.random-secret#0",
+      "check": "py.random-secret",
+      "kind": "semantic",
+      "label": true,
+      "pred": {
+        "candidate": true,
+        "rule": true,
+        "tool": null,
+        "model:gemma3:270m": true,
+        "hybrid:gemma3:270m": true,
+        "model:qwen3:0.6b": true,
+        "hybrid:qwen3:0.6b": true,
+        "model:qwen2.5-coder:1.5b": true,
+        "hybrid:qwen2.5-coder:1.5b": true
+      },
+      "raw": {
+        "gemma3:270m": "{\"answer\": \"yes\"}",
+        "qwen3:0.6b": "{\"answer\": \"yes\"}",
+        "qwen2.5-coder:1.5b": "{\"answer\": \"yes\"}"
+      }
+    },
+    {
+      "id": "py.random-secret#1",
+      "check": "py.random-secret",
+      "kind": "semantic",
+      "label": true,
+      "pred": {
+        "candidate": true,
+        "rule": false,
+        "tool": null,
+        "model:gemma3:270m": false,
+        "hybrid:gemma3:270m": false,
+        "model:qwen3:0.6b": false,
+        "hybrid:qwen3:0.6b": false,
+        "model:qwen2.5-coder:1.5b": true,
+        "hybrid:qwen2.5-coder:1.5b": true
+      },
+      "raw": {
+        "gemma3:270m": "{\"answer\": \"no\"}",
+        "qwen3:0.6b": "{\"answer\": \"no\"}",
+        "qwen2.5-coder:1.5b": "{\"answer\": \"yes\"}"
+      }
+    },
+    {
+      "id": "py.random-secret#2",
+      "check": "py.random-secret",
+      "kind": "semantic",
+      "label": true,
+      "pred": {
+        "candidate": true,
+        "rule": true,
+        "tool": null,
+        "model:gemma3:270m": true,
+        "hybrid:gemma3:270m": true,
+        "model:qwen3:0.6b": true,
+        "hybrid:qwen3:0.6b": true,
+        "model:qwen2.5-coder:1.5b": true,
+        "hybrid:qwen2.5-coder:1.5b": true
+      },
+      "raw": {
+        "gemma3:270m": "{\"answer\": \"yes\"}",
+        "qwen3:0.6b": "{\"answer\": \"yes\"}",
+        "qwen2.5-coder:1.5b": "{\"answer\": \"yes\"}"
+      }
+    },
+    {
+      "id": "py.random-secret#3",
+      "check": "py.random-secret",
+      "kind": "semantic",
+      "label": true,
+      "pred": {
+        "candidate": true,
+        "rule": false,
+        "tool": null,
+        "model:gemma3:270m": false,
+        "hybrid:gemma3:270m": false,
+        "model:qwen3:0.6b": true,
+        "hybrid:qwen3:0.6b": true,
+        "model:qwen2.5-coder:1.5b": true,
+        "hybrid:qwen2.5-coder:1.5b": true
+      },
+      "raw": {
+        "gemma3:270m": "{\"answer\": \"no\"}",
+        "qwen3:0.6b": "{\"answer\": \"yes\"}",
+        "qwen2.5-coder:1.5b": "{\"answer\": \"yes\"}"
+      }
+    },
+    {
+      "id": "py.random-secret#4",
+      "check": "py.random-secret",
+      "kind": "semantic",
+      "label": true,
+      "pred": {
+        "candidate": true,
+        "rule": true,
+        "tool": null,
+        "model:gemma3:270m": false,
+        "hybrid:gemma3:270m": false,
+        "model:qwen3:0.6b": true,
+        "hybrid:qwen3:0.6b": true,
+        "model:qwen2.5-coder:1.5b": true,
+        "hybrid:qwen2.5-coder:1.5b": true
+      },
+      "raw": {
+        "gemma3:270m": "{\"answer\": \"no\"}",
+        "qwen3:0.6b": "{\"answer\": \"yes\"}",
+        "qwen2.5-coder:1.5b": "{\"answer\": \"yes\"}"
+      }
+    },
+    {
+      "id": "py.random-secret#5",
+      "check": "py.random-secret",
+      "kind": "semantic",
+      "label": false,
+      "pred": {
+        "candidate": true,
+        "rule": false,
+        "tool": null,
+        "model:gemma3:270m": false,
+        "hybrid:gemma3:270m": false,
+        "model:qwen3:0.6b": false,
+        "hybrid:qwen3:0.6b": false,
+        "model:qwen2.5-coder:1.5b": true,
+        "hybrid:qwen2.5-coder:1.5b": true
+      },
+      "raw": {
+        "gemma3:270m": "{\"answer\": \"no\"}",
+        "qwen3:0.6b": "{\"answer\": \"no\"}",
+        "qwen2.5-coder:1.5b": "{\"answer\": \"yes\"}"
+      }
+    },
+    {
+      "id": "py.random-secret#6",
+      "check": "py.random-secret",
+      "kind": "semantic",
+      "label": false,
+      "pred": {
+        "candidate": true,
+        "rule": false,
+        "tool": null,
+        "model:gemma3:270m": false,
+        "hybrid:gemma3:270m": false,
+        "model:qwen3:0.6b": false,
+        "hybrid:qwen3:0.6b": false,
+        "model:qwen2.5-coder:1.5b": true,
+        "hybrid:qwen2.5-coder:1.5b": true
+      },
+      "raw": {
+        "gemma3:270m": "{\"answer\": \"no\"}",
+        "qwen3:0.6b": "{\"answer\": \"no\"}",
+        "qwen2.5-coder:1.5b": "{\"answer\": \"yes\"}"
+      }
+    },
+    {
+      "id": "py.random-secret#7",
+      "check": "py.random-secret",
+      "kind": "semantic",
+      "label": false,
+      "pred": {
+        "candidate": true,
+        "rule": false,
+        "tool": null,
+        "model:gemma3:270m": false,
+        "hybrid:gemma3:270m": false,
+        "model:qwen3:0.6b": false,
+        "hybrid:qwen3:0.6b": false,
+        "model:qwen2.5-coder:1.5b": false,
+        "hybrid:qwen2.5-coder:1.5b": false
+      },
+      "raw": {
+        "gemma3:270m": "{\"answer\": \"no\"}",
+        "qwen3:0.6b": "{\"answer\": \"no\"}",
+        "qwen2.5-coder:1.5b": "{\"answer\": \"no\"}"
+      }
+    },
+    {
+      "id": "py.random-secret#8",
+      "check": "py.random-secret",
+      "kind": "semantic",
+      "label": false,
+      "pred": {
+        "candidate": true,
+        "rule": false,
+        "tool": null,
+        "model:gemma3:270m": false,
+        "hybrid:gemma3:270m": false,
+        "model:qwen3:0.6b": false,
+        "hybrid:qwen3:0.6b": false,
+        "model:qwen2.5-coder:1.5b": true,
+        "hybrid:qwen2.5-coder:1.5b": true
+      },
+      "raw": {
+        "gemma3:270m": "{\"answer\": \"no\"}",
+        "qwen3:0.6b": "{\"answer\": \"no\"}",
+        "qwen2.5-coder:1.5b": "{\"answer\": \"yes\"}"
+      }
+    },
+    {
+      "id": "py.random-secret#9",
+      "check": "py.random-secret",
+      "kind": "semantic",
+      "label": false,
+      "pred": {
+        "candidate": true,
+        "rule": false,
+        "tool": null,
+        "model:gemma3:270m": false,
+        "hybrid:gemma3:270m": false,
+        "model:qwen3:0.6b": false,
+        "hybrid:qwen3:0.6b": false,
+        "model:qwen2.5-coder:1.5b": false,
+        "hybrid:qwen2.5-coder:1.5b": false
+      },
+      "raw": {
+        "gemma3:270m": "{\"answer\": \"no\"}",
+        "qwen3:0.6b": "{\"answer\": \"no\"}",
+        "qwen2.5-coder:1.5b": "{\"answer\": \"no\"}"
+      }
+    },
+    {
+      "id": "py.assert-guard#10",
+      "check": "py.assert-guard",
+      "kind": "semantic",
+      "label": true,
+      "pred": {
+        "candidate": true,
+        "rule": true,
+        "tool": null,
+        "model:gemma3:270m": false,
+        "hybrid:gemma3:270m": false,
+        "model:qwen3:0.6b": false,
+        "hybrid:qwen3:0.6b": false,
+        "model:qwen2.5-coder:1.5b": true,
+        "hybrid:qwen2.5-coder:1.5b": true
+      },
+      "raw": {
+        "gemma3:270m": "{\"answer\": \"no\"}",
+        "qwen3:0.6b": "{\"answer\": \"no\"}",
+        "qwen2.5-coder:1.5b": "{\"answer\": \"yes\"}"
+      }
+    },
+    {
+      "id": "py.assert-guard#11",
+      "check": "py.assert-guard",
+      "kind": "semantic",
+      "label": true,
+      "pred": {
+        "candidate": true,
+        "rule": false,
+        "tool": null,
+        "model:gemma3:270m": true,
+        "hybrid:gemma3:270m": true,
+        "model:qwen3:0.6b": false,
+        "hybrid:qwen3:0.6b": false,
+        "model:qwen2.5-coder:1.5b": true,
+        "hybrid:qwen2.5-coder:1.5b": true
+      },
+      "raw": {
+        "gemma3:270m": "{\"answer\": \"yes\"}",
+        "qwen3:0.6b": "{\"answer\": \"no\"}",
+        "qwen2.5-coder:1.5b": "{\"answer\": \"yes\"}"
+      }
+    },
+    {
+      "id": "py.assert-guard#12",
+      "check": "py.assert-guard",
+      "kind": "semantic",
+      "label": true,
+      "pred": {
+        "candidate": true,
+        "rule": false,
+        "tool": null,
+        "model:gemma3:270m": false,
+        "hybrid:gemma3:270m": false,
+        "model:qwen3:0.6b": false,
+        "hybrid:qwen3:0.6b": false,
+        "model:qwen2.5-coder:1.5b": true,
+        "hybrid:qwen2.5-coder:1.5b": true
+      },
+      "raw": {
+        "gemma3:270m": "{\"answer\": \"no\"}",
+        "qwen3:0.6b": "{\"answer\": \"no\"}",
+        "qwen2.5-coder:1.5b": "{\"answer\": \"yes\"}"
+      }
+    },
+    {
+      "id": "py.assert-guard#13",
+      "check": "py.assert-guard",
+      "kind": "semantic",
+      "label": true,
+      "pred": {
+        "candidate": true,
+        "rule": false,
+        "tool": null,
+        "model:gemma3:270m": true,
+        "hybrid:gemma3:270m": true,
+        "model:qwen3:0.6b": false,
+        "hybrid:qwen3:0.6b": false,
+        "model:qwen2.5-coder:1.5b": true,
+        "hybrid:qwen2.5-coder:1.5b": true
+      },
+      "raw": {
+        "gemma3:270m": "{\"answer\": \"yes\"}",
+        "qwen3:0.6b": "{\"answer\": \"no\"}",
+        "qwen2.5-coder:1.5b": "{\"answer\": \"yes\"}"
+      }
+    },
+    {
+      "id": "py.assert-guard#14",
+      "check": "py.assert-guard",
+      "kind": "semantic",
+      "label": true,
+      "pred": {
+        "candidate": true,
+        "rule": false,
+        "tool": null,
+        "model:gemma3:270m": true,
+        "hybrid:gemma3:270m": true,
+        "model:qwen3:0.6b": false,
+        "hybrid:qwen3:0.6b": false,
+        "model:qwen2.5-coder:1.5b": true,
+        "hybrid:qwen2.5-coder:1.5b": true
+      },
+      "raw": {
+        "gemma3:270m": "{\"answer\": \"yes\"}",
+        "qwen3:0.6b": "{\"answer\": \"no\"}",
+        "qwen2.5-coder:1.5b": "{\"answer\": \"yes\"}"
+      }
+    },
+    {
+      "id": "py.assert-guard#15",
+      "check": "py.assert-guard",
+      "kind": "semantic",
+      "label": false,
+      "pred": {
+        "candidate": true,
+        "rule": false,
+        "tool": null,
+        "model:gemma3:270m": false,
+        "hybrid:gemma3:270m": false,
+        "model:qwen3:0.6b": false,
+        "hybrid:qwen3:0.6b": false,
+        "model:qwen2.5-coder:1.5b": true,
+        "hybrid:qwen2.5-coder:1.5b": true
+      },
+      "raw": {
+        "gemma3:270m": "{\"answer\": \"no\"}",
+        "qwen3:0.6b": "{\"answer\": \"no\"}",
+        "qwen2.5-coder:1.5b": "{\"answer\": \"yes\"}"
+      }
+    },
+    {
+      "id": "py.assert-guard#16",
+      "check": "py.assert-guard",
+      "kind": "semantic",
+      "label": false,
+      "pred": {
+        "candidate": true,
+        "rule": false,
+        "tool": null,
+        "model:gemma3:270m": false,
+        "hybrid:gemma3:270m": false,
+        "model:qwen3:0.6b": false,
+        "hybrid:qwen3:0.6b": false,
+        "model:qwen2.5-coder:1.5b": true,
+        "hybrid:qwen2.5-coder:1.5b": true
+      },
+      "raw": {
+        "gemma3:270m": "{\"answer\": \"no\"}",
+        "qwen3:0.6b": "{\"answer\": \"no\"}",
+        "qwen2.5-coder:1.5b": "{\"answer\": \"yes\"}"
+      }
+    },
+    {
+      "id": "py.assert-guard#17",
+      "check": "py.assert-guard",
+      "kind": "semantic",
+      "label": false,
+      "pred": {
+        "candidate": true,
+        "rule": false,
+        "tool": null,
+        "model:gemma3:270m": false,
+        "hybrid:gemma3:270m": false,
+        "model:qwen3:0.6b": false,
+        "hybrid:qwen3:0.6b": false,
+        "model:qwen2.5-coder:1.5b": true,
+        "hybrid:qwen2.5-coder:1.5b": true
+      },
+      "raw": {
+        "gemma3:270m": "{\"answer\": \"no\"}",
+        "qwen3:0.6b": "{\"answer\": \"no\"}",
+        "qwen2.5-coder:1.5b": "{\"answer\": \"yes\"}"
+      }
+    },
+    {
+      "id": "py.assert-guard#18",
+      "check": "py.assert-guard",
+      "kind": "semantic",
+      "label": false,
+      "pred": {
+        "candidate": true,
+        "rule": false,
+        "tool": null,
+        "model:gemma3:270m": false,
+        "hybrid:gemma3:270m": false,
+        "model:qwen3:0.6b": false,
+        "hybrid:qwen3:0.6b": false,
+        "model:qwen2.5-coder:1.5b": true,
+        "hybrid:qwen2.5-coder:1.5b": true
+      },
+      "raw": {
+        "gemma3:270m": "{\"answer\": \"no\"}",
+        "qwen3:0.6b": "{\"answer\": \"no\"}",
+        "qwen2.5-coder:1.5b": "{\"answer\": \"yes\"}"
+      }
+    },
+    {
+      "id": "py.assert-guard#19",
+      "check": "py.assert-guard",
+      "kind": "semantic",
+      "label": false,
+      "pred": {
+        "candidate": true,
+        "rule": false,
+        "tool": null,
+        "model:gemma3:270m": true,
+        "hybrid:gemma3:270m": true,
+        "model:qwen3:0.6b": false,
+        "hybrid:qwen3:0.6b": false,
+        "model:qwen2.5-coder:1.5b": true,
+        "hybrid:qwen2.5-coder:1.5b": true
+      },
+      "raw": {
+        "gemma3:270m": "{\"answer\": \"yes\"}",
+        "qwen3:0.6b": "{\"answer\": \"no\"}",
+        "qwen2.5-coder:1.5b": "{\"answer\": \"yes\"}"
+      }
+    },
+    {
+      "id": "java.money-double#40",
+      "check": "java.money-double",
+      "kind": "semantic",
+      "label": true,
+      "pred": {
+        "candidate": true,
+        "rule": true,
+        "tool": null,
+        "model:gemma3:270m": false,
+        "hybrid:gemma3:270m": false,
+        "model:qwen3:0.6b": false,
+        "hybrid:qwen3:0.6b": false,
+        "model:qwen2.5-coder:1.5b": true,
+        "hybrid:qwen2.5-coder:1.5b": true
+      },
+      "raw": {
+        "gemma3:270m": "{\"answer\": \"no\"}",
+        "qwen3:0.6b": "{\"answer\": \"no\"}",
+        "qwen2.5-coder:1.5b": "{\"answer\": \"yes\"}"
+      }
+    },
+    {
+      "id": "java.money-double#41",
+      "check": "java.money-double",
+      "kind": "semantic",
+      "label": true,
+      "pred": {
+        "candidate": true,
+        "rule": true,
+        "tool": null,
+        "model:gemma3:270m": false,
+        "hybrid:gemma3:270m": false,
+        "model:qwen3:0.6b": false,
+        "hybrid:qwen3:0.6b": false,
+        "model:qwen2.5-coder:1.5b": true,
+        "hybrid:qwen2.5-coder:1.5b": true
+      },
+      "raw": {
+        "gemma3:270m": "{\"answer\": \"no\"}",
+        "qwen3:0.6b": "{\"answer\": \"no\"}",
+        "qwen2.5-coder:1.5b": "{\"answer\": \"yes\"}"
+      }
+    },
+    {
+      "id": "java.money-double#42",
+      "check": "java.money-double",
+      "kind": "semantic",
+      "label": true,
+      "pred": {
+        "candidate": true,
+        "rule": true,
+        "tool": null,
+        "model:gemma3:270m": false,
+        "hybrid:gemma3:270m": false,
+        "model:qwen3:0.6b": false,
+        "hybrid:qwen3:0.6b": false,
+        "model:qwen2.5-coder:1.5b": true,
+        "hybrid:qwen2.5-coder:1.5b": true
+      },
+      "raw": {
+        "gemma3:270m": "{\"answer\": \"no\"}",
+        "qwen3:0.6b": "{\"answer\": \"no\"}",
+        "qwen2.5-coder:1.5b": "{\"answer\": \"yes\"}"
+      }
+    },
+    {
+      "id": "java.money-double#43",
+      "check": "java.money-double",
+      "kind": "semantic",
+      "label": true,
+      "pred": {
+        "candidate": true,
+        "rule": false,
+        "tool": null,
+        "model:gemma3:270m": true,
+        "hybrid:gemma3:270m": true,
+        "model:qwen3:0.6b": false,
+        "hybrid:qwen3:0.6b": false,
+        "model:qwen2.5-coder:1.5b": true,
+        "hybrid:qwen2.5-coder:1.5b": true
+      },
+      "raw": {
+        "gemma3:270m": "{\"answer\": \"yes\"}",
+        "qwen3:0.6b": "{\"answer\": \"no\"}",
+        "qwen2.5-coder:1.5b": "{\"answer\": \"yes\"}"
+      }
+    },
+    {
+      "id": "java.money-double#44",
+      "check": "java.money-double",
+      "kind": "semantic",
+      "label": true,
+      "pred": {
+        "candidate": true,
+        "rule": false,
+        "tool": null,
+        "model:gemma3:270m": false,
+        "hybrid:gemma3:270m": false,
+        "model:qwen3:0.6b": false,
+        "hybrid:qwen3:0.6b": false,
+        "model:qwen2.5-coder:1.5b": true,
+        "hybrid:qwen2.5-coder:1.5b": true
+      },
+      "raw": {
+        "gemma3:270m": "{\"answer\": \"no\"}",
+        "qwen3:0.6b": "{\"answer\": \"no\"}",
+        "qwen2.5-coder:1.5b": "{\"answer\": \"yes\"}"
+      }
+    },
+    {
+      "id": "java.money-double#45",
+      "check": "java.money-double",
+      "kind": "semantic",
+      "label": false,
+      "pred": {
+        "candidate": true,
+        "rule": true,
+        "tool": null,
+        "model:gemma3:270m": false,
+        "hybrid:gemma3:270m": false,
+        "model:qwen3:0.6b": false,
+        "hybrid:qwen3:0.6b": false,
+        "model:qwen2.5-coder:1.5b": true,
+        "hybrid:qwen2.5-coder:1.5b": true
+      },
+      "raw": {
+        "gemma3:270m": "{\"answer\": \"no\"}",
+        "qwen3:0.6b": "{\"answer\": \"no\"}",
+        "qwen2.5-coder:1.5b": "{\"answer\": \"yes\"}"
+      }
+    },
+    {
+      "id": "java.money-double#46",
+      "check": "java.money-double",
+      "kind": "semantic",
+      "label": false,
+      "pred": {
+        "candidate": true,
+        "rule": false,
+        "tool": null,
+        "model:gemma3:270m": true,
+        "hybrid:gemma3:270m": true,
+        "model:qwen3:0.6b": false,
+        "hybrid:qwen3:0.6b": false,
+        "model:qwen2.5-coder:1.5b": true,
+        "hybrid:qwen2.5-coder:1.5b": true
+      },
+      "raw": {
+        "gemma3:270m": "{\"answer\": \"yes\"}",
+        "qwen3:0.6b": "{\"answer\": \"no\"}",
+        "qwen2.5-coder:1.5b": "{\"answer\": \"yes\"}"
+      }
+    },
+    {
+      "id": "java.money-double#47",
+      "check": "java.money-double",
+      "kind": "semantic",
+      "label": false,
+      "pred": {
+        "candidate": true,
+        "rule": false,
+        "tool": null,
+        "model:gemma3:270m": false,
+        "hybrid:gemma3:270m": false,
+        "model:qwen3:0.6b": false,
+        "hybrid:qwen3:0.6b": false,
+        "model:qwen2.5-coder:1.5b": false,
+        "hybrid:qwen2.5-coder:1.5b": false
+      },
+      "raw": {
+        "gemma3:270m": "{\"answer\": \"no\"}",
+        "qwen3:0.6b": "{\"answer\": \"no\"}",
+        "qwen2.5-coder:1.5b": "{\"answer\": \"no\"}"
+      }
+    },
+    {
+      "id": "java.money-double#48",
+      "check": "java.money-double",
+      "kind": "semantic",
+      "label": false,
+      "pred": {
+        "candidate": true,
+        "rule": false,
+        "tool": null,
+        "model:gemma3:270m": false,
+        "hybrid:gemma3:270m": false,
+        "model:qwen3:0.6b": false,
+        "hybrid:qwen3:0.6b": false,
+        "model:qwen2.5-coder:1.5b": true,
+        "hybrid:qwen2.5-coder:1.5b": true
+      },
+      "raw": {
+        "gemma3:270m": "{\"answer\": \"no\"}",
+        "qwen3:0.6b": "{\"answer\": \"no\"}",
+        "qwen2.5-coder:1.5b": "{\"answer\": \"yes\"}"
+      }
+    },
+    {
+      "id": "java.money-double#49",
+      "check": "java.money-double",
+      "kind": "semantic",
+      "label": false,
+      "pred": {
+        "candidate": true,
+        "rule": false,
+        "tool": null,
+        "model:gemma3:270m": false,
+        "hybrid:gemma3:270m": false,
+        "model:qwen3:0.6b": false,
+        "hybrid:qwen3:0.6b": false,
+        "model:qwen2.5-coder:1.5b": true,
+        "hybrid:qwen2.5-coder:1.5b": true
+      },
+      "raw": {
+        "gemma3:270m": "{\"answer\": \"no\"}",
+        "qwen3:0.6b": "{\"answer\": \"no\"}",
+        "qwen2.5-coder:1.5b": "{\"answer\": \"yes\"}"
+      }
+    },
+    {
+      "id": "java.bigdecimal-equals#50",
+      "check": "java.bigdecimal-equals",
+      "kind": "semantic",
+      "label": true,
+      "pred": {
+        "candidate": true,
+        "rule": null,
+        "tool": null,
+        "model:gemma3:270m": false,
+        "hybrid:gemma3:270m": false,
+        "model:qwen3:0.6b": false,
+        "hybrid:qwen3:0.6b": false,
+        "model:qwen2.5-coder:1.5b": true,
+        "hybrid:qwen2.5-coder:1.5b": true
+      },
+      "raw": {
+        "gemma3:270m": "{\"answer\": \"no\"}",
+        "qwen3:0.6b": "{\"answer\": \"no\"}",
+        "qwen2.5-coder:1.5b": "{\"answer\": \"yes\"}"
+      }
+    },
+    {
+      "id": "java.bigdecimal-equals#51",
+      "check": "java.bigdecimal-equals",
+      "kind": "semantic",
+      "label": true,
+      "pred": {
+        "candidate": true,
+        "rule": null,
+        "tool": null,
+        "model:gemma3:270m": false,
+        "hybrid:gemma3:270m": false,
+        "model:qwen3:0.6b": true,
+        "hybrid:qwen3:0.6b": true,
+        "model:qwen2.5-coder:1.5b": true,
+        "hybrid:qwen2.5-coder:1.5b": true
+      },
+      "raw": {
+        "gemma3:270m": "{\"answer\": \"no\"}",
+        "qwen3:0.6b": "{\"answer\": \"yes\"}",
+        "qwen2.5-coder:1.5b": "{\"answer\": \"yes\"}"
+      }
+    },
+    {
+      "id": "java.bigdecimal-equals#52",
+      "check": "java.bigdecimal-equals",
+      "kind": "semantic",
+      "label": true,
+      "pred": {
+        "candidate": true,
+        "rule": null,
+        "tool": null,
+        "model:gemma3:270m": true,
+        "hybrid:gemma3:270m": true,
+        "model:qwen3:0.6b": false,
+        "hybrid:qwen3:0.6b": false,
+        "model:qwen2.5-coder:1.5b": true,
+        "hybrid:qwen2.5-coder:1.5b": true
+      },
+      "raw": {
+        "gemma3:270m": "{\"answer\": \"yes\"}",
+        "qwen3:0.6b": "{\"answer\": \"no\"}",
+        "qwen2.5-coder:1.5b": "{\"answer\": \"yes\"}"
+      }
+    },
+    {
+      "id": "java.bigdecimal-equals#53",
+      "check": "java.bigdecimal-equals",
+      "kind": "semantic",
+      "label": true,
+      "pred": {
+        "candidate": true,
+        "rule": null,
+        "tool": null,
+        "model:gemma3:270m": false,
+        "hybrid:gemma3:270m": false,
+        "model:qwen3:0.6b": false,
+        "hybrid:qwen3:0.6b": false,
+        "model:qwen2.5-coder:1.5b": true,
+        "hybrid:qwen2.5-coder:1.5b": true
+      },
+      "raw": {
+        "gemma3:270m": "{\"answer\": \"no\"}",
+        "qwen3:0.6b": "{\"answer\": \"no\"}",
+        "qwen2.5-coder:1.5b": "{\"answer\": \"yes\"}"
+      }
+    },
+    {
+      "id": "java.bigdecimal-equals#54",
+      "check": "java.bigdecimal-equals",
+      "kind": "semantic",
+      "label": true,
+      "pred": {
+        "candidate": true,
+        "rule": null,
+        "tool": null,
+        "model:gemma3:270m": true,
+        "hybrid:gemma3:270m": true,
+        "model:qwen3:0.6b": false,
+        "hybrid:qwen3:0.6b": false,
+        "model:qwen2.5-coder:1.5b": true,
+        "hybrid:qwen2.5-coder:1.5b": true
+      },
+      "raw": {
+        "gemma3:270m": "{\"answer\": \"yes\"}",
+        "qwen3:0.6b": "{\"answer\": \"no\"}",
+        "qwen2.5-coder:1.5b": "{\"answer\": \"yes\"}"
+      }
+    },
+    {
+      "id": "java.bigdecimal-equals#55",
+      "check": "java.bigdecimal-equals",
+      "kind": "semantic",
+      "label": false,
+      "pred": {
+        "candidate": true,
+        "rule": null,
+        "tool": null,
+        "model:gemma3:270m": false,
+        "hybrid:gemma3:270m": false,
+        "model:qwen3:0.6b": false,
+        "hybrid:qwen3:0.6b": false,
+        "model:qwen2.5-coder:1.5b": true,
+        "hybrid:qwen2.5-coder:1.5b": true
+      },
+      "raw": {
+        "gemma3:270m": "{\"answer\": \"no\"}",
+        "qwen3:0.6b": "{\"answer\": \"no\"}",
+        "qwen2.5-coder:1.5b": "{\"answer\": \"yes\"}"
+      }
+    },
+    {
+      "id": "java.bigdecimal-equals#56",
+      "check": "java.bigdecimal-equals",
+      "kind": "semantic",
+      "label": false,
+      "pred": {
+        "candidate": true,
+        "rule": null,
+        "tool": null,
+        "model:gemma3:270m": false,
+        "hybrid:gemma3:270m": false,
+        "model:qwen3:0.6b": false,
+        "hybrid:qwen3:0.6b": false,
+        "model:qwen2.5-coder:1.5b": true,
+        "hybrid:qwen2.5-coder:1.5b": true
+      },
+      "raw": {
+        "gemma3:270m": "{\"answer\": \"no\"}",
+        "qwen3:0.6b": "{\"answer\": \"no\"}",
+        "qwen2.5-coder:1.5b": "{\"answer\": \"yes\"}"
+      }
+    },
+    {
+      "id": "java.bigdecimal-equals#57",
+      "check": "java.bigdecimal-equals",
+      "kind": "semantic",
+      "label": false,
+      "pred": {
+        "candidate": true,
+        "rule": null,
+        "tool": null,
+        "model:gemma3:270m": true,
+        "hybrid:gemma3:270m": true,
+        "model:qwen3:0.6b": false,
+        "hybrid:qwen3:0.6b": false,
+        "model:qwen2.5-coder:1.5b": true,
+        "hybrid:qwen2.5-coder:1.5b": true
+      },
+      "raw": {
+        "gemma3:270m": "{\"answer\": \"yes\"}",
+        "qwen3:0.6b": "{\"answer\": \"no\"}",
+        "qwen2.5-coder:1.5b": "{\"answer\": \"yes\"}"
+      }
+    },
+    {
+      "id": "java.bigdecimal-equals#58",
+      "check": "java.bigdecimal-equals",
+      "kind": "semantic",
+      "label": false,
+      "pred": {
+        "candidate": true,
+        "rule": null,
+        "tool": null,
+        "model:gemma3:270m": true,
+        "hybrid:gemma3:270m": true,
+        "model:qwen3:0.6b": false,
+        "hybrid:qwen3:0.6b": false,
+        "model:qwen2.5-coder:1.5b": true,
+        "hybrid:qwen2.5-coder:1.5b": true
+      },
+      "raw": {
+        "gemma3:270m": "{\"answer\": \"yes\"}",
+        "qwen3:0.6b": "{\"answer\": \"no\"}",
+        "qwen2.5-coder:1.5b": "{\"answer\": \"yes\"}"
+      }
+    },
+    {
+      "id": "java.bigdecimal-equals#59",
+      "check": "java.bigdecimal-equals",
+      "kind": "semantic",
+      "label": false,
+      "pred": {
+        "candidate": true,
+        "rule": null,
+        "tool": null,
+        "model:gemma3:270m": false,
+        "hybrid:gemma3:270m": false,
+        "model:qwen3:0.6b": false,
+        "hybrid:qwen3:0.6b": false,
+        "model:qwen2.5-coder:1.5b": true,
+        "hybrid:qwen2.5-coder:1.5b": true
+      },
+      "raw": {
+        "gemma3:270m": "{\"answer\": \"no\"}",
+        "qwen3:0.6b": "{\"answer\": \"no\"}",
+        "qwen2.5-coder:1.5b": "{\"answer\": \"yes\"}"
+      }
+    },
+    {
+      "id": "java.log-secret#60",
+      "check": "java.log-secret",
+      "kind": "semantic",
+      "label": true,
+      "pred": {
+        "candidate": true,
+        "rule": null,
+        "tool": null,
+        "model:gemma3:270m": false,
+        "hybrid:gemma3:270m": false,
+        "model:qwen3:0.6b": true,
+        "hybrid:qwen3:0.6b": true,
+        "model:qwen2.5-coder:1.5b": true,
+        "hybrid:qwen2.5-coder:1.5b": true
+      },
+      "raw": {
+        "gemma3:270m": "{\"answer\": \"no\"}",
+        "qwen3:0.6b": "{\"answer\": \"yes\"}",
+        "qwen2.5-coder:1.5b": "{\"answer\": \"yes\"}"
+      }
+    },
+    {
+      "id": "java.log-secret#61",
+      "check": "java.log-secret",
+      "kind": "semantic",
+      "label": true,
+      "pred": {
+        "candidate": true,
+        "rule": null,
+        "tool": null,
+        "model:gemma3:270m": false,
+        "hybrid:gemma3:270m": false,
+        "model:qwen3:0.6b": false,
+        "hybrid:qwen3:0.6b": false,
+        "model:qwen2.5-coder:1.5b": false,
+        "hybrid:qwen2.5-coder:1.5b": false
+      },
+      "raw": {
+        "gemma3:270m": "{\"answer\": \"no\"}",
+        "qwen3:0.6b": "{\"answer\": \"no\"}",
+        "qwen2.5-coder:1.5b": "{\"answer\": \"no\"}"
+      }
+    },
+    {
+      "id": "java.log-secret#62",
+      "check": "java.log-secret",
+      "kind": "semantic",
+      "label": true,
+      "pred": {
+        "candidate": true,
+        "rule": null,
+        "tool": null,
+        "model:gemma3:270m": false,
+        "hybrid:gemma3:270m": false,
+        "model:qwen3:0.6b": false,
+        "hybrid:qwen3:0.6b": false,
+        "model:qwen2.5-coder:1.5b": true,
+        "hybrid:qwen2.5-coder:1.5b": true
+      },
+      "raw": {
+        "gemma3:270m": "{\"answer\": \"no\"}",
+        "qwen3:0.6b": "{\"answer\": \"no\"}",
+        "qwen2.5-coder:1.5b": "{\"answer\": \"yes\"}"
+      }
+    },
+    {
+      "id": "java.log-secret#63",
+      "check": "java.log-secret",
+      "kind": "semantic",
+      "label": true,
+      "pred": {
+        "candidate": true,
+        "rule": null,
+        "tool": null,
+        "model:gemma3:270m": true,
+        "hybrid:gemma3:270m": true,
+        "model:qwen3:0.6b": true,
+        "hybrid:qwen3:0.6b": true,
+        "model:qwen2.5-coder:1.5b": false,
+        "hybrid:qwen2.5-coder:1.5b": false
+      },
+      "raw": {
+        "gemma3:270m": "{\"answer\": \"yes\"}",
+        "qwen3:0.6b": "{\"answer\": \"yes\"}",
+        "qwen2.5-coder:1.5b": "{\"answer\": \"no\"}"
+      }
+    },
+    {
+      "id": "java.log-secret#64",
+      "check": "java.log-secret",
+      "kind": "semantic",
+      "label": true,
+      "pred": {
+        "candidate": true,
+        "rule": null,
+        "tool": null,
+        "model:gemma3:270m": false,
+        "hybrid:gemma3:270m": false,
+        "model:qwen3:0.6b": false,
+        "hybrid:qwen3:0.6b": false,
+        "model:qwen2.5-coder:1.5b": true,
+        "hybrid:qwen2.5-coder:1.5b": true
+      },
+      "raw": {
+        "gemma3:270m": "{\"answer\": \"no\"}",
+        "qwen3:0.6b": "{\"answer\": \"no\"}",
+        "qwen2.5-coder:1.5b": "{\"answer\": \"yes\"}"
+      }
+    },
+    {
+      "id": "java.log-secret#65",
+      "check": "java.log-secret",
+      "kind": "semantic",
+      "label": false,
+      "pred": {
+        "candidate": true,
+        "rule": null,
+        "tool": null,
+        "model:gemma3:270m": false,
+        "hybrid:gemma3:270m": false,
+        "model:qwen3:0.6b": false,
+        "hybrid:qwen3:0.6b": false,
+        "model:qwen2.5-coder:1.5b": false,
+        "hybrid:qwen2.5-coder:1.5b": false
+      },
+      "raw": {
+        "gemma3:270m": "{\"answer\": \"no\"}",
+        "qwen3:0.6b": "{\"answer\": \"no\"}",
+        "qwen2.5-coder:1.5b": "{\"answer\": \"no\"}"
+      }
+    },
+    {
+      "id": "java.log-secret#66",
+      "check": "java.log-secret",
+      "kind": "semantic",
+      "label": false,
+      "pred": {
+        "candidate": true,
+        "rule": null,
+        "tool": null,
+        "model:gemma3:270m": false,
+        "hybrid:gemma3:270m": false,
+        "model:qwen3:0.6b": false,
+        "hybrid:qwen3:0.6b": false,
+        "model:qwen2.5-coder:1.5b": false,
+        "hybrid:qwen2.5-coder:1.5b": false
+      },
+      "raw": {
+        "gemma3:270m": "{\"answer\": \"no\"}",
+        "qwen3:0.6b": "{\"answer\": \"no\"}",
+        "qwen2.5-coder:1.5b": "{\"answer\": \"no\"}"
+      }
+    },
+    {
+      "id": "java.log-secret#67",
+      "check": "java.log-secret",
+      "kind": "semantic",
+      "label": false,
+      "pred": {
+        "candidate": true,
+        "rule": null,
+        "tool": null,
+        "model:gemma3:270m": false,
+        "hybrid:gemma3:270m": false,
+        "model:qwen3:0.6b": false,
+        "hybrid:qwen3:0.6b": false,
+        "model:qwen2.5-coder:1.5b": false,
+        "hybrid:qwen2.5-coder:1.5b": false
+      },
+      "raw": {
+        "gemma3:270m": "{\"answer\": \"no\"}",
+        "qwen3:0.6b": "{\"answer\": \"no\"}",
+        "qwen2.5-coder:1.5b": "{\"answer\": \"no\"}"
+      }
+    },
+    {
+      "id": "java.log-secret#68",
+      "check": "java.log-secret",
+      "kind": "semantic",
+      "label": false,
+      "pred": {
+        "candidate": true,
+        "rule": null,
+        "tool": null,
+        "model:gemma3:270m": false,
+        "hybrid:gemma3:270m": false,
+        "model:qwen3:0.6b": false,
+        "hybrid:qwen3:0.6b": false,
+        "model:qwen2.5-coder:1.5b": false,
+        "hybrid:qwen2.5-coder:1.5b": false
+      },
+      "raw": {
+        "gemma3:270m": "{\"answer\": \"no\"}",
+        "qwen3:0.6b": "{\"answer\": \"no\"}",
+        "qwen2.5-coder:1.5b": "{\"answer\": \"no\"}"
+      }
+    },
+    {
+      "id": "java.log-secret#69",
+      "check": "java.log-secret",
+      "kind": "semantic",
+      "label": false,
+      "pred": {
+        "candidate": true,
+        "rule": null,
+        "tool": null,
+        "model:gemma3:270m": false,
+        "hybrid:gemma3:270m": false,
+        "model:qwen3:0.6b": false,
+        "hybrid:qwen3:0.6b": false,
+        "model:qwen2.5-coder:1.5b": false,
+        "hybrid:qwen2.5-coder:1.5b": false
+      },
+      "raw": {
+        "gemma3:270m": "{\"answer\": \"no\"}",
+        "qwen3:0.6b": "{\"answer\": \"no\"}",
+        "qwen2.5-coder:1.5b": "{\"answer\": \"no\"}"
+      }
+    },
+    {
+      "id": "bash.rm-empty-var#80",
+      "check": "bash.rm-empty-var",
+      "kind": "semantic",
+      "label": true,
+      "pred": {
+        "candidate": true,
+        "rule": null,
+        "tool": true,
+        "model:gemma3:270m": false,
+        "hybrid:gemma3:270m": true,
+        "model:qwen3:0.6b": false,
+        "hybrid:qwen3:0.6b": true,
+        "model:qwen2.5-coder:1.5b": true,
+        "hybrid:qwen2.5-coder:1.5b": true
+      },
+      "raw": {
+        "gemma3:270m": "{\"answer\": \"no\"}",
+        "qwen3:0.6b": "{\"answer\": \"no\"}",
+        "qwen2.5-coder:1.5b": "{\"answer\": \"yes\"}"
+      }
+    },
+    {
+      "id": "bash.rm-empty-var#81",
+      "check": "bash.rm-empty-var",
+      "kind": "semantic",
+      "label": true,
+      "pred": {
+        "candidate": true,
+        "rule": null,
+        "tool": true,
+        "model:gemma3:270m": false,
+        "hybrid:gemma3:270m": true,
+        "model:qwen3:0.6b": false,
+        "hybrid:qwen3:0.6b": true,
+        "model:qwen2.5-coder:1.5b": true,
+        "hybrid:qwen2.5-coder:1.5b": true
+      },
+      "raw": {
+        "gemma3:270m": "{\"answer\": \"no\"}",
+        "qwen3:0.6b": "{\"answer\": \"no\"}",
+        "qwen2.5-coder:1.5b": "{\"answer\": \"yes\"}"
+      }
+    },
+    {
+      "id": "bash.rm-empty-var#82",
+      "check": "bash.rm-empty-var",
+      "kind": "semantic",
+      "label": true,
+      "pred": {
+        "candidate": true,
+        "rule": null,
+        "tool": false,
+        "model:gemma3:270m": false,
+        "hybrid:gemma3:270m": false,
+        "model:qwen3:0.6b": false,
+        "hybrid:qwen3:0.6b": false,
+        "model:qwen2.5-coder:1.5b": true,
+        "hybrid:qwen2.5-coder:1.5b": false
+      },
+      "raw": {
+        "gemma3:270m": "{\"answer\": \"no\"}",
+        "qwen3:0.6b": "{\"answer\": \"no\"}",
+        "qwen2.5-coder:1.5b": "{\"answer\": \"yes\"}"
+      }
+    },
+    {
+      "id": "bash.rm-empty-var#83",
+      "check": "bash.rm-empty-var",
+      "kind": "semantic",
+      "label": true,
+      "pred": {
+        "candidate": true,
+        "rule": null,
+        "tool": true,
+        "model:gemma3:270m": false,
+        "hybrid:gemma3:270m": true,
+        "model:qwen3:0.6b": false,
+        "hybrid:qwen3:0.6b": true,
+        "model:qwen2.5-coder:1.5b": true,
+        "hybrid:qwen2.5-coder:1.5b": true
+      },
+      "raw": {
+        "gemma3:270m": "{\"answer\": \"no\"}",
+        "qwen3:0.6b": "{\"answer\": \"no\"}",
+        "qwen2.5-coder:1.5b": "{\"answer\": \"yes\"}"
+      }
+    },
+    {
+      "id": "bash.rm-empty-var#84",
+      "check": "bash.rm-empty-var",
+      "kind": "semantic",
+      "label": true,
+      "pred": {
+        "candidate": true,
+        "rule": null,
+        "tool": true,
+        "model:gemma3:270m": false,
+        "hybrid:gemma3:270m": true,
+        "model:qwen3:0.6b": false,
+        "hybrid:qwen3:0.6b": true,
+        "model:qwen2.5-coder:1.5b": true,
+        "hybrid:qwen2.5-coder:1.5b": true
+      },
+      "raw": {
+        "gemma3:270m": "{\"answer\": \"no\"}",
+        "qwen3:0.6b": "{\"answer\": \"no\"}",
+        "qwen2.5-coder:1.5b": "{\"answer\": \"yes\"}"
+      }
+    },
+    {
+      "id": "bash.rm-empty-var#85",
+      "check": "bash.rm-empty-var",
+      "kind": "semantic",
+      "label": false,
+      "pred": {
+        "candidate": true,
+        "rule": null,
+        "tool": false,
+        "model:gemma3:270m": false,
+        "hybrid:gemma3:270m": false,
+        "model:qwen3:0.6b": false,
+        "hybrid:qwen3:0.6b": false,
+        "model:qwen2.5-coder:1.5b": true,
+        "hybrid:qwen2.5-coder:1.5b": false
+      },
+      "raw": {
+        "gemma3:270m": "{\"answer\": \"no\"}",
+        "qwen3:0.6b": "{\"answer\": \"no\"}",
+        "qwen2.5-coder:1.5b": "{\"answer\": \"yes\"}"
+      }
+    },
+    {
+      "id": "bash.rm-empty-var#86",
+      "check": "bash.rm-empty-var",
+      "kind": "semantic",
+      "label": false,
+      "pred": {
+        "candidate": true,
+        "rule": null,
+        "tool": false,
+        "model:gemma3:270m": false,
+        "hybrid:gemma3:270m": false,
+        "model:qwen3:0.6b": false,
+        "hybrid:qwen3:0.6b": false,
+        "model:qwen2.5-coder:1.5b": false,
+        "hybrid:qwen2.5-coder:1.5b": false
+      },
+      "raw": {
+        "gemma3:270m": "{\"answer\": \"no\"}",
+        "qwen3:0.6b": "{\"answer\": \"no\"}",
+        "qwen2.5-coder:1.5b": "{\"answer\": \"no\"}"
+      }
+    },
+    {
+      "id": "bash.rm-empty-var#87",
+      "check": "bash.rm-empty-var",
+      "kind": "semantic",
+      "label": false,
+      "pred": {
+        "candidate": true,
+        "rule": null,
+        "tool": false,
+        "model:gemma3:270m": false,
+        "hybrid:gemma3:270m": false,
+        "model:qwen3:0.6b": false,
+        "hybrid:qwen3:0.6b": false,
+        "model:qwen2.5-coder:1.5b": true,
+        "hybrid:qwen2.5-coder:1.5b": false
+      },
+      "raw": {
+        "gemma3:270m": "{\"answer\": \"no\"}",
+        "qwen3:0.6b": "{\"answer\": \"no\"}",
+        "qwen2.5-coder:1.5b": "{\"answer\": \"yes\"}"
+      }
+    },
+    {
+      "id": "bash.rm-empty-var#88",
+      "check": "bash.rm-empty-var",
+      "kind": "semantic",
+      "label": false,
+      "pred": {
+        "candidate": true,
+        "rule": null,
+        "tool": true,
+        "model:gemma3:270m": false,
+        "hybrid:gemma3:270m": true,
+        "model:qwen3:0.6b": false,
+        "hybrid:qwen3:0.6b": true,
+        "model:qwen2.5-coder:1.5b": true,
+        "hybrid:qwen2.5-coder:1.5b": true
+      },
+      "raw": {
+        "gemma3:270m": "{\"answer\": \"no\"}",
+        "qwen3:0.6b": "{\"answer\": \"no\"}",
+        "qwen2.5-coder:1.5b": "{\"answer\": \"yes\"}"
+      }
+    },
+    {
+      "id": "bash.rm-empty-var#89",
+      "check": "bash.rm-empty-var",
+      "kind": "semantic",
+      "label": false,
+      "pred": {
+        "candidate": true,
+        "rule": null,
+        "tool": false,
+        "model:gemma3:270m": false,
+        "hybrid:gemma3:270m": false,
+        "model:qwen3:0.6b": false,
+        "hybrid:qwen3:0.6b": false,
+        "model:qwen2.5-coder:1.5b": false,
+        "hybrid:qwen2.5-coder:1.5b": false
+      },
+      "raw": {
+        "gemma3:270m": "{\"answer\": \"no\"}",
+        "qwen3:0.6b": "{\"answer\": \"no\"}",
+        "qwen2.5-coder:1.5b": "{\"answer\": \"no\"}"
+      }
+    }
+  ]
+}

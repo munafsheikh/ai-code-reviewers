@@ -1,0 +1,19 @@
+{
+  "findings": [
+    {
+      "path": "svc/reports.py",
+      "line": 14,
+      "rule_id": "PY-007"
+    },
+    {
+      "path": "svc/reports.py",
+      "line": 21,
+      "rule_id": "INJ-006"
+    },
+    {
+      "path": "svc/reports.py",
+      "line": 27,
+      "rule_id": "INJ-006"
+    }
+  ]
+}

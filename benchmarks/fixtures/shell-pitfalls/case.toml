@@ -1,0 +1,2 @@
+description = "Deploy script: curl|sudo bash, unchecked cd, unquoted cp argument, unguarded rm -rf on a variable, chmod 777, eval of a variable; assignments, [[ ]], ${VAR:?} and $((...)) stay quiet."
+expected_gate = "block"

@@ -1,0 +1,21 @@
+diff --git a/scripts/deploy.sh b/scripts/deploy.sh
+index a9bf588..aaca8d1 100644
+--- a/scripts/deploy.sh
++++ b/scripts/deploy.sh
+@@ -1 +1,16 @@
+ #!/bin/bash
++set -uo pipefail
++
++RELEASE_DIR=/srv/app/releases/$VERSION
++curl -fsSL https://get.example.com/tool | sudo bash
++cd "$WORKSPACE"
++cp $ARTIFACT "$RELEASE_DIR/"
++rm -rf "$STAGING_DIR/"
++chmod -R 777 "$RELEASE_DIR/uploads"
++eval "$POST_DEPLOY_HOOK"
++
++if [[ -n $NOTIFY ]]; then
++  echo "deployed $VERSION" | mail -s "deploy" "$NOTIFY"
++fi
++rm -rf "${CACHE_DIR:?}/old"
++count=$((count + $step))

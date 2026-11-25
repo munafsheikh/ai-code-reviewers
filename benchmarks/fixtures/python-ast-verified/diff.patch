@@ -1,0 +1,38 @@
+diff --git a/svc/reports.py b/svc/reports.py
+index 20b1553..4cc3e5b 100644
+--- a/svc/reports.py
++++ b/svc/reports.py
+@@ -1 +1,33 @@
+ import requests
++
++
++def fetch(url, token):
++    resp = requests.get(
++        url,
++        headers={"Authorization": f"Bearer {token}"},
++        timeout=(3.05, 27),
++    )
++    return resp.json()
++
++
++def push(url, payload):
++    return requests.post(
++        url,
++        json=payload,
++    )
++
++
++def by_status(cur, status):
++    cur.execute(f"SELECT * FROM jobs WHERE status = '{status}'")
++    return cur.fetchall()
++
++
++def by_owner(cur, owner):
++    query = "SELECT * FROM jobs WHERE owner = '%s'" % owner
++    cur.execute(query)
++    return cur.fetchall()
++
++
++def by_id(cur, job_id):
++    cur.execute("SELECT * FROM jobs WHERE id = %s", (job_id,))
++    return cur.fetchone()

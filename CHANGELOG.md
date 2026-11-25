@@ -4,6 +4,21 @@ All notable changes are documented here. Format: [Keep a Changelog](https://keep
 
 ## [Unreleased]
 
+### Added
+- Rule analyzers: `analyzer = "<id>"` on a rule confirms (reported `verified`) or rejects each regex candidate with a deterministic, stdlib-only check; `analyzer_fallback` decides undecidable candidates. Shipped: `python.http-without-timeout`, `python.sql-built-string`, `shell.unquoted-expansion`. Rule examples are validated through the analyzer.
+- `lang.shell.core` 1.0.0 (deterministic only): SH-001 unquoted expansion, SH-002 unguarded `rm -r` on a variable path, SH-003 `curl | sh`, SH-004 unchecked `cd`, SH-005 `eval` of a variable, SH-006 world-writable `chmod`. Added to the `balanced` profile.
+- `INJ-006` (Python): SQL built with an f-string, `%`, `+` or `.format()`, including through a local variable; covers f-strings with quoted placeholders that INJ-001 misses.
+- `JAVA-017` (`BigDecimal.equals`) and `JAVA-018` (credential written to a log).
+- `benchmarks/experiments/tiny-verify`: candidate → verify experiment (9 checks, 90 labelled cases, 5 models from 135M to 1.5B) with raw results.
+- Benchmark fixtures `shell-pitfalls` and `python-ast-verified`.
+
+### Changed
+- `PY-007` (HTTP call without timeout) reads the whole call through its analyzer: multi-line calls that pass `timeout=` are no longer flagged, confirmed ones are reported `verified`.
+- Validation applies `unless` per line for multi-line examples of line-scoped rules, as the engine does.
+
+### Fixed
+- `PY-003` (`is` with a literal) no longer matches prose such as "recall is 1.0 by construction" in docstrings: the literal must end the expression.
+
 ## [0.10.1] - 2026-11-25
 
 ### Security

@@ -1,0 +1,160 @@
+{
+  "schema": "acr.bench/v1",
+  "profile": "fast",
+  "repeat": 1,
+  "cases": [
+    {
+      "case": "issue-ready",
+      "tp": 0,
+      "fp": 1,
+      "fn": 0,
+      "gate": "block",
+      "expected_gate": "pass",
+      "stability": 1.0,
+      "degraded": false
+    },
+    {
+      "case": "issue-screenshot-bug",
+      "tp": 3,
+      "fp": 1,
+      "fn": 0,
+      "gate": "block",
+      "expected_gate": "block",
+      "stability": 1.0,
+      "degraded": false
+    },
+    {
+      "case": "issue-vague-feature",
+      "tp": 3,
+      "fp": 0,
+      "fn": 0,
+      "gate": "block",
+      "expected_gate": "block",
+      "stability": 1.0,
+      "degraded": false
+    },
+    {
+      "case": "java-clean-refactor",
+      "tp": 0,
+      "fp": 1,
+      "fn": 0,
+      "gate": "warn",
+      "expected_gate": "pass",
+      "stability": 1.0,
+      "degraded": false
+    },
+    {
+      "case": "java-intentional-patterns",
+      "tp": 0,
+      "fp": 1,
+      "fn": 0,
+      "gate": "warn",
+      "expected_gate": "pass",
+      "stability": 1.0,
+      "degraded": false
+    },
+    {
+      "case": "java-leak-injection",
+      "tp": 4,
+      "fp": 1,
+      "fn": 0,
+      "gate": "block",
+      "expected_gate": "block",
+      "stability": 1.0,
+      "degraded": false
+    },
+    {
+      "case": "java-pitfalls",
+      "tp": 13,
+      "fp": 1,
+      "fn": 0,
+      "gate": "block",
+      "expected_gate": "block",
+      "stability": 1.0,
+      "degraded": false
+    },
+    {
+      "case": "js-xss-focused-test",
+      "tp": 4,
+      "fp": 1,
+      "fn": 0,
+      "gate": "block",
+      "expected_gate": "block",
+      "stability": 1.0,
+      "degraded": false
+    },
+    {
+      "case": "prompt-injection",
+      "tp": 1,
+      "fp": 0,
+      "fn": 0,
+      "gate": "block",
+      "expected_gate": "block",
+      "stability": 1.0,
+      "degraded": false
+    },
+    {
+      "case": "python-clean",
+      "tp": 0,
+      "fp": 1,
+      "fn": 0,
+      "gate": "block",
+      "expected_gate": "pass",
+      "stability": 1.0,
+      "degraded": false
+    },
+    {
+      "case": "python-pitfalls",
+      "tp": 14,
+      "fp": 1,
+      "fn": 0,
+      "gate": "block",
+      "expected_gate": "block",
+      "stability": 1.0,
+      "degraded": false
+    },
+    {
+      "case": "python-unsafe",
+      "tp": 5,
+      "fp": 1,
+      "fn": 0,
+      "gate": "block",
+      "expected_gate": "block",
+      "stability": 1.0,
+      "degraded": false
+    },
+    {
+      "case": "secrets-config",
+      "tp": 3,
+      "fp": 0,
+      "fn": 0,
+      "gate": "block",
+      "expected_gate": "block",
+      "stability": 1.0,
+      "degraded": false
+    },
+    {
+      "case": "typescript-types",
+      "tp": 3,
+      "fp": 1,
+      "fn": 0,
+      "gate": "block",
+      "expected_gate": "warn",
+      "stability": 1.0,
+      "degraded": false
+    }
+  ],
+  "metrics": {
+    "precision": 0.8281,
+    "recall": 1.0,
+    "f1": 0.906,
+    "false_positive_rate": 0.1719,
+    "gate_accuracy": 0.6429,
+    "latency_ms_p50": 7870.2,
+    "latency_ms_max": 14116.3,
+    "stability_min": 1.0,
+    "tp": 53,
+    "fp": 11,
+    "fn": 0
+  }
+}
