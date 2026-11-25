@@ -15,6 +15,7 @@ All notable changes are documented here. Format: [Keep a Changelog](https://keep
 ### Changed
 - `PY-007` (HTTP call without timeout) reads the whole call through its analyzer: multi-line calls that pass `timeout=` are no longer flagged, confirmed ones are reported `verified`.
 - Validation applies `unless` per line for multi-line examples of line-scoped rules, as the engine does.
+- CI review lanes exclude `tests/unit/test_analyzers.py`, which holds deliberate injection samples (as `tests/unit/test_rules.py` does).
 
 ### Fixed
 - `PY-003` (`is` with a literal) no longer matches prose such as "recall is 1.0 by construction" in docstrings: the literal must end the expression.
